@@ -14,8 +14,8 @@ library(tidyverse)
 
 # Load data ---------------------------------------------------------------
 
-prism.daily.raw <- read_xlsx("data/data-wrangling-intermediate/02_monitoring-events-with-PRISM-csv-file-name.xlsx",
+prism.daily.raw <- read_xlsx("data/data-wrangling-intermediate/02.1_monitoring-events-with-PRISM-csv-file-name.xlsx",
                              sheet = "daily")
 
-prism.normals.raw <- read_xlsx("data/data-wrangling-intermediate/02_monitoring-events-with-PRISM-csv-file-name.xlsx",
+prism.normals.raw <- read_xlsx("data/data-wrangling-intermediate/02.1_monitoring-events-with-PRISM-csv-file-name.xlsx",
                                sheet = "normals")
