@@ -14,10 +14,10 @@ library(tidyverse)
 
 # Load data ---------------------------------------------------------------
 
-prism.daily.raw <- read_xlsx("data/data-wrangling-intermediate/02.1_monitoring-events-with-PRISM-csv-file-name.xlsx",
+prism.daily.raw <- read_xlsx("data/data-wrangling-intermediate/02_monitoring-events-with-PRISM-csv-file-name.xlsx",
                              sheet = "daily")
 
-prism.normals.raw <- read_xlsx("data/data-wrangling-intermediate/02.1_monitoring-events-with-PRISM-csv-file-name.xlsx",
+prism.normals.raw <- read_xlsx("data/data-wrangling-intermediate/02_monitoring-events-with-PRISM-csv-file-name.xlsx",
                                sheet = "normals")
 
 monitor <- read_csv("data/cleaned/01_site-and-monitoring-info_clean.csv")
@@ -132,5 +132,5 @@ monitor.prism <- monitor.prism |>
 # Write to csv ------------------------------------------------------------
 
 write_csv(monitor.prism,
-          file = "data/cleaned/02.1_monitoring-info-with-PRISM-data_clean.csv")
+          file = "data/cleaned/02_monitoring-info-with-PRISM-data_clean.csv")
 
