@@ -22,7 +22,7 @@ library(tidyverse)
 # Load data ---------------------------------------------------------------
 
 coord.raw <- read_xlsx("data/raw/Buffelgrass Demography GPS coordinates.xlsx")
-dat.raw <- read_xlsx("data/raw/2024-07_LO_Buffelgrass-culm-demography_master.xlsx", sheet = "Demography")
+dat.raw <- read_xlsx("data/raw/2024-09_LO_Buffelgrass-culm-demography_master.xlsx", sheet = "Demography")
 
 
 # Convert coordinates to decimal degrees ----------------------------------
