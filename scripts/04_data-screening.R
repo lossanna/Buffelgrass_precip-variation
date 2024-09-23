@@ -5,11 +5,12 @@
 
 library(readxl)
 library(tidyverse)
+library(GGally)
 
 # Load data ---------------------------------------------------------------
 
 culms.raw <- read_xlsx("data/raw/2024-09_LO_Buffelgrass-culm-demography_master.xlsx", sheet = "Demography")
-monitor.prism <- read_csv("data/cleaned/02.1_monitoring-info-with-PRISM-data_clean.csv")
+monitor.prism <- read_csv("data/cleaned/02_monitoring-info-with-PRISM-data_clean.csv")
 
 # Data wrangling ----------------------------------------------------------
 
@@ -86,3 +87,73 @@ dat |>
 dat |> 
   ggplot(aes(x = Aspect, y = Reproductive_culms)) +
   geom_boxplot()
+
+
+## Pair plot --------------------------------------------------------------
+
+# Reproductive & vegetative culms
+dat |>
+  ggplot(aes(x = Vegetative_culms, y = Reproductive_culms)) +
+  geom_point()
+
+
+# Response variable: Density & cover --------------------------------------
+
+# Pair plot
+res.cont |> 
+  select(-Longestleaflength_cm, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms) |> 
+  ggpairs()
+
+# BG Cover
+hist(dat$BGCover)
+dat |> 
+  ggplot(aes(x = Site, y = BGCover)) +
+  geom_boxplot()
+
+# BG Density
+hist(dat$BGDensity)
+dat |> 
+  ggplot(aes(x = Site, y = BGDensity)) +
+  geom_boxplot()
+
+# Shrub cover
+hist(dat$ShrubCover)
+dat |> 
+  ggplot(aes(x = Site, y = ShrubCover)) +
+  geom_boxplot()
+
+# Forb cover
+hist(dat$ForbCover)
+dat |> 
+  ggplot(aes(x = Site, y = ForbCover)) +
+  geom_boxplot()
+
+# Native grass cover
+hist(dat$NGCover)
+dat |> 
+  ggplot(aes(x = Site, y = NGCover)) +
+  geom_boxplot()
+
+# Longest leaf
+hist(dat$Longestleaflength_cm)
+dat |> 
+  filter(!is.na(Longestleaflength_cm)) |> 
+  ggplot(aes(x = Site, y = Longestleaflength_cm)) + 
+  geom_boxplot()
+
+
+
+# Continuous explanatory variables ----------------------------------------
+
+# Pair plot
+dat |> 
+  select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm) |> 
+  distinct(.keep_all = TRUE) |> 
+  ggpairs()
+
+
+
+# Write out data to csv ---------------------------------------------------
+
+write_csv(dat,
+          file = "data/cleaned/04_demography-data_clean.csv")
