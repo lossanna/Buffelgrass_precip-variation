@@ -19,13 +19,16 @@ dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 culm.avg.site.aspect <- dat |> 
   group_by(Year, StudyYear, Site, Aspect) |> 
   summarise(repro_avg = mean(Reproductive_culms),
-            repro_se = sd(Reproductive_culms) / 40,
+            repro_se = sd(Reproductive_culms) / sqrt(40),
             .groups = "keep")
 
 culm.avg.percdev.aspect <- dat |> 
-  group_by(Site, Aspect, Perc_dev) |> 
+  group_by(Year, Site, Aspect) |> 
   summarise(repro_avg = mean(Reproductive_culms),
-            repro_se = sd(Reproductive_culms) / 78,
+            repro_se = sd(Reproductive_culms) / sqrt(78),
+            total_avg = mean(Total_Live_Culms),
+            total_se = sd(Total_Live_Culms) / sqrt(78),
+            Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
   
   
@@ -48,21 +51,30 @@ culm.avg.site.aspect |>
   facet_wrap(~Site)
 
 culm.avg.percdev.aspect |> 
-  ggplot(aes(x = Perc_dev, y = repro_avg)) +
-  geom_point(aes(color = Aspect)) +
-  geom_line(aes(color = Aspect)) +
-  facet_wrap(~Site)
+  ggplot(aes(x = Perc_dev_avg, y = repro_avg, color = Aspect)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin = repro_avg - repro_se, ymax = repro_avg + repro_se)) +
+  facet_wrap(~Site) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from normals") +
+  ylab("No. of reproductive culms")
 
 culm.avg.percdev.aspect |> 
-  filter(Aspect == "E") |> 
-  ggplot(aes(x = Perc_dev, y = repro_avg)) +
-  geom_point(aes(color = Aspect)) +
-  geom_line(aes(color = Aspect)) +
-  facet_wrap(~Site)
+  ggplot(aes(x = Perc_dev_avg, y = total_avg, color = Aspect)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin = total_avg - total_se, ymax = total_avg + total_se)) +
+  facet_wrap(~Site) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from normals") +
+  ylab("Total number of culms")
 
-culm.avg.percdev.aspect |> 
-  filter(Aspect == "E") |> 
-  ggplot(aes(x = Perc_dev, y = repro_avg)) +
-  geom_bar(aes(color = Aspect), stat = "identity") +
-  facet_wrap(~Site)
+
+
+
     
