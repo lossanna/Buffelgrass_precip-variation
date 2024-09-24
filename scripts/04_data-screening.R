@@ -34,6 +34,11 @@ dat <- dat |>
          Deviation_mm = Prev_year_precip - MAP) |> 
   mutate(Perc_dev_abs = abs(Perc_dev))
 
+# Change year cols to character
+dat <- dat |> 
+  mutate(Year = as.character(Year),
+         StudyYear = as.character(StudyYear))
+
 # Separate out continuous explanatory variables
 exp.cont <- dat |> 
   select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm)
@@ -42,6 +47,24 @@ exp.cont <- dat |>
 res.cont <- dat |> 
   select(BGCover, BGDensity, ShrubCover, ForbCover, NGCover, Vegetative_culms, Reproductive_culms, Total_Live_Culms,
          Longestleaflength_cm)
+
+
+
+
+# Precipitation variability -----------------------------------------------
+
+summary(dat$Perc_dev) # ranges from -28% to +40%
+
+dat |> 
+  ggplot(aes(x = Date, y = Perc_dev)) +
+  geom_point()
+
+dat |> 
+  ggplot(aes(x = Site, y = Perc_dev)) +
+  geom_boxplot() +
+  geom_jitter() +
+  scale_y_continuous(labels = scales::percent) +
+  geom_hline(yintercept = 0, linetype = "dashed")
 
 
 # Response variable: Culm count -------------------------------------------
