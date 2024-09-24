@@ -18,10 +18,12 @@ dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 str(dat)
 
 
+
+
 # GLM ---------------------------------------------------------------------
 
 pos.repro <- glmmTMB(Reproductive_culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                       Aspect + PlotSlope + (1 | Site / Plot),
+                       Aspect + PlotSlope + Year + (1 | Site / Plot),
                      data = dat,
                      family = genpois)
 summary(pos.repro)
