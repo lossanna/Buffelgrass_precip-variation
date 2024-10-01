@@ -13,11 +13,6 @@ library(DHARMa)
 
 dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 
-# Data wrangling ----------------------------------------------------------
-
-# Examine character cols
-str(dat)
-
 
 # Reproductive culms ------------------------------------------------------
 
@@ -25,7 +20,7 @@ str(dat)
 
 # All variables
 pos.repro <- glmmTMB(Reproductive_culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                       Aspect + PlotSlope + Year + Prev_year_precip + (1 | Site / Plot),
+                       Aspect + PlotSlope + Prev_year_precip + (1 | Site / Plot),
                      data = dat,
                      family = genpois)
 summary(pos.repro)
@@ -34,36 +29,64 @@ res.pos.repro <- simulateResiduals(pos.repro)
 plotQQunif(res.pos.repro)
 plotResiduals(res.pos.repro)
 check_overdispersion(pos.repro) # no overdispersion detected
-check_zeroinflation(pos.repro) # model is underfitting zeros
+check_zeroinflation(pos.repro) # model is underfitting zeros (ratio = 0.5)
 check_collinearity(pos.repro)
+
+# 1: Site as fixed effect, drop MAT
+pos.repro1 <- glmmTMB(Reproductive_culms ~ Perc_dev_abs + Elevation_ft + 
+                       Aspect + PlotSlope + Prev_year_precip + Site + (1 | Plot),
+                     data = dat,
+                     family = genpois)
+summary(pos.repro1)
+r2(pos.repro1)
+res.pos.repro1 <- simulateResiduals(pos.repro1)
+plotQQunif(res.pos.repro1)
+plotResiduals(res.pos.repro1)
+check_overdispersion(pos.repro1) # underdispersion detected
+check_zeroinflation(pos.repro1) # model is underfitting zeros
+check_collinearity(pos.repro1) # Site has high correlation
 
 
 ## Zero-inflated Poisson --------------------------------------------------
 
+# All variables
 zip.repro <- glmmTMB(Reproductive_culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                       Aspect + PlotSlope + Year + Prev_year_precip + (1 | Site / Plot),
+                       Aspect + PlotSlope + Prev_year_precip + (1 | Site / Plot),
                      data = dat,
                      family = poisson,
-                     ziformula = ~.) # did not converge
+                     ziformula = ~.)
+summary(zip.repro)
+r2(zip.repro) # lol this R^2 is terrible
+res.zip.repro <- simulateResiduals(zip.repro)
+plotQQunif(res.zip.repro)
+plotResiduals(res.zip.repro)
+check_overdispersion(zip.repro) # no overdispersion detected
+check_zeroinflation(zip.repro) # model is underfitting zeros
+check_collinearity(zip.repro)
 
-
-## Zero-inflated negative binomial ----------------------------------------
-
-# All variables: does not converge
-zinb.repro <- glmmTMB(Reproductive_culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                       Aspect + PlotSlope + Year + Prev_year_precip + (1 | Site / Plot),
+# 1: Drop MAT: did not really improve anything
+zip.repro1 <- glmmTMB(Reproductive_culms ~ Perc_dev_abs + Elevation_ft + 
+                       Aspect + PlotSlope + Prev_year_precip + (1 | Site / Plot),
                      data = dat,
-                     family = nbinom2,
-                     ziformula = ~.) # did not converge
-
+                     family = poisson,
+                     ziformula = ~.)
+summary(zip.repro1)
+r2(zip.repro1) # lol this R^2 is terrible
+res.zip.repro1 <- simulateResiduals(zip.repro1)
+plotQQunif(res.zip.repro1)
+plotResiduals(res.zip.repro1)
+check_overdispersion(zip.repro1) # no overdispersion detected
+check_zeroinflation(zip.repro1) # model is underfitting zeros
+check_collinearity(zip.repro1)
 
 
 # Total culms -------------------------------------------------------------
 
 ## Poisson ----------------------------------------------------------------
 
+# All variables
 pos.total <- glmmTMB(Total_Live_Culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                       Aspect + PlotSlope + Year + Prev_year_precip + (1 | Site / Plot),
+                       Aspect + PlotSlope + Prev_year_precip + (1 | Site / Plot),
                      data = dat,
                      family = genpois)
 summary(pos.total)
@@ -78,53 +101,22 @@ check_collinearity(pos.total)
 
 ## Zero-inflated Poisson --------------------------------------------------
 
-# All variables: does not converge
+# All variables
 zip.total <- glmmTMB(Total_Live_Culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                       Aspect + PlotSlope + Year + Prev_year_precip + (1 | Site / Plot),
+                       Aspect + PlotSlope + Prev_year_precip + (1 | Site / Plot),
                      data = dat,
                      family = poisson,
-                     ziformula = ~.) # did not converge
+                     ziformula = ~.)
+summary(zip.total)
+r2(zip.total) # this R^2 is rough
+res.zip.total <- simulateResiduals(zip.total)
+plotQQunif(res.zip.total)
+plotResiduals(res.zip.total)
+check_overdispersion(zip.total) # no overdispersion detected
+check_zeroinflation(zip.total) # model is underfitting zeros
+check_collinearity(zip.total)
 
 
-# Zero-inflated negative binomial -----------------------------------------
-
-# All variables
-zinb.total <- glmmTMB(Total_Live_Culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                        Aspect + PlotSlope + Year + Prev_year_precip + (1 | Site / Plot),
-                      data = dat,
-                      family = nbinom2,
-                      ziformula = ~.)
-summary(zinb.total)
-r2(zinb.total)
-res.zinb.total <- simulateResiduals(zinb.total)
-plotQQunif(res.zinb.total)
-plotResiduals(res.zinb.total)
-check_overdispersion(zinb.total) # no overdispersion detected
-check_zeroinflation(zinb.total) # no zero-inflation
-check_collinearity(zinb.total) # drop Year or Prev_year_precip
-
-# All variables
-zinb.total1 <- glmmTMB(Total_Live_Culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                        Aspect + PlotSlope + Prev_year_precip + (1 | Site / Plot),
-                      data = dat,
-                      family = nbinom2,
-                      ziformula = ~.)
-summary(zinb.total1)
-r2(zinb.total1)
-res.zinb.total1 <- simulateResiduals(zinb.total1)
-plotQQunif(res.zinb.total1)
-plotResiduals(res.zinb.total1)
-check_overdispersion(zinb.total1) # no overdispersion detected
-check_zeroinflation(zinb.total1) # model is underfitting zeros
-check_collinearity(zinb.total1)
-
-# 2: Site as fixed effect and Plot as random effect, Year dropped: does not converge
-zinb.total2 <- glmmTMB(Total_Live_Culms ~ Perc_dev_abs + Elevation_ft + MAT +
-                        Aspect + PlotSlope + Year + Prev_year_precip + Site +
-                         (1 | Plot),
-                      data = dat,
-                      family = nbinom2,
-                      ziformula = ~.) # did not converge
 
 
 save.image("RData/06_generalized-linear-models_culms.RData")
