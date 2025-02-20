@@ -226,7 +226,7 @@ bgden.site <- plot.avg.site |>
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
   labs(x = "Precip deviation from normals",
-       y = expression(paste("Density (individuals / ", m^2, ")"))) 
+       y = expression(paste("Density (individuals /  ", m^2, ")"))) 
 bgden.site
 
 # By site and aspect (line graph)
@@ -246,7 +246,7 @@ plot.avg.site.aspect |>
   facet_wrap(~Site) +
   scale_x_continuous(labels = scales::percent) +
   labs(x = "Precip deviation from normals",
-       y = expression(paste("Density (individuals / ", m^2, ")"))) 
+       y = expression(paste("Density (individuals /  ", m^2, ")"))) 
 
 
 # Buffelgrass cover -------------------------------------------------------
@@ -401,6 +401,11 @@ plot.avg.site.aspect |>
   scale_x_continuous(labels = scales::percent) +
   xlab("Precip deviation from normals") +
   ylab("Native grass cover (%)")  
+
+
+
+# Herb cover --------------------------------------------------------------
+
 
 
 # Write out draft figures -------------------------------------------------
