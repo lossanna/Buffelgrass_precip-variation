@@ -1,7 +1,7 @@
 # Created: 2024-09-23
-# Updated: 2024-09-23
+# Updated: 2025-02-20
 
-# Purpose: Examine distributions.
+# Purpose: Examine distributions; write out clean data with precip deviation variable added.
 
 library(readxl)
 library(tidyverse)
@@ -28,11 +28,10 @@ na.culm <- dat |>
 dat <- dat |> 
   filter(!is.na(Vegetative_culms))
 
-# Add Perc_dev, Perc_dev_abs, and Deviation_mm cols
+# Add Perc_dev and Deviation_mm cols
 dat <- dat |> 
   mutate(Perc_dev = (Prev_year_precip - MAP) / MAP,
-         Deviation_mm = Prev_year_precip - MAP) |> 
-  mutate(Perc_dev_abs = abs(Perc_dev))
+         Deviation_mm = Prev_year_precip - MAP) 
 
 # Change year cols to character
 dat <- dat |> 
