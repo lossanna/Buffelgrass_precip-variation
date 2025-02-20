@@ -84,7 +84,7 @@ precip.dev <- plot.avg.site |>
   facet_wrap(~Site) +
   ggtitle("Precipitation conditions") +
   xlab(NULL) +
-  ylab("Precip deviation from normals") +
+  ylab("Precip deviation from average") +
   theme_bw() +
   scale_y_continuous(labels = percent) +
   geom_hline(yintercept = 0,
@@ -100,7 +100,7 @@ plot.avg.site.aspect |>
   facet_wrap(~Site) +
   ggtitle("Precipitation conditions") +
   xlab(NULL) +
-  ylab("Precip deviation from normals") +
+  ylab("Precip deviation from average") +
   theme_bw() +
   scale_y_continuous(labels = percent) +
   geom_hline(yintercept = 0,
@@ -133,7 +133,7 @@ repro.site <- culm.avg.site |>
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("No. of reproductive culms")
 repro.site
 
@@ -153,7 +153,7 @@ culm.avg.site.aspect |>
   theme_bw() +
   facet_wrap(~Site) +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("No. of reproductive culms")
 
 
@@ -184,7 +184,7 @@ total.site <- culm.avg.site |>
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Total number of culms")
 total.site
 
@@ -204,7 +204,7 @@ culm.avg.site.aspect |>
   theme_bw() +
   facet_wrap(~Site) +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Total number of culms")
 
 
@@ -225,7 +225,7 @@ bgden.site <- plot.avg.site |>
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
-  labs(x = "Precip deviation from normals",
+  labs(x = "Precip deviation from average",
        y = expression(paste("Density (individuals /  ", m^2, ")"))) 
 bgden.site
 
@@ -245,7 +245,7 @@ plot.avg.site.aspect |>
   theme_bw() +
   facet_wrap(~Site) +
   scale_x_continuous(labels = scales::percent) +
-  labs(x = "Precip deviation from normals",
+  labs(x = "Precip deviation from average",
        y = expression(paste("Density (individuals /  ", m^2, ")"))) 
 
 
@@ -264,7 +264,7 @@ bgcov.site <- plot.avg.site |>
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Buffelgrass cover (%)")
 bgcov.site
 
@@ -284,7 +284,7 @@ plot.avg.site.aspect |>
   theme_bw() +
   facet_wrap(~Site) +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Buffelgrass cover")    
 
 
@@ -303,7 +303,7 @@ plot.avg.site |>
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Shrub cover (%)")
 
 # By site and aspect (line graph)
@@ -322,7 +322,7 @@ plot.avg.site.aspect |>
   theme_bw() +
   facet_wrap(~Site) +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Shrub cover (%)")    
 
 
@@ -342,7 +342,7 @@ plot.avg.site |>
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Forb cover (%)")
 
 # By site and aspect (line graph)
@@ -361,7 +361,7 @@ plot.avg.site.aspect |>
   theme_bw() +
   facet_wrap(~Site) +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Forb cover (%)")    
 
 
@@ -380,7 +380,7 @@ plot.avg.site |>
   geom_vline(xintercept = 0, linetype = "dashed") +
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Native grass cover (%)")
 
 # By site and aspect (line graph)
@@ -399,33 +399,33 @@ plot.avg.site.aspect |>
   theme_bw() +
   facet_wrap(~Site) +
   scale_x_continuous(labels = scales::percent) +
-  xlab("Precip deviation from normals") +
+  xlab("Precip deviation from average") +
   ylab("Native grass cover (%)")  
 
-
-
-# Herb cover --------------------------------------------------------------
 
 
 
 # Write out draft figures -------------------------------------------------
 
-tiff("figures/2024-10_draft-figures/Precip-deviation.tiff", units = "in", height = 5, width = 7, res = 150)
+tiff("figures/2025-02_draft-figures/Precip-deviation.tiff", units = "in", height = 5, width = 7, res = 150)
 precip.dev
 dev.off()
 
-tiff("figures/2024-10_draft-figures/Reproductive-culms_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
+tiff("figures/2025-02_draft-figures/Reproductive-culms_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
 repro.site
 dev.off()
 
-tiff("figures/2024-10_draft-figures/Total-culms_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
+tiff("figures/2025-02_draft-figures/Total-culms_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
 total.site
 dev.off()
 
-tiff("figures/2024-10_draft-figures/BG-density_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
+tiff("figures/2025-02_draft-figures/BG-density_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
 bgden.site
 dev.off()
 
-tiff("figures/2024-10_draft-figures/BG-cover_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
+tiff("figures/2025-02_draft-figures/BG-cover_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
 bgcov.site
 dev.off()
+
+
+save.image("RData/05_draft-figs.RData")
