@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2024-10-01
+# Updated: 2025-02-20
 
 # Purpose: Graph culm, cover and density response to precip variation.
 
