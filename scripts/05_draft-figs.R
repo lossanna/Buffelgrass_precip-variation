@@ -74,6 +74,22 @@ plot.avg.site.aspect <- dat.plot |>
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
 
+plot.avg.aspect <- dat.plot |> 
+  group_by(Year, Aspect) |> 
+  summarise(bgden_avg = mean(BGDensity),
+            bgden_se = sd(BGDensity) / sqrt(n()),
+            bgcov_avg = mean(BGCover),
+            bgcov_se   = sd(BGCover) / sqrt(n()),
+            shrub_avg = mean(ShrubCover),
+            shrub_se = sd(ShrubCover) / sqrt(n()),
+            forb_avg = mean(ForbCover),
+            forb_se = sd(ForbCover) / sqrt(n()),
+            ng_avg = mean(NGCover),
+            ng_se = sd(NGCover) / sqrt(n()),
+            Perc_dev_avg = mean(Perc_dev),
+            .groups = "keep")
+
+
 
 # Precip deviation --------------------------------------------------------
 
@@ -107,6 +123,23 @@ plot.avg.site.aspect |>
              linetype = "dashed",
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
+
+plot.avg.aspect |> 
+  ggplot(aes(x = Year, y = Perc_dev_avg)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~Aspect) +
+  ggtitle("Precipitation conditions") +
+  xlab(NULL) +
+  ylab("Precip deviation from average") +
+  theme_bw() +
+  scale_y_continuous(labels = percent) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black"))
+
+
 
 
 # Reproductive culms ------------------------------------------------------
