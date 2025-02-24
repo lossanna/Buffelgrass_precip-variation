@@ -1,7 +1,9 @@
 # Created: 2024-09-23
-# Updated: 2025-02-20
+# Updated: 2025-02-21
 
 # Purpose: Examine distributions; write out clean data with precip deviation variable added.
+
+# Culm counts are Poisson distribution. Buffelgrass density & cover are approximately normal distribution.
 
 library(readxl)
 library(tidyverse)
