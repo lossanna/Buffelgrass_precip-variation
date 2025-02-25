@@ -145,6 +145,21 @@ check_zeroinflation(zip.repro2) # model is underfitting zeros (ratio = 0.66)
 check_collinearity(zip.repro2)
 
 
+# ***3: Drop Prev_year_precip & MAT, scaled, add interaction***
+zip.repro3 <- glmmTMB(Reproductive_culms ~ Perc_dev_scaled + Elevation_ft_scaled +
+                        Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect + (1 | Site / Plot),
+                      data = dat,
+                      family = poisson,
+                      ziformula = ~.)
+summary(zip.repro3)
+r2(zip.repro3) # R^2 is very low
+res.zip.repro3 <- simulateResiduals(zip.repro3)
+plotQQunif(res.zip.repro3)
+plotResiduals(res.zip.repro3)
+check_overdispersion(zip.repro3) # no overdispersion detected
+check_zeroinflation(zip.repro3) # model is underfitting zeros (ratio = 0.70)
+check_collinearity(zip.repro3)
+
 
 
 # Total culms -------------------------------------------------------------
