@@ -13,7 +13,7 @@ library(scales)
 
 # Load data ---------------------------------------------------------------
 
-prism.dat.raw <- read_csv("data/cleaned/02.1_monitoring-info-with-PRISM-data_clean.csv")
+prism.dat.raw <- read_csv("data/cleaned/02_monitoring-info-with-PRISM-data_clean.csv")
 
 
 # Add Site_Transect col ---------------------------------------------------
@@ -50,3 +50,4 @@ prism.dat |>
   facet_wrap(~Site_Transect) +
   theme_bw() +
   geom_hline(yintercept = 0, linetype = "dashed", color = "red")
+
