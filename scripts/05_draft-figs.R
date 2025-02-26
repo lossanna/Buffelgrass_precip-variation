@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-02-20
+# Updated: 2025-02-26
 
 # Purpose: Graph culm, cover and density response to precip variation.
 
@@ -7,7 +7,6 @@
 #   is slightly different by sampling date.
 
 
-library(readxl)
 library(tidyverse)
 library(scales)
 
@@ -19,8 +18,8 @@ dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 # Data wrangling ----------------------------------------------------------
 
 # Create df of average and SE to make line graph for culm count
-culm.avg.site <- dat |> 
-  group_by(Year, StudyYear, Site) |> 
+culm.avg.site <- dat %>% 
+  group_by(Year, StudyYear, Site) %>% 
   summarise(repro_avg = mean(Reproductive_culms),
             repro_se = sd(Reproductive_culms) / sqrt(n()),
             total_avg = mean(Total_Live_Culms),
@@ -28,8 +27,17 @@ culm.avg.site <- dat |>
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
 
-culm.avg.site.aspect <- dat |> 
-  group_by(Year, StudyYear, Site, Aspect) |> 
+culm.avg.site.aspect <- dat %>% 
+  group_by(Year, StudyYear, Site, Aspect) %>% 
+  summarise(repro_avg = mean(Reproductive_culms),
+            repro_se = sd(Reproductive_culms) / sqrt(n()),
+            total_avg = mean(Total_Live_Culms),
+            total_se = sd(Total_Live_Culms) / sqrt(n()),
+            Perc_dev_avg = mean(Perc_dev),
+            .groups = "keep")
+
+culm.avg.aspect <- dat %>% 
+  group_by(Year, Aspect) %>% 
   summarise(repro_avg = mean(Reproductive_culms),
             repro_se = sd(Reproductive_culms) / sqrt(n()),
             total_avg = mean(Total_Live_Culms),
@@ -39,13 +47,13 @@ culm.avg.site.aspect <- dat |>
 
 
 # Separate out plot-level data
-dat.plot <- dat |> 
-  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) |> 
+dat.plot <- dat %>% 
+  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>% 
   distinct(.keep_all = TRUE)
 
 # Create df of average and SE to make line graph for density & cover
-plot.avg.site <- dat.plot |> 
-  group_by(Year, StudyYear, Site) |> 
+plot.avg.site <- dat.plot %>% 
+  group_by(Year, StudyYear, Site) %>% 
   summarise(bgden_avg = mean(BGDensity),
             bgden_se = sd(BGDensity) / sqrt(n()),
             bgcov_avg = mean(BGCover),
@@ -59,8 +67,8 @@ plot.avg.site <- dat.plot |>
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
 
-plot.avg.site.aspect <- dat.plot |> 
-  group_by(Year, StudyYear, Site, Aspect) |> 
+plot.avg.site.aspect <- dat.plot %>% 
+  group_by(Year, StudyYear, Site, Aspect) %>% 
   summarise(bgden_avg = mean(BGDensity),
             bgden_se = sd(BGDensity) / sqrt(n()),
             bgcov_avg = mean(BGCover),
@@ -74,8 +82,8 @@ plot.avg.site.aspect <- dat.plot |>
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
 
-plot.avg.aspect <- dat.plot |> 
-  group_by(Year, Aspect) |> 
+plot.avg.aspect <- dat.plot %>% 
+  group_by(Year, Aspect) %>% 
   summarise(bgden_avg = mean(BGDensity),
             bgden_se = sd(BGDensity) / sqrt(n()),
             bgcov_avg = mean(BGCover),
@@ -93,7 +101,7 @@ plot.avg.aspect <- dat.plot |>
 
 # Precip deviation --------------------------------------------------------
 
-precip.dev.site <- plot.avg.site |> 
+precip.dev.site <- plot.avg.site %>% 
   ggplot(aes(x = Year, y = Perc_dev_avg)) +
   geom_point() +
   geom_line() +
@@ -109,7 +117,7 @@ precip.dev.site <- plot.avg.site |>
   theme(axis.text.x = element_text(color = "black"))
 precip.dev.site
 
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = Perc_dev_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
@@ -124,7 +132,7 @@ plot.avg.site.aspect |>
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
 
-precip.dev.aspect <- plot.avg.aspect |> 
+precip.dev.aspect <- plot.avg.aspect %>% 
   ggplot(aes(x = Year, y = Perc_dev_avg)) +
   geom_point() +
   geom_line() +
@@ -146,7 +154,7 @@ precip.dev.aspect
 # Reproductive culms ------------------------------------------------------
 
 # By aspect (scatterplot, all obs)
-dat |> 
+dat %>% 
   ggplot(aes(x = Perc_dev, y = Reproductive_culms)) +
   geom_point() +
   scale_x_continuous(labels = scales::percent) +
@@ -154,12 +162,12 @@ dat |>
   theme_bw()
 
 # By site (line graph)
-culm.avg.site |> 
+culm.avg.site %>% 
   ggplot(aes(x = Year, y = repro_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
-repro.site <- culm.avg.site |> 
+repro.site <- culm.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = repro_avg, color = Site)) +
   geom_point() +
   geom_line() +
@@ -171,14 +179,28 @@ repro.site <- culm.avg.site |>
   ylab("No. of reproductive culms")
 repro.site
 
+# By aspect (line graph)
+repro.aspect <- culm.avg.aspect %>% 
+  ggplot(aes(x = Perc_dev_avg, y = repro_avg, color = Aspect)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin = repro_avg - repro_se, ymax = repro_avg + repro_se)) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("No. of reproductive culms") +
+  facet_wrap(~Aspect)
+repro.aspect
+
 # By site and aspect (line graph)
-culm.avg.site.aspect |> 
+culm.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = repro_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
-culm.avg.site.aspect |> 
+culm.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = repro_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
@@ -197,7 +219,7 @@ culm.avg.site.aspect |>
 # Total culms -------------------------------------------------------------
 
 # By aspect (scatterplot, all obs)
-dat |> 
+dat %>% 
   ggplot(aes(x = Perc_dev, y = Total_Live_Culms)) +
   geom_point() +
   scale_x_continuous(labels = scales::percent) +
@@ -205,12 +227,12 @@ dat |>
   theme_bw()
 
 # By site (line graph)
-culm.avg.site |> 
+culm.avg.site %>% 
   ggplot(aes(x = Year, y = total_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
-total.site <- culm.avg.site |> 
+total.site <- culm.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = total_avg, color = Site)) +
   geom_point() +
   geom_line() +
@@ -222,14 +244,39 @@ total.site <- culm.avg.site |>
   ylab("Total number of culms")
 total.site
 
+# By aspect (line graph)
+total.aspect <- culm.avg.aspect %>% 
+  ggplot(aes(x = Perc_dev_avg, y = total_avg, color = Aspect)) +
+  geom_point() +
+  geom_line() +
+  geom_errorbar(aes(ymin = total_avg - total_se, ymax = total_avg + total_se)) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  theme_bw() +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Total number of culms") +
+  facet_wrap(~Aspect)
+total.aspect
+
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = Total_Live_Culms, color = Aspect)) +
+  geom_point() + 
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_x_continuous(labels = scales::percent) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  xlab("Precip deviation from average") +
+  ylab("Total number of culms") +
+  facet_wrap(~Aspect)
+
 # By site and aspect (line graph)
-culm.avg.site.aspect |> 
+culm.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = total_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
-culm.avg.site.aspect |> 
+culm.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = total_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
@@ -246,12 +293,12 @@ culm.avg.site.aspect |>
 # Buffelgrass density -----------------------------------------------------
 
 # By site (line graph)
-plot.avg.site |> 
+plot.avg.site %>% 
   ggplot(aes(x = Year, y = bgden_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
-bgden.site <- plot.avg.site |> 
+bgden.site <- plot.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = bgden_avg, color = Site)) +
   geom_point() +
   geom_line() +
@@ -264,13 +311,13 @@ bgden.site <- plot.avg.site |>
 bgden.site
 
 # By site and aspect (line graph)
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = bgden_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = bgden_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
@@ -285,12 +332,12 @@ plot.avg.site.aspect |>
 
 # Buffelgrass cover -------------------------------------------------------
 
-plot.avg.site |> 
+plot.avg.site %>% 
   ggplot(aes(x = Year, y = bgcov_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
-bgcov.site <- plot.avg.site |> 
+bgcov.site <- plot.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = bgcov_avg, color = Site)) +
   geom_point() +
   geom_line() +
@@ -303,13 +350,13 @@ bgcov.site <- plot.avg.site |>
 bgcov.site
 
 # By site and aspect (line graph)
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = bgcov_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = bgcov_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
@@ -324,12 +371,12 @@ plot.avg.site.aspect |>
 
 # Shrub cover -------------------------------------------------------------
 
-plot.avg.site |> 
+plot.avg.site %>% 
   ggplot(aes(x = Year, y = shrub_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
-plot.avg.site |> 
+plot.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = shrub_avg, color = Site)) +
   geom_point() +
   geom_line() +
@@ -341,13 +388,13 @@ plot.avg.site |>
   ylab("Shrub cover (%)")
 
 # By site and aspect (line graph)
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = shrub_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = shrub_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
@@ -363,12 +410,12 @@ plot.avg.site.aspect |>
 
 # Forb cover --------------------------------------------------------------
 
-plot.avg.site |> 
+plot.avg.site %>% 
   ggplot(aes(x = Year, y = forb_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
-plot.avg.site |> 
+plot.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = forb_avg, color = Site)) +
   geom_point() +
   geom_line() +
@@ -380,13 +427,13 @@ plot.avg.site |>
   ylab("Forb cover (%)")
 
 # By site and aspect (line graph)
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = forb_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = forb_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
@@ -401,12 +448,12 @@ plot.avg.site.aspect |>
 
 # Native grass cover ------------------------------------------------------
 
-plot.avg.site |> 
+plot.avg.site %>% 
   ggplot(aes(x = Year, y = ng_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
-plot.avg.site |> 
+plot.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = ng_avg, color = Site)) +
   geom_point() +
   geom_line() +
@@ -418,13 +465,13 @@ plot.avg.site |>
   ylab("Native grass cover (%)")
 
 # By site and aspect (line graph)
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = ng_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
-plot.avg.site.aspect |> 
+plot.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = ng_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
