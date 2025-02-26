@@ -29,7 +29,7 @@ dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 # Data wrangling ----------------------------------------------------------
 
 # Center and scale numeric variables
-dat <- dat |> 
+dat <- dat %>% 
   mutate(Perc_dev_scaled = scale(Perc_dev, center = TRUE, scale = TRUE)[, ],
          Elevation_ft_scaled = scale(Elevation_ft, center = TRUE, scale = TRUE)[, 1],
          MAT_scaled = scale(MAT, center = TRUE, scale = TRUE)[, 1],
@@ -41,11 +41,11 @@ dat$Aspect <- as.factor(dat$Aspect)
 dat$Aspect <- relevel(dat$Aspect, ref = "N")
 
 # Separate out plot-level data
-dat.plot <- dat |>
-  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) |>
+dat.plot <- dat %>%
+  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>%
   distinct(.keep_all = TRUE)
 
-dat.plot_scaled <- dat.plot |> 
+dat.plot_scaled <- dat.plot %>% 
   mutate(Perc_dev_scaled = scale(Perc_dev,center = TRUE, scale = TRUE)[, 1],
          Elevation_ft_scaled = scale(Elevation_ft, center = TRUE, scale = TRUE)[, 1],
          MAT_scaled = scale(MAT, center = TRUE, scale = TRUE)[, 1],

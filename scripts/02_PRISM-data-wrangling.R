@@ -26,11 +26,11 @@ monitor <- read_csv("data/cleaned/01_site-and-monitoring-info_clean.csv")
 # Add complete path to prism.daily columns --------------------------------
 
 # Add complete path to file names for daily values
-prism.daily <- prism.daily.raw |> 
+prism.daily <- prism.daily.raw %>% 
   mutate(precip_file = paste0("data/prism-dat/", path_beginning, "/", file_name))
 
 # Add complete path for normals
-prism.normals <- prism.normals.raw |> 
+prism.normals <- prism.normals.raw %>% 
   mutate(precip_file = paste0("data/prism-dat/", path_beginning, "/", file_name))
 
 
@@ -60,7 +60,7 @@ process_csv <- function(file.names) {
 
 # Use purrr::map to apply the function to each row of df
 prism.daily <- prism.daily %>%
-  mutate(Prev_year_precip = map_dbl(precip_file, process_csv)) |> 
+  mutate(Prev_year_precip = map_dbl(precip_file, process_csv)) %>% 
   select(-path_beginning, -file_name, -precip_file)
 
 
@@ -101,7 +101,7 @@ temp_normals <- function(file.names) {
 # Use purrr::map to apply the function to each row of df
 prism.normals <- prism.normals %>%
   mutate(MAP = map_dbl(precip_file, ppt_normals)) %>%
-  mutate(MAT = map_dbl(precip_file, temp_normals)) |> 
+  mutate(MAT = map_dbl(precip_file, temp_normals)) %>% 
   select(-path_beginning, -file_name, -precip_file)
 
 
@@ -117,15 +117,15 @@ monitor$Latitude == prism.daily$Latitude
 monitor$Longitude == prism.daily$Longitude
 
 # Drop Lat & Long cols
-prism.daily <- prism.daily |> 
+prism.daily <- prism.daily %>% 
   select(-Latitude, -Longitude)
-prism.normals <- prism.normals |> 
+prism.normals <- prism.normals %>% 
   select(-Latitude, -Longitude)
 
 # Attempt left_join() again
-monitor.prism <- monitor.prism |> 
-  select(-Prev_year_precip) |> 
-  left_join(prism.daily) |> 
+monitor.prism <- monitor.prism %>% 
+  select(-Prev_year_precip) %>% 
+  left_join(prism.daily) %>% 
   left_join(prism.normals)
 
 

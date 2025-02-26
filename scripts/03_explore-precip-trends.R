@@ -18,7 +18,7 @@ prism.dat.raw <- read_csv("data/cleaned/02_monitoring-info-with-PRISM-data_clean
 
 # Add Site_Transect col ---------------------------------------------------
 
-prism.dat <- prism.dat.raw |> 
+prism.dat <- prism.dat.raw %>% 
   mutate(Site_Transect = paste0(Site, "_", Transect))
 prism.dat <- prism.dat[, c(1:9, 13, 10:12)]
 
@@ -26,7 +26,7 @@ prism.dat <- prism.dat[, c(1:9, 13, 10:12)]
 # Add Perc_deviation col --------------------------------------------------
 
 # Percent deviation of actual values from normals
-prism.dat <- prism.dat |> 
+prism.dat <- prism.dat %>% 
   mutate(Perc_deviation = (Prev_year_precip - MAP) / MAP,
          Deviation_mm = Prev_year_precip - MAP)
 
@@ -34,7 +34,7 @@ prism.dat <- prism.dat |>
 # Graph -------------------------------------------------------------------
 
 # Percent deviation
-prism.dat |> 
+prism.dat %>% 
   ggplot(aes(x = Date, y = Perc_deviation)) +
   geom_point() +
   geom_line() +
@@ -43,7 +43,7 @@ prism.dat |>
   geom_hline(yintercept = 0, linetype = "dashed", color = "red")
 
 # Deviation in mm ppt
-prism.dat |> 
+prism.dat %>% 
   ggplot(aes(x = Date, y = Deviation_mm)) +
   geom_point() +
   geom_line() +

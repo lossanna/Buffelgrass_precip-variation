@@ -16,36 +16,36 @@ monitor.prism <- read_csv("data/cleaned/02_monitoring-info-with-PRISM-data_clean
 
 # Data wrangling ----------------------------------------------------------
 
-dat <- culms.raw |> 
+dat <- culms.raw %>% 
   left_join(monitor.prism)
 
 # Check for NAs
 apply(dat, 2, anyNA)
 
 # Separate NA culm counts
-na.culm <- dat |> 
+na.culm <- dat %>% 
   filter(is.na(Vegetative_culms))
 
 # Remove NA culm count - plants could not be located and weren't sampled
-dat <- dat |> 
+dat <- dat %>% 
   filter(!is.na(Vegetative_culms))
 
 # Add Perc_dev and Deviation_mm cols
-dat <- dat |> 
+dat <- dat %>% 
   mutate(Perc_dev = (Prev_year_precip - MAP) / MAP,
          Deviation_mm = Prev_year_precip - MAP) 
 
 # Change year cols to character
-dat <- dat |> 
+dat <- dat %>% 
   mutate(Year = as.character(Year),
          StudyYear = as.character(StudyYear))
 
 # Separate out continuous explanatory variables
-exp.cont <- dat |> 
+exp.cont <- dat %>% 
   select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm)
 
 # Separate out response variables
-res.cont <- dat |> 
+res.cont <- dat %>% 
   select(BGCover, BGDensity, ShrubCover, ForbCover, NGCover, Vegetative_culms, Reproductive_culms, Total_Live_Culms,
          Longestleaflength_cm)
 
@@ -56,11 +56,11 @@ res.cont <- dat |>
 
 summary(dat$Perc_dev) # ranges from -28% to +40%
 
-dat |> 
+dat %>% 
   ggplot(aes(x = Date, y = Perc_dev)) +
   geom_point()
 
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = Perc_dev)) +
   geom_boxplot() +
   geom_jitter() +
@@ -92,23 +92,23 @@ hist(dat$Vegetative_culms)
 
 # All, by site
 #   Reproductive
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = Reproductive_culms)) +
   geom_boxplot()
 
 #   Total
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = Total_Live_Culms)) +
   geom_boxplot()
 
 #   Vegetative
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = Vegetative_culms)) +
   geom_boxplot()
 
 
 # By aspect
-dat |> 
+dat %>% 
   ggplot(aes(x = Aspect, y = Reproductive_culms)) +
   geom_boxplot()
 
@@ -116,7 +116,7 @@ dat |>
 ## Pair plot --------------------------------------------------------------
 
 # Reproductive & vegetative culms
-dat |>
+dat %>%
   ggplot(aes(x = Vegetative_culms, y = Reproductive_culms)) +
   geom_point()
 
@@ -124,44 +124,44 @@ dat |>
 # Response variable: Density & cover --------------------------------------
 
 # Pair plot
-res.cont |> 
-  select(-Longestleaflength_cm, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms) |> 
+res.cont %>% 
+  select(-Longestleaflength_cm, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms) %>% 
   ggpairs()
 
 # BG Cover
 hist(dat$BGCover)
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = BGCover)) +
   geom_boxplot()
 
 # BG Density
 hist(dat$BGDensity)
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = BGDensity)) +
   geom_boxplot()
 
 # Shrub cover
 hist(dat$ShrubCover)
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = ShrubCover)) +
   geom_boxplot()
 
 # Forb cover
 hist(dat$ForbCover)
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = ForbCover)) +
   geom_boxplot()
 
 # Native grass cover
 hist(dat$NGCover)
-dat |> 
+dat %>% 
   ggplot(aes(x = Site, y = NGCover)) +
   geom_boxplot()
 
 # Longest leaf
 hist(dat$Longestleaflength_cm)
-dat |> 
-  filter(!is.na(Longestleaflength_cm)) |> 
+dat %>% 
+  filter(!is.na(Longestleaflength_cm)) %>% 
   ggplot(aes(x = Site, y = Longestleaflength_cm)) + 
   geom_boxplot()
 
@@ -170,9 +170,9 @@ dat |>
 # Continuous explanatory variables ----------------------------------------
 
 # Pair plot
-dat |> 
-  select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm) |> 
-  distinct(.keep_all = TRUE) |> 
+dat %>% 
+  select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm) %>% 
+  distinct(.keep_all = TRUE) %>% 
   ggpairs()
 
 
