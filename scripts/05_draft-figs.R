@@ -93,7 +93,7 @@ plot.avg.aspect <- dat.plot |>
 
 # Precip deviation --------------------------------------------------------
 
-precip.dev <- plot.avg.site |> 
+precip.dev.site <- plot.avg.site |> 
   ggplot(aes(x = Year, y = Perc_dev_avg)) +
   geom_point() +
   geom_line() +
@@ -107,7 +107,7 @@ precip.dev <- plot.avg.site |>
              linetype = "dashed",
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
-precip.dev
+precip.dev.site
 
 plot.avg.site.aspect |> 
   ggplot(aes(x = Year, y = Perc_dev_avg, color = Aspect)) +
@@ -124,7 +124,7 @@ plot.avg.site.aspect |>
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
 
-plot.avg.aspect |> 
+precip.dev.aspect <- plot.avg.aspect |> 
   ggplot(aes(x = Year, y = Perc_dev_avg)) +
   geom_point() +
   geom_line() +
@@ -138,6 +138,7 @@ plot.avg.aspect |>
              linetype = "dashed",
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
+precip.dev.aspect
 
 
 
@@ -440,8 +441,12 @@ plot.avg.site.aspect |>
 
 # Write out draft figures -------------------------------------------------
 
-tiff("figures/2025-02_draft-figures/Precip-deviation.tiff", units = "in", height = 5, width = 7, res = 150)
-precip.dev
+tiff("figures/2025-02_draft-figures/Precip-deviation_site.tiff", units = "in", height = 5, width = 7, res = 150)
+precip.dev.site
+dev.off()
+
+tiff("figures/2025-02_draft-figures/Precip-deviation_aspect.tiff", units = "in", height = 5, width = 7, res = 150)
+precip.dev.aspect
 dev.off()
 
 tiff("figures/2025-02_draft-figures/Reproductive-culms_precip-dev-by-site.tiff", units = "in", height = 5, width = 6, res = 150)
