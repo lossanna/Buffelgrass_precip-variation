@@ -1,7 +1,8 @@
 # Created: 2024-09-23
-# Updated: 2025-02-25
+# Updated: 2025-02-28
 
 # Purpose: Run generalized linear models with Reproductive_culms and Total_Live_Culms
+#   as response variable, and linear models with BGDensity and BGCover 
 #   as response variable.
 
 # Continuous variables are centered and scaled.
@@ -12,7 +13,8 @@
 
 # Previous_year_precip and Perc_dev are too highly correlated, so Previous_year_precip must be dropped.
 # MAT also dropped because sites were close enough that they probably didn't experience 
-#   different temperatures.
+#   different temperatures (range was only 1.6 degrees C); would have needed more local
+#   measurements of higher resolution to see temperature effects.
 
 
 library(tidyverse)
@@ -35,10 +37,6 @@ dat <- dat %>%
          MAT_scaled = scale(MAT, center = TRUE, scale = TRUE)[, 1],
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1])
-
-# Change Aspect reference to North
-dat$Aspect <- as.factor(dat$Aspect)
-dat$Aspect <- relevel(dat$Aspect, ref = "N")
 
 # Separate out plot-level data
 dat.plot <- dat %>%
@@ -134,7 +132,7 @@ check_overdispersion(zip.repro1) # no overdispersion detected
 check_zeroinflation(zip.repro1) # model is underfitting zeros (ratio = 0.81)
 check_collinearity(zip.repro1)
 
-# 2: Drop Prev_year_precip & MAT, add interactions
+# ***2: Drop Prev_year_precip & MAT, add interactions***
 zip.repro2 <- glmmTMB(Reproductive_culms ~ Perc_dev_scaled + Elevation_ft_scaled + 
                         Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
                         Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
@@ -150,6 +148,21 @@ check_overdispersion(zip.repro2) # no overdispersion detected
 check_zeroinflation(zip.repro2) # model is underfitting zeros (ratio = 0.83)
 check_collinearity(zip.repro2) # Perc_dev and Perc_dev * Aspect highly correlated
 
+# 3: Drop Perc_dev * Aspect (for collinearity) - fit is really not good at all
+zip.repro3 <- glmmTMB(Reproductive_culms ~ Perc_dev_scaled + Elevation_ft_scaled + 
+                        Aspect + PlotSlope_scaled + 
+                        Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                      data = dat,
+                      family = poisson,
+                      ziformula = ~.) 
+summary(zip.repro3)
+r2(zip.repro3) 
+res.zip.repro3 <- simulateResiduals(zip.repro3)
+plotQQunif(res.zip.repro3)
+plotResiduals(res.zip.repro3)
+check_overdispersion(zip.repro3) # overdispersion detected
+check_zeroinflation(zip.repro3) # model is underfitting zeros (ratio = 0.424)
+check_collinearity(zip.repro3)
 
 
 
@@ -234,7 +247,7 @@ check_zeroinflation(zip.total1) # model is underfitting zeros (ratio = 0.64)
 check_collinearity(zip.total1)
 
 
-# 2: Drop Prev_year_precip & MAT, add interactions
+# 2: ***Drop Prev_year_precip & MAT, add interactions***
 zip.total2 <- glmmTMB(Total_Live_Culms ~ Perc_dev_scaled + Elevation_ft_scaled +
                         Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
                         Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
@@ -248,7 +261,7 @@ plotQQunif(res.zip.total2)
 plotResiduals(res.zip.total2)
 check_overdispersion(zip.total2) # no overdispersion detected
 check_zeroinflation(zip.total2) # model is underfitting zeros (ratio = 0.67)
-check_collinearity(zip.total2) 
+check_collinearity(zip.total2) # Perc_dev * Aspect has high correlation
 
 
 
@@ -278,7 +291,7 @@ plotResiduals(res.lm.bgden1)
 check_overdispersion(lm.bgden1) # no overdispersion detected
 check_collinearity(lm.bgden1)
 
-# 2: Drop Prev_year_precip & MAT, add interactions
+# ***2: Drop Prev_year_precip & MAT, add interactions***
 lm.bgden2 <- lmer(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
                     Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
                     Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
@@ -289,7 +302,7 @@ res.lm.bgden2 <- simulateResiduals(lm.bgden2)
 plotQQunif(res.lm.bgden2)
 plotResiduals(res.lm.bgden2)
 check_overdispersion(lm.bgden2) # no overdispersion detected
-check_collinearity(lm.bgden2)
+check_collinearity(lm.bgden2) # Perc_dev * Aspect has high correlation
 
 
 
@@ -320,7 +333,7 @@ check_overdispersion(lm.bgcov1) # no overdispersion detected
 check_collinearity(lm.bgcov1)
 
 
-# 2: Drop Prev_year_precip & MAT, add interactions
+# ***2: Drop Prev_year_precip & MAT, add interactions***
 lm.bgcov2 <- lmer(BGCover ~ Perc_dev_scaled + Elevation_ft_scaled + 
                     Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
                     Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
