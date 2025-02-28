@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-02-21
+# Updated: 2025-02-28
 
 # Purpose: Examine distributions; write out clean data with precip deviation variable added.
 
@@ -169,6 +169,16 @@ dat %>%
 
 # Continuous explanatory variables ----------------------------------------
 
+# Summary
+summary(dat$Elevation_ft)
+summary(dat$PlotSlope)
+summary(dat$MAT)
+
+# Distribution
+hist(dat$Elevation_ft)
+hist(dat$PlotSlope)
+hist(dat$MAT)
+
 # Pair plot
 dat %>% 
   select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm) %>% 
@@ -181,3 +191,6 @@ dat %>%
 
 write_csv(dat,
           file = "data/cleaned/04_demography-data_clean.csv")
+
+
+save.image("RData/04_data-wrangling-and-screening.RData")
