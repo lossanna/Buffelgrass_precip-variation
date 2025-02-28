@@ -21,6 +21,8 @@ library(tidyverse)
 library(glmmTMB)
 library(performance)
 library(DHARMa)
+library(nlme)
+library(performance)
 library(lme4)
 
 # Load data ---------------------------------------------------------------
@@ -268,41 +270,47 @@ check_collinearity(zip.total2) # Perc_dev * Aspect has high correlation
 # Buffelgrass density -----------------------------------------------------
 
 # All variables
-lm.bgden <- lmer(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + MAT_scaled +
-                 Aspect + PlotSlope_scaled + Prev_year_precip_scaled + (1 | Site / Transect),
-                 data = dat.plot_scaled) 
+lm.bgden <- lme(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + MAT_scaled +
+                  Aspect + PlotSlope_scaled + Prev_year_precip_scaled, 
+                random = ~ 1 | Site / Transect,
+                data = dat.plot_scaled) 
 summary(lm.bgden)
 r2(lm.bgden)
-res.lm.bgden <- simulateResiduals(lm.bgden)
-plotQQunif(res.lm.bgden)
-plotResiduals(res.lm.bgden)
-check_overdispersion(lm.bgden) # no overdispersion detected
+check_model(lm.bgden)
 check_collinearity(lm.bgden) # Prev_year_precip and Perc_dev correlated
 
 # 1: Drop Prev_year_precip & MAT
-lm.bgden1 <- lmer(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
-                  Aspect + PlotSlope_scaled + (1 | Site / Transect),
-                  data = dat.plot_scaled) 
+lm.bgden1 <- lme(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
+                   Aspect + PlotSlope_scaled,
+                 random = ~ 1 | Site / Transect,
+                 data = dat.plot_scaled) 
 summary(lm.bgden1)
 r2(lm.bgden1) 
-res.lm.bgden1 <- simulateResiduals(lm.bgden1)
-plotQQunif(res.lm.bgden1)
-plotResiduals(res.lm.bgden1)
-check_overdispersion(lm.bgden1) # no overdispersion detected
+check_model(lm.bgden1)
 check_collinearity(lm.bgden1)
 
 # ***2: Drop Prev_year_precip & MAT, add interactions***
-lm.bgden2 <- lmer(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
+lm.bgden2 <- lme(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
                     Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
-                    Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                    Perc_dev_scaled * PlotSlope_scaled,
+                 random = ~ 1 | Site / Transect,
                   data = dat.plot_scaled) 
 summary(lm.bgden2)
 r2(lm.bgden2) 
-res.lm.bgden2 <- simulateResiduals(lm.bgden2)
-plotQQunif(res.lm.bgden2)
-plotResiduals(res.lm.bgden2)
-check_overdispersion(lm.bgden2) # no overdispersion detected
+check_model(lm.bgden2) 
 check_collinearity(lm.bgden2) # Perc_dev * Aspect has high correlation
+
+# 2: lme4 version
+lm.bgden2.lme4 <- lmer(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
+                    Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
+                    Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                  data = dat.plot_scaled) 
+summary(lm.bgden2.lme4)
+res.lm.bgden2.lme4 <- simulateResiduals(lm.bgden2.lme4)
+plotQQunif(res.lm.bgden2.lme4)
+plotResiduals(res.lm.bgden2.lme4)
+check_overdispersion(lm.bgden2.lme4) # no overdispersion detected
+check_collinearity(lm.bgden2.lme4)
 
 
 
@@ -330,21 +338,32 @@ res.lm.bgcov1 <- simulateResiduals(lm.bgcov1)
 plotQQunif(res.lm.bgcov1)
 plotResiduals(res.lm.bgcov1)
 check_overdispersion(lm.bgcov1) # no overdispersion detected
-check_collinearity(lm.bgcov1)
+check_collinearity(lm.bgcov1) # Perc_dev * Aspect has high correlation
 
 
 # ***2: Drop Prev_year_precip & MAT, add interactions***
-lm.bgcov2 <- lmer(BGCover ~ Perc_dev_scaled + Elevation_ft_scaled + 
+lm.bgcov2 <- lme(BGCover ~ Perc_dev_scaled + Elevation_ft_scaled + 
                     Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
-                    Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                    Perc_dev_scaled * PlotSlope_scaled,
+                 random = ~ 1 | Site / Transect,
                   data = dat.plot_scaled) 
 summary(lm.bgcov2)
 r2(lm.bgcov2) 
-res.lm.bgcov2 <- simulateResiduals(lm.bgcov2)
-plotQQunif(res.lm.bgcov2)
-plotResiduals(res.lm.bgcov2)
-check_overdispersion(lm.bgcov2) # no overdispersion detected
-check_collinearity(lm.bgcov2)
+check_model(lm.bgcov2) 
+check_collinearity(lm.bgcov2) # Perc_dev * Aspect has high correlation
+
+# 2: lme4 version
+lm.bgcov2.lme4 <- lmer(BGCover ~ Perc_dev_scaled + Elevation_ft_scaled + 
+                    Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
+                    Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                  data = dat.plot_scaled) 
+summary(lm.bgcov2.lme4)
+r2(lm.bgcov2.lme4) 
+res.lm.bgcov2.lme4 <- simulateResiduals(lm.bgcov2.lme4)
+plotQQunif(res.lm.bgcov2.lme4)
+plotResiduals(res.lm.bgcov2.lme4)
+check_overdispersion(lm.bgcov2.lme4) # no overdispersion detected
+check_collinearity(lm.bgcov2.lme4) # Perc_dev * Aspect has high correlation
 
 
 
