@@ -140,6 +140,16 @@ dat %>%
   ggplot(aes(x = Site, y = BGDensity)) +
   geom_boxplot()
 
+# Longest leaf
+hist(dat$Longestleaflength_cm)
+dat %>% 
+  filter(!is.na(Longestleaflength_cm)) %>% 
+  ggplot(aes(x = Site, y = Longestleaflength_cm)) + 
+  geom_boxplot()
+
+
+# Response variable: Native plant cover -----------------------------------
+
 # Shrub cover
 hist(dat$ShrubCover)
 dat %>% 
@@ -158,13 +168,10 @@ dat %>%
   ggplot(aes(x = Site, y = NGCover)) +
   geom_boxplot()
 
-# Longest leaf
-hist(dat$Longestleaflength_cm)
-dat %>% 
-  filter(!is.na(Longestleaflength_cm)) %>% 
-  ggplot(aes(x = Site, y = Longestleaflength_cm)) + 
-  geom_boxplot()
-
+# Combine for herb cover (grass & forb)
+dat <- dat %>% 
+  mutate(HerbCover = NGCover + ForbCover)
+hist(dat$HerbCover)
 
 
 # Continuous explanatory variables ----------------------------------------
