@@ -295,6 +295,18 @@ repro.aspect.avg <- culm.avg.aspect %>%
 repro.aspect.avg
 
 
+# Repro: Aspect by Prev_year_precip (linear regression, all obs)
+repro.all.aspect.prevprecip.lm <- dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~Aspect) +
+  theme_bw() +
+  xlab("Previous year precip (mm)") +
+  ylab("No. of reproductive culms")
+repro.all.aspect.prevprecip.lm
+
+
 
 ## Repro: By site ---------------------------------------------------------
 
@@ -461,6 +473,17 @@ total.aspect.avg <- culm.avg.aspect %>%
   facet_wrap(~Aspect)
 total.aspect.avg
 
+# Total: Aspect by Prev_year_precip (linear regression, all obs)
+total.all.aspect.prevprecip.lm <- dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~Aspect) +
+  theme_bw() +
+  xlab("Previous year precip (mm)") +
+  ylab("Total number of culms")
+total.all.aspect.prevprecip.lm
+
 
 ## Total: By site ---------------------------------------------------------
 
@@ -573,6 +596,17 @@ bgden.aspect.avg <- plot.avg.aspect %>%
   facet_wrap(~Aspect) 
 bgden.aspect.avg
 
+# BG density: Aspect by Prev_year_precip (linear regression, all obs)
+bgden.all.aspect.prevprecip.lm <- dat.plot %>% 
+  ggplot(aes(x = Prev_year_precip, y = BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~Aspect) +
+  theme_bw() +
+  labs(x = "Previous year precip (mm)",
+       y = expression(paste("Density (individuals /  ", m^2, ")")),
+       title = "Buffelgrass density") 
+bgden.all.aspect.prevprecip.lm
 
 
 
@@ -704,6 +738,18 @@ dat.plot %>%
   facet_wrap(~Aspect) +
   theme_bw()
 
+# BG cover: Aspect by Prev_year_precip (linear regression, all obs)
+bgcov.all.aspect.prevprecip.lm <- dat.plot %>% 
+  ggplot(aes(x = Prev_year_precip, y = BGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  facet_wrap(~Aspect) +
+  theme_bw() +
+  labs(x = "Previous year precip (mm)",
+       y = "Cover (%)",
+       title = "Buffelgrass cover") 
+bgcov.all.aspect.prevprecip.lm
+
 
 ## BG cover: By site ------------------------------------------------------
 
@@ -754,8 +800,32 @@ plot.avg.site.aspect %>%
 
 
 
+# BG density & cover ------------------------------------------------------
+
+# By aspect
+dat.plot %>% 
+  ggplot(aes(x = BGCover, y = BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~Aspect) +
+  labs(x = "Cover (%)",
+       y = expression(paste("Density (individuals /  ", m^2, ")")),
+       title = "Buffelgrass density & cover") 
+
 
 # Shrub cover -------------------------------------------------------------
+
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~Aspect) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Shrub cover (%)")
 
 plot.avg.site %>% 
   ggplot(aes(x = Year, y = shrub_avg, color = Site)) +
