@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-02-27
+# Updated: 2025-03-10
 
 # Purpose: Graph culm, cover and density response to precip variation.
 
@@ -538,6 +538,64 @@ culm.avg.site.aspect %>%
 
 ## BG density: All combined -----------------------------------------------
 
+# BG density: Linear regression by Perc_dev
+bgden.all.lm <- dat.plot %>% 
+  ggplot(aes(x = Perc_dev, y = BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_x_continuous(labels = percent) +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Precip deviation from average",
+       y = expression(paste("Density (individuals /  ", m^2, ")")),
+       title = "Buffelgrass density")
+bgden.all.lm
+
+# BG density: geom_smooth() by Perc_dev
+dat.plot %>% 
+  ggplot(aes(x = Perc_dev, y = BGDensity)) +
+  geom_point() +
+  geom_smooth() +
+  theme_bw() +
+  scale_x_continuous(labels = percent) +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red")  +
+  labs(x = "Precip deviation from average",
+       y = expression(paste("Density (individuals /  ", m^2, ")")),
+       title = "Buffelgrass density")
+
+# BG density: Wetter/drier divided, linear regression by Perc_dev
+dat.plot %>% 
+  filter(Perc_dev > 0) %>% 
+  ggplot(aes(x = Perc_dev, y = BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_x_continuous(labels = percent) +
+  labs(x = "Precip deviation from average",
+       y = expression(paste("Density (individuals /  ", m^2, ")")),
+       title = "Buffelgrass density in wetter conditions")
+dat.plot %>% 
+  filter(Perc_dev < 0) %>% 
+  ggplot(aes(x = Perc_dev, y = BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_x_continuous(labels = percent) +
+  ggtitle("Drier conditions") +
+  labs(x = "Precip deviation from average",
+       y = expression(paste("Density (individuals /  ", m^2, ")")),
+       title = "Buffelgrass density in drier conditions")
+
+# BG density: Plot slope and Perc_dev
+dat.plot %>% 
+  ggplot(aes(x = PlotSlope, y = BGDensity, color = Perc_dev)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1)
 
 
 
@@ -866,6 +924,17 @@ plot.avg.site.aspect %>%
 
 # Forb cover --------------------------------------------------------------
 
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = ForbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~Aspect) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Forb cover (%)")
+
 plot.avg.site %>% 
   ggplot(aes(x = Year, y = forb_avg, color = Site)) +
   geom_point() +
@@ -904,6 +973,17 @@ plot.avg.site.aspect %>%
 
 # Native grass cover ------------------------------------------------------
 
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = NGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~Aspect) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Shrub cover (%)")
+
 plot.avg.site %>% 
   ggplot(aes(x = Year, y = ng_avg, color = Site)) +
   geom_point() +
@@ -938,6 +1018,9 @@ plot.avg.site.aspect %>%
   scale_x_continuous(labels = scales::percent) +
   xlab("Precip deviation from average") +
   ylab("Native grass cover (%)")  
+
+
+# Herb cover (grass & forb) -----------------------------------------------
 
 
 
