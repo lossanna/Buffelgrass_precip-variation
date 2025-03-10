@@ -7,6 +7,8 @@
 #   normality. Native grass, native forb, and herb (forb + grass) roughly have a Poisson distribution,
 #   with a lot of 0s.
 
+# MAT correlated with precip-related variables.
+
 library(readxl)
 library(tidyverse)
 library(GGally)

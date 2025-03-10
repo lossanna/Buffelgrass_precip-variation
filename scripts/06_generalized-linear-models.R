@@ -83,7 +83,7 @@ res.pos.repro1 <- simulateResiduals(pos.repro1)
 plotQQunif(res.pos.repro1)
 plotResiduals(res.pos.repro1)
 check_overdispersion(pos.repro1) # no overdispersion detected
-check_zeroinflation(pos.repro1) # model is underfitting zeros (ratio = 0.49)
+check_zeroinflation(pos.repro1) # model is underfitting zeros (ratio = 0.52)
 check_collinearity(pos.repro1) 
 
 # 2: Drop Previous_year_precip & MAT, add interactions
@@ -97,9 +97,9 @@ r2(pos.repro2)
 res.pos.repro2 <- simulateResiduals(pos.repro2)
 plotQQunif(res.pos.repro2)
 plotResiduals(res.pos.repro2)
-check_overdispersion(pos.repro2) # no overdispersion detected
-check_zeroinflation(pos.repro2) # model is underfitting zeros (ratio = 0.53)
-check_collinearity(pos.repro2)
+check_overdispersion(pos.repro2) # underdispersion detected
+check_zeroinflation(pos.repro2) # model is underfitting zeros (ratio = 0.56)
+check_collinearity(pos.repro2) 
 
 
 ## Zero-inflated Poisson --------------------------------------------------
@@ -115,7 +115,7 @@ r2(zip.repro) # can't compute
 res.zip.repro <- simulateResiduals(zip.repro)
 plotQQunif(res.zip.repro)
 plotResiduals(res.zip.repro)
-check_overdispersion(zip.repro) # overdispersion detected (ratio = 2.67)
+check_overdispersion(zip.repro) # overdispersion detected (ratio = 2.59)
 check_zeroinflation(zip.repro) # model is okay
 check_collinearity(zip.repro) # Perc_dev and Prev_year_precip correlated
 
@@ -130,8 +130,8 @@ r2(zip.repro1) # R^2 is very low
 res.zip.repro1 <- simulateResiduals(zip.repro1)
 plotQQunif(res.zip.repro1)
 plotResiduals(res.zip.repro1)
-check_overdispersion(zip.repro1) # no overdispersion detected
-check_zeroinflation(zip.repro1) # model is underfitting zeros (ratio = 0.81)
+check_overdispersion(zip.repro1) # overdispersion detected (ratio = 2.37)
+check_zeroinflation(zip.repro1) # model is underfitting zeros (ratio = 0.77)
 check_collinearity(zip.repro1)
 
 # ***2: Drop Prev_year_precip & MAT, add interactions***
@@ -147,7 +147,7 @@ res.zip.repro2 <- simulateResiduals(zip.repro2)
 plotQQunif(res.zip.repro2)
 plotResiduals(res.zip.repro2)
 check_overdispersion(zip.repro2) # no overdispersion detected
-check_zeroinflation(zip.repro2) # model is underfitting zeros (ratio = 0.83)
+check_zeroinflation(zip.repro2) # model is underfitting zeros (ratio = 0.86)
 check_collinearity(zip.repro2) # Perc_dev and Perc_dev * Aspect highly correlated
 
 # 3: Drop Perc_dev * Aspect (for collinearity) - fit is really not good at all
@@ -182,8 +182,8 @@ r2(pos.total)
 res.pos.total <- simulateResiduals(pos.total)
 plotQQunif(res.pos.total)
 plotResiduals(res.pos.total)
-check_overdispersion(pos.total) # underdispersion detected
-check_zeroinflation(pos.total) # model is underfitting zeros (ratio = 0.18)
+check_overdispersion(pos.total) # underdispersion detected (ratio = 0.58)
+check_zeroinflation(pos.total) # model is underfitting zeros (ratio = 0.20)
 check_collinearity(pos.total) # Perc_dev and Prev_year_precip highly correlated
 
 # 1: Drop Prev_year_precip & MAT
@@ -197,7 +197,7 @@ res.pos.total1 <- simulateResiduals(pos.total1)
 plotQQunif(res.pos.total1)
 plotResiduals(res.pos.total1)
 check_overdispersion(pos.total1) # no overdispersion detected
-check_zeroinflation(pos.total1) # model is underfitting zeros (ratio = 0.17)
+check_zeroinflation(pos.total1) # model is underfitting zeros (ratio = 0.19)
 check_collinearity(pos.total1) 
 
 # 2: Drop Prev_year_precip & MAT, add interactions
@@ -212,7 +212,7 @@ res.pos.total2 <- simulateResiduals(pos.total2)
 plotQQunif(res.pos.total2)
 plotResiduals(res.pos.total2)
 check_overdispersion(pos.total2) # no overdispersion detected
-check_zeroinflation(pos.total2) # model is underfitting zeros (ratio = 0.18)
+check_zeroinflation(pos.total2) # model is underfitting zeros (ratio = 0.20)
 check_collinearity(pos.total2) 
 
 
@@ -230,7 +230,7 @@ res.zip.total <- simulateResiduals(zip.total)
 plotQQunif(res.zip.total)
 plotResiduals(res.zip.total)
 check_overdispersion(zip.total) # no overdispersion detected
-check_zeroinflation(zip.total) # model is okay
+check_zeroinflation(zip.total) # model is overfitting zeros (ratio = 1.11)
 check_collinearity(zip.total) # Perc_dev and Prev_year_precip correlated
 
 # 1: Drop Prev_year_precip & MAT
@@ -245,7 +245,7 @@ res.zip.total1 <- simulateResiduals(zip.total1)
 plotQQunif(res.zip.total1)
 plotResiduals(res.zip.total1)
 check_overdispersion(zip.total1) # no overdispersion detected
-check_zeroinflation(zip.total1) # model is underfitting zeros (ratio = 0.64)
+check_zeroinflation(zip.total1) # model is underfitting zeros (ratio = 0.65)
 check_collinearity(zip.total1)
 
 
@@ -262,7 +262,7 @@ res.zip.total2 <- simulateResiduals(zip.total2)
 plotQQunif(res.zip.total2)
 plotResiduals(res.zip.total2)
 check_overdispersion(zip.total2) # no overdispersion detected
-check_zeroinflation(zip.total2) # model is underfitting zeros (ratio = 0.67)
+check_zeroinflation(zip.total2) # model is underfitting zeros (ratio = 0.65)
 check_collinearity(zip.total2) # Perc_dev * Aspect has high correlation
 
 
