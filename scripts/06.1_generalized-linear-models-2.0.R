@@ -10,7 +10,10 @@
 #   Buffelgrass density and cover are log-transformed to improve normality.
 #   MAT & MAP not used as explantory variable; MAT was often too closely correlated with precip
 #     variables. Also didn't have much variation in MAT between sites.
-#   Tested version of models with Prev_year_precip.
+#   Tested version of models with Prev_year_precip for reproductive culms.
+#   Added interaction term of Aspect * PlotSlope for culm models.
+#   Removed "flat" plot from plot-level data (there is only 1 plot and 3 data points),
+#     and also tried it for culm data (did not help with Perc_Dev * Aspect correlation, though).
 
 # Zero-inflated Poisson models needed for models of both reproductive and total culms.
 # Mixed-effects linear models needed for buffelgrass density & cover (log transformed).
@@ -38,6 +41,9 @@ dat <- dat %>%
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1])
 
+dat.flat.rm <- dat %>% 
+  filter(Aspect != "flat")
+
 # Separate out plot-level data
 dat.plot <- dat %>%
   select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>%
@@ -47,7 +53,8 @@ dat.plot_scaled <- dat.plot %>%
   mutate(Perc_dev_scaled = scale(Perc_dev,center = TRUE, scale = TRUE)[, 1],
          Elevation_ft_scaled = scale(Elevation_ft, center = TRUE, scale = TRUE)[, 1],
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
-         Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1])
+         Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1]) %>% 
+  filter(Aspect != "flat")
 
 
 
@@ -99,10 +106,11 @@ check_overdispersion(pos.repro3) # no overdispersion detected
 check_zeroinflation(pos.repro3) # model is underfitting zeros (ratio = 0.50)
 check_collinearity(pos.repro3) 
 
-# 4: With Perc_dev, add interactions
+# 4: With Prev_year_precip, add interactions
 pos.repro4 <- glmmTMB(Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
                         Aspect + PlotSlope_scaled + Prev_year_precip_scaled * Aspect +
-                        Prev_year_precip_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                        Prev_year_precip_scaled * PlotSlope_scaled + Aspect * PlotSlope_scaled +
+                        (1 | Site / Transect),
                       data = dat,
                       family = genpois) 
 summary(pos.repro4)
@@ -135,7 +143,8 @@ check_collinearity(zip.repro1)
 # 2: With Perc_dev, add interactions
 zip.repro2 <- glmmTMB(Reproductive_culms ~ Perc_dev_scaled + Elevation_ft_scaled + 
                         Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
-                        Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                        Perc_dev_scaled * PlotSlope_scaled + Aspect * PlotSlope_scaled +
+                        (1 | Site / Transect),
                       data = dat,
                       family = poisson,
                       ziformula = ~.) 
@@ -145,8 +154,8 @@ res.zip.repro2 <- simulateResiduals(zip.repro2)
 plotQQunif(res.zip.repro2)
 plotResiduals(res.zip.repro2)
 check_overdispersion(zip.repro2) # no overdispersion detected
-check_zeroinflation(zip.repro2) # model is underfitting zeros (ratio = 0.86)
-check_collinearity(zip.repro2) 
+check_zeroinflation(zip.repro2) # model is underfitting zeros (ratio = 0.88)
+check_collinearity(zip.repro2) # Perc_dev * Aspect are highly correlated
 
 # 3: With Prev_year_precip 
 zip.repro3 <- glmmTMB(Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled +
@@ -163,10 +172,11 @@ check_overdispersion(zip.repro3) # no overdispersion detected
 check_zeroinflation(zip.repro3) # model is underfitting zeros (ratio = 0.76)
 check_collinearity(zip.repro3)
 
-# 2: With Prev_year_precip, add interactions
+# 4: With Prev_year_precip, add interactions
 zip.repro4 <- glmmTMB(Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
                         Aspect + PlotSlope_scaled + Prev_year_precip_scaled * Aspect +
-                        Prev_year_precip_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                        Prev_year_precip_scaled * PlotSlope_scaled + Aspect * PlotSlope_scaled +
+                        (1 | Site / Transect),
                       data = dat,
                       family = poisson,
                       ziformula = ~.) 
@@ -177,7 +187,7 @@ plotQQunif(res.zip.repro4)
 plotResiduals(res.zip.repro4)
 check_overdispersion(zip.repro4) # no overdispersion detected
 check_zeroinflation(zip.repro4) # model is underfitting zeros (ratio = 0.81)
-check_collinearity(zip.repro4) 
+check_collinearity(zip.repro4) # Prev_year_precip * Aspect are highly correlated
 
 
 
@@ -185,21 +195,7 @@ check_collinearity(zip.repro4)
 
 ## Poisson ----------------------------------------------------------------
 
-# All variables
-pos.total <- glmmTMB(Total_Live_Culms ~ Perc_dev_scaled + Elevation_ft_scaled + MAT_scaled +
-                       Aspect + PlotSlope_scaled + Prev_year_precip_scaled + (1 | Site / Transect),
-                     data = dat,
-                     family = genpois)
-summary(pos.total)
-r2(pos.total)
-res.pos.total <- simulateResiduals(pos.total)
-plotQQunif(res.pos.total)
-plotResiduals(res.pos.total)
-check_overdispersion(pos.total) # underdispersion detected
-check_zeroinflation(pos.total) # model is underfitting zeros (ratio = 0.18)
-check_collinearity(pos.total) # Perc_dev and Prev_year_precip highly correlated
-
-# 1: Drop Prev_year_precip & MAT
+# 1: With Perc_dev
 pos.total1 <- glmmTMB(Total_Live_Culms ~ Perc_dev_scaled + Elevation_ft_scaled +
                         Aspect + PlotSlope_scaled + (1 | Site / Transect),
                       data = dat,
@@ -210,13 +206,14 @@ res.pos.total1 <- simulateResiduals(pos.total1)
 plotQQunif(res.pos.total1)
 plotResiduals(res.pos.total1)
 check_overdispersion(pos.total1) # no overdispersion detected
-check_zeroinflation(pos.total1) # model is underfitting zeros (ratio = 0.17)
+check_zeroinflation(pos.total1) # model is underfitting zeros (ratio = 0.19)
 check_collinearity(pos.total1) 
 
-# 2: Drop Prev_year_precip & MAT, add interactions
+# 2: With Perc_dev, add interactions
 pos.total2 <- glmmTMB(Total_Live_Culms ~ Perc_dev_scaled + Elevation_ft_scaled +
                         Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
-                        Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                        Perc_dev_scaled * PlotSlope_scaled + Aspect * PlotSlope_scaled +
+                        (1 | Site / Transect),
                       data = dat,
                       family = genpois)
 summary(pos.total2)
@@ -225,75 +222,83 @@ res.pos.total2 <- simulateResiduals(pos.total2)
 plotQQunif(res.pos.total2)
 plotResiduals(res.pos.total2)
 check_overdispersion(pos.total2) # no overdispersion detected
-check_zeroinflation(pos.total2) # model is underfitting zeros (ratio = 0.18)
+check_zeroinflation(pos.total2) # model is underfitting zeros (ratio = 0.21)
 check_collinearity(pos.total2) 
 
 
 ## Zero-inflated Poisson --------------------------------------------------
 
-# All variables
-zip.total <- glmmTMB(Total_Live_Culms ~ Perc_dev_scaled + Elevation_ft_scaled + MAT_scaled +
-                       Aspect + PlotSlope_scaled + Prev_year_precip_scaled + (1 | Site / Transect),
-                     data = dat,
-                     family = poisson,
-                     ziformula = ~.)
-summary(zip.total)
-r2(zip.total) # can't compute
-res.zip.total <- simulateResiduals(zip.total)
-plotQQunif(res.zip.total)
-plotResiduals(res.zip.total)
-check_overdispersion(zip.total) # no overdispersion detected
-check_zeroinflation(zip.total) # model is okay
-check_collinearity(zip.total) # Perc_dev and Prev_year_precip correlated
-
-# 1: Drop Prev_year_precip & MAT
+# 1: With Perc_dev
 zip.total1 <- glmmTMB(Total_Live_Culms ~ Perc_dev_scaled + Elevation_ft_scaled + 
                         Aspect + PlotSlope_scaled + (1 | Site / Transect),
                       data = dat,
                       family = poisson,
                       ziformula = ~.)
 summary(zip.total1)
-r2(zip.total1) 
+r2(zip.total1) # R^2 very low
 res.zip.total1 <- simulateResiduals(zip.total1)
 plotQQunif(res.zip.total1)
 plotResiduals(res.zip.total1)
 check_overdispersion(zip.total1) # no overdispersion detected
-check_zeroinflation(zip.total1) # model is underfitting zeros (ratio = 0.64)
+check_zeroinflation(zip.total1) # model is underfitting zeros (ratio = 0.65)
 check_collinearity(zip.total1)
 
 
-# 2: ***Drop Prev_year_precip & MAT, add interactions***
+# 2: With Perc_dev, add interactions
 zip.total2 <- glmmTMB(Total_Live_Culms ~ Perc_dev_scaled + Elevation_ft_scaled +
                         Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
-                        Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                        Perc_dev_scaled * PlotSlope_scaled + Aspect * PlotSlope_scaled +
+                        (1 | Site / Transect),
                       data = dat,
                       family = poisson,
                       ziformula = ~.)
 summary(zip.total2)
-r2(zip.total2)
+r2(zip.total2) # R^2 still pretty low
 res.zip.total2 <- simulateResiduals(zip.total2)
 plotQQunif(res.zip.total2)
 plotResiduals(res.zip.total2)
 check_overdispersion(zip.total2) # no overdispersion detected
-check_zeroinflation(zip.total2) # model is underfitting zeros (ratio = 0.67)
+check_zeroinflation(zip.total2) # model is underfitting zeros (ratio = 0.69)
 check_collinearity(zip.total2) # Perc_dev * Aspect has high correlation
+
+# 3: With Prev_year_precip 
+zip.total3 <- glmmTMB(Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                        Aspect + PlotSlope_scaled + (1 | Site / Transect),
+                      data = dat,
+                      family = poisson,
+                      ziformula = ~.)
+summary(zip.total3)
+r2(zip.total3) # R^2 very low
+res.zip.total3 <- simulateResiduals(zip.total3)
+plotQQunif(res.zip.total3)
+plotResiduals(res.zip.total3)
+check_overdispersion(zip.total3) # no overdispersion detected
+check_zeroinflation(zip.total3) # model is underfitting zeros (ratio = 0.65)
+check_collinearity(zip.total3)
+
+# 4: With Prev_year_precip, add interactions
+zip.total4 <- glmmTMB(Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                        Aspect + PlotSlope_scaled + Prev_year_precip_scaled * Aspect +
+                        Prev_year_precip_scaled * PlotSlope_scaled + Aspect * PlotSlope_scaled +
+                        (1 | Site / Transect),
+                      data = dat,
+                      family = poisson,
+                      ziformula = ~.) 
+summary(zip.total4)
+r2(zip.total4) # R^2 slightly improved (but still low)
+res.zip.total4 <- simulateResiduals(zip.total4)
+plotQQunif(res.zip.total4)
+plotResiduals(res.zip.total4)
+check_overdispersion(zip.total4) # no overdispersion detected
+check_zeroinflation(zip.total4) # model is underfitting zeros (ratio = 0.67)
+check_collinearity(zip.total4) # Prev_year_precip * Aspect are highly correlated
 
 
 
 # Buffelgrass density -----------------------------------------------------
 
-# All variables
-lm.bgden <- lme(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + MAT_scaled +
-                  Aspect + PlotSlope_scaled + Prev_year_precip_scaled, 
-                random = ~ 1 | Site / Transect,
-                data = dat.plot_scaled) 
-summary(lm.bgden)
-r2(lm.bgden)
-check_model(lm.bgden)
-check_collinearity(lm.bgden) # Prev_year_precip and Perc_dev correlated
-
-# 1: Drop Prev_year_precip & MAT
-lm.bgden1 <- lme(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
+# 1: With Perc_dev
+lm.bgden1 <- lme(BGDensity_log ~ Perc_dev_scaled + Elevation_ft_scaled + 
                    Aspect + PlotSlope_scaled,
                  random = ~ 1 | Site / Transect,
                  data = dat.plot_scaled) 
@@ -302,8 +307,8 @@ r2(lm.bgden1)
 check_model(lm.bgden1)
 check_collinearity(lm.bgden1)
 
-# ***2: Drop Prev_year_precip & MAT, add interactions***
-lm.bgden2 <- lme(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
+# 2: With Perc_dev, add interactions (cannot calculate with Aspect * PlotSlope)
+lm.bgden2 <- lme(BGDensity_log ~ Perc_dev_scaled + Elevation_ft_scaled + 
                    Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
                    Perc_dev_scaled * PlotSlope_scaled,
                  random = ~ 1 | Site / Transect,
@@ -311,10 +316,10 @@ lm.bgden2 <- lme(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled +
 summary(lm.bgden2)
 r2(lm.bgden2) 
 check_model(lm.bgden2) 
-check_collinearity(lm.bgden2) # Perc_dev * Aspect has high correlation
+check_collinearity(lm.bgden2) 
 
 # 2: lme4 version
-lm.bgden2.lme4 <- lmer(BGDensity ~ Perc_dev_scaled + Elevation_ft_scaled + 
+lm.bgden2.lme4 <- lmer(BGDensity_log ~ Perc_dev_scaled + Elevation_ft_scaled + 
                          Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
                          Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
                        data = dat.plot_scaled) 
@@ -329,55 +334,44 @@ check_collinearity(lm.bgden2.lme4)
 
 # Buffelgrass cover -------------------------------------------------------
 
-# All variables
-lm.bgcov <- lmer(BGCover ~ Perc_dev_scaled + Elevation_ft_scaled + MAT_scaled +
-                   Aspect + PlotSlope_scaled + Prev_year_precip_scaled + (1 | Site / Transect),
-                 data = dat.plot_scaled)
-summary(lm.bgcov)
-r2(lm.bgcov)
-res.lm.bgcov <- simulateResiduals(lm.bgcov)
-plotQQunif(res.lm.bgcov)
-plotResiduals(res.lm.bgcov)
-check_overdispersion(lm.bgcov) # no overdispersion detected
-check_collinearity(lm.bgcov) # Prev_year_precip and Perc_dev correlated
-
-# 1: Drop Prev_year_precip & MAT
-lm.bgcov1 <- lmer(BGCover ~ Perc_dev_scaled + Elevation_ft_scaled + 
+# 1: With Perc_dev
+lm.bgcov1 <- lmer(BGCover_log ~ Perc_dev_scaled + Elevation_ft_scaled + 
                     Aspect + PlotSlope_scaled + (1 | Site / Transect),
                   data = dat.plot_scaled)
 summary(lm.bgcov1)
-r2(lm.bgcov1)
+r2(lm.bgcov1) # R^2 is low
 res.lm.bgcov1 <- simulateResiduals(lm.bgcov1)
 plotQQunif(res.lm.bgcov1)
 plotResiduals(res.lm.bgcov1)
 check_overdispersion(lm.bgcov1) # no overdispersion detected
-check_collinearity(lm.bgcov1) # Perc_dev * Aspect has high correlation
+check_collinearity(lm.bgcov1) 
 
 
-# ***2: Drop Prev_year_precip & MAT, add interactions***
-lm.bgcov2 <- lme(BGCover ~ Perc_dev_scaled + Elevation_ft_scaled + 
+# 2: With Perc_dev, add interactions
+lm.bgcov2 <- lme(BGCover_log ~ Perc_dev_scaled + Elevation_ft_scaled + 
                    Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
-                   Perc_dev_scaled * PlotSlope_scaled,
+                   Perc_dev_scaled * PlotSlope_scaled + 
+                   Aspect * PlotSlope_scaled,
                  random = ~ 1 | Site / Transect,
                  data = dat.plot_scaled) 
 summary(lm.bgcov2)
-r2(lm.bgcov2) 
+r2(lm.bgcov2) # R^2 very low
 check_model(lm.bgcov2) 
-check_collinearity(lm.bgcov2) # Perc_dev * Aspect has high correlation
+check_collinearity(lm.bgcov2) 
 
 # 2: lme4 version
 lm.bgcov2.lme4 <- lmer(BGCover ~ Perc_dev_scaled + Elevation_ft_scaled + 
                          Aspect + PlotSlope_scaled + Perc_dev_scaled * Aspect +
-                         Perc_dev_scaled * PlotSlope_scaled + (1 | Site / Transect),
+                         Perc_dev_scaled * PlotSlope_scaled +
+                         Aspect * PlotSlope_scaled + (1 | Site / Transect),
                        data = dat.plot_scaled) 
 summary(lm.bgcov2.lme4)
-r2(lm.bgcov2.lme4) 
+r2(lm.bgcov2.lme4) # R^2 slightly improved
 res.lm.bgcov2.lme4 <- simulateResiduals(lm.bgcov2.lme4)
 plotQQunif(res.lm.bgcov2.lme4)
 plotResiduals(res.lm.bgcov2.lme4)
 check_overdispersion(lm.bgcov2.lme4) # no overdispersion detected
-check_collinearity(lm.bgcov2.lme4) # Perc_dev * Aspect has high correlation
+check_collinearity(lm.bgcov2.lme4)
 
 
-
-save.image("RData/06_generalized-linear-models.RData")
+save.image("RData/06.1_generalized-linear-models-2.0.RData")
