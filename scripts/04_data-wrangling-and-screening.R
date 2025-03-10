@@ -1,9 +1,11 @@
 # Created: 2024-09-23
-# Updated: 2025-02-28
+# Updated: 2025-03-10
 
 # Purpose: Examine distributions; write out clean data with precip deviation variable added.
 
-# Culm counts are Poisson distribution. Buffelgrass density & cover are approximately normal distribution.
+# Culm counts have a Poisson distribution. Buffelgrass density & cover should be log-transformed to improve
+#   normality. Native grass, native forb, and herb (forb + grass) roughly have a Poisson distribution,
+#   with a lot of 0s.
 
 library(readxl)
 library(tidyverse)
@@ -40,13 +42,18 @@ dat <- dat %>%
   mutate(Year = as.character(Year),
          StudyYear = as.character(StudyYear))
 
+# Add HerbCover col
+dat <- dat %>% 
+  mutate(HerbCover = NGCover + ForbCover)
+
 # Separate out continuous explanatory variables
 exp.cont <- dat %>% 
   select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm)
 
 # Separate out response variables
 res.cont <- dat %>% 
-  select(BGCover, BGDensity, ShrubCover, ForbCover, NGCover, Vegetative_culms, Reproductive_culms, Total_Live_Culms,
+  select(BGCover, BGDensity, ShrubCover, ForbCover, NGCover, HerbCover,
+         Vegetative_culms, Reproductive_culms, Total_Live_Culms,
          Longestleaflength_cm)
 
 
@@ -73,7 +80,14 @@ dat %>%
 ## Histogram --------------------------------------------------------------
 
 # All, Reproductive
-hist(dat$Reproductive_culms)
+hist(dat$Reproductive_culms) # Poisson
+
+# By aspect, Reproductive
+hist(filter(dat, Aspect == "S")$Reproductive_culms)
+hist(filter(dat, Aspect == "SW")$Reproductive_culms)
+hist(filter(dat, Aspect == "E")$Reproductive_culms)
+hist(filter(dat, Aspect == "W")$Reproductive_culms)
+hist(filter(dat, Aspect == "N")$Reproductive_culms)
 
 # By site, Reproductive
 hist(filter(dat, Site == "TumamocHill")$Reproductive_culms)
@@ -107,9 +121,20 @@ dat %>%
   geom_boxplot()
 
 
-# By aspect
+# All, by aspect
+#   Reproductive
 dat %>% 
   ggplot(aes(x = Aspect, y = Reproductive_culms)) +
+  geom_boxplot()
+
+#   Total
+dat %>% 
+  ggplot(aes(x = Aspect, y = Total_Live_Culms)) +
+  geom_boxplot()
+
+#   Vegetative
+dat %>% 
+  ggplot(aes(x = Aspect, y = Vegetative_culms)) +
   geom_boxplot()
 
 
@@ -121,7 +146,8 @@ dat %>%
   geom_point()
 
 
-# Response variable: Density & cover --------------------------------------
+
+# Response variable: BG density & cover -----------------------------------
 
 # Pair plot
 res.cont %>% 
@@ -134,11 +160,22 @@ dat %>%
   ggplot(aes(x = Site, y = BGCover)) +
   geom_boxplot()
 
+#   Log transformation
+dat <- dat %>% 
+  mutate(BGCover_log = log(BGCover))
+hist(dat$BGCover_log) # log transformation kind of improves normality?
+
 # BG Density
 hist(dat$BGDensity)
 dat %>% 
   ggplot(aes(x = Site, y = BGDensity)) +
   geom_boxplot()
+
+#   Log transformation
+dat <- dat %>% 
+  mutate(BGDensity_log = log(BGDensity))
+hist(dat$BGDensity_log) # log transformation improves normality
+
 
 # Longest leaf
 hist(dat$Longestleaflength_cm)
@@ -148,6 +185,7 @@ dat %>%
   geom_boxplot()
 
 
+
 # Response variable: Native plant cover -----------------------------------
 
 # Shrub cover
@@ -155,11 +193,17 @@ hist(dat$ShrubCover)
 dat %>% 
   ggplot(aes(x = Site, y = ShrubCover)) +
   geom_boxplot()
+dat %>% 
+  ggplot(aes(x = Aspect, y = ShrubCover)) +
+  geom_boxplot()
 
 # Forb cover
 hist(dat$ForbCover)
 dat %>% 
   ggplot(aes(x = Site, y = ForbCover)) +
+  geom_boxplot()
+dat %>% 
+  ggplot(aes(x = Aspect, y = ForbCover)) +
   geom_boxplot()
 
 # Native grass cover
@@ -167,11 +211,18 @@ hist(dat$NGCover)
 dat %>% 
   ggplot(aes(x = Site, y = NGCover)) +
   geom_boxplot()
+dat %>% 
+  ggplot(aes(x = Aspect, y = NGCover)) +
+  geom_boxplot()
 
-# Combine for herb cover (grass & forb)
-dat <- dat %>% 
-  mutate(HerbCover = NGCover + ForbCover)
+# Herb cover
 hist(dat$HerbCover)
+dat %>% 
+  ggplot(aes(x = Site, y = HerbCover)) +
+  geom_boxplot()
+dat %>% 
+  ggplot(aes(x = Aspect, y = HerbCover)) +
+  geom_boxplot()
 
 
 # Continuous explanatory variables ----------------------------------------
