@@ -2,6 +2,7 @@
 # Updated: 2025-03-20
 
 # Purpose: Examine distributions; write out clean data with precip deviation variable added.
+#   Also write out different data table with change in culm/cover/density as response variable.
 
 # Culm counts have a Poisson distribution. Buffelgrass density & cover should be log-transformed to improve
 #   normality. Native grass, native forb, and herb (forb + grass) roughly have a Poisson distribution,
@@ -256,7 +257,9 @@ culm.change <- dat %>%
          Change_Total_Live_Culms = Total_Live_Culms - lag(Total_Live_Culms)) %>% 
   mutate(Change_BGDensity = BGDensity - lag(BGDensity),
          Change_BGCover = BGCover - lag(BGCover)) %>% 
-  mutate(Change_HerbCover = HerbCover - lag(HerbCover),
+  mutate(Change_NGCover = NGCover - lag(NGCover),
+         Change_ForbCover = ForbCover - lag(ForbCover),
+         Change_HerbCover = HerbCover - lag(HerbCover),
          Change_ShrubCover = ShrubCover - lag(ShrubCover)) %>% 
   filter(!is.na(Change_Total_Live_Culms))
 
@@ -264,6 +267,9 @@ hist(culm.change$Change_Reproductive_culms, breaks = 20)
 hist(culm.change$Change_Total_Live_Culms, breaks = 20)
 hist(culm.change$Change_BGDensity, breaks = 20)
 hist(culm.change$Change_BGCover, breaks = 20)
+hist(culm.change$Change_HerbCover, breaks = 20)
+hist(culm.change$Change_NGCover, breaks = 20)
+hist(culm.change$Change_ForbCover, breaks = 20)
 
 
 
