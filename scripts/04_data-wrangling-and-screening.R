@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-03-10
+# Updated: 2025-03-20
 
 # Purpose: Examine distributions; write out clean data with precip deviation variable added.
 
@@ -247,10 +247,33 @@ dat %>%
 
 
 
+# Create response variable: change in total culm count --------------------
+
+culm.change <- dat %>%
+  arrange(Plant_ID, Year) %>%
+  group_by(Plant_ID) %>%
+  mutate(Change_Reproductive_culms = Reproductive_culms - lag(Reproductive_culms),
+         Change_Total_Live_Culms = Total_Live_Culms - lag(Total_Live_Culms)) %>% 
+  mutate(Change_BGDensity = BGDensity - lag(BGDensity),
+         Change_BGCover = BGCover - lag(BGCover)) %>% 
+  mutate(Change_HerbCover = HerbCover - lag(HerbCover),
+         Change_ShrubCover = ShrubCover - lag(ShrubCover)) %>% 
+  filter(!is.na(Change_Total_Live_Culms))
+
+hist(culm.change$Change_Reproductive_culms, breaks = 20)
+hist(culm.change$Change_Total_Live_Culms, breaks = 20)
+hist(culm.change$Change_BGDensity, breaks = 20)
+hist(culm.change$Change_BGCover, breaks = 20)
+
+
+
 # Write out data to csv ---------------------------------------------------
 
 write_csv(dat,
           file = "data/cleaned/04_demography-data_clean.csv")
+
+write_csv(culm.change,
+          file = "data/cleaned/04_change-in-culm-density-cover_clean.csv")
 
 
 save.image("RData/04_data-wrangling-and-screening.RData")
