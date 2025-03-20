@@ -225,12 +225,21 @@ dat %>%
   ylab("No. of reproductive culms")
 
 
-# Repro: Plot slope and Perc_dev
+# Repro: scatterplot Plot slope and Perc_dev
 dat %>% 
   ggplot(aes(x = PlotSlope, y = Reproductive_culms, color = Perc_dev)) +
   geom_point() +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1)
+
+
+# Repro: linear regression with buffelgrass density
+dat %>% 
+  ggplot(aes(x = BGDensity, y = Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
 
 
 ## Repro: By aspect -------------------------------------------------------
@@ -412,11 +421,26 @@ dat %>%
   ylab("Total number of culms")
 
 
-# Total: Plot slope and Perc_dev
+# Total: scatterplot by Plot slope and Perc_dev
 dat %>% 
   ggplot(aes(x = PlotSlope, y = Total_Live_Culms, color = Perc_dev)) +
   geom_point() +
   scale_color_viridis(option = "viridis", direction = -1)
+
+# Total: linear regression with buffelgrass density
+dat %>% 
+  ggplot(aes(x = BGDensity, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+# Total: linear regression with buffelgrass cover
+dat %>% 
+  ggplot(aes(x = BGCover, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
 
 
 ## Total: By aspect -------------------------------------------------------
@@ -438,7 +462,7 @@ dat %>%
   facet_wrap(~Aspect) +
   theme_bw()
 
-# Repro: Aspect by Perc_dev (linear regression, all obs)
+# Total: Aspect by Perc_dev (linear regression, all obs)
 total.all.aspect.lm <- dat %>% 
   ggplot(aes(x = Perc_dev, y = Total_Live_Culms)) +
   geom_point() +
@@ -483,6 +507,24 @@ total.all.aspect.prevprecip.lm <- dat %>%
   xlab("Previous year precip (mm)") +
   ylab("Total number of culms")
 total.all.aspect.prevprecip.lm
+
+# Total: Aspect by buffelgrass density (linear regression, all obs)
+dat %>% 
+  ggplot(aes(x = BGDensity, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~Aspect)
+
+# Total: Aspect by buffelgrass cover (linear regression, all obs)
+dat %>% 
+  ggplot(aes(x = BGCover, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~Aspect)
+
+
 
 
 ## Total: By site ---------------------------------------------------------
@@ -590,7 +632,7 @@ dat.plot %>%
        y = expression(paste("Density (individuals /  ", m^2, ")")),
        title = "Buffelgrass density in drier conditions")
 
-# BG density: Plot slope and Perc_dev
+# BG density: scatterplot by Plot slope and Perc_dev
 dat.plot %>% 
   ggplot(aes(x = PlotSlope, y = BGDensity, color = Perc_dev)) +
   geom_point() +
