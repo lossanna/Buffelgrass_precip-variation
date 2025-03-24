@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-03-10
+# Updated: 2025-03-24
 
 # Purpose: Graph culm, cover and density response to precip variation.
 
@@ -14,11 +14,13 @@ library(viridis)
 # Load data ---------------------------------------------------------------
 
 dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
+culm.change <- read_csv("data/cleaned/04_change-in-culm-density-cover_clean.csv")
 
 
 # Data wrangling ----------------------------------------------------------
 
 # Create df of average and SE to make line graph for culm count
+#   By site
 culm.avg.site <- dat %>% 
   group_by(Year, StudyYear, Site) %>% 
   summarise(repro_avg = mean(Reproductive_culms),
@@ -27,7 +29,16 @@ culm.avg.site <- dat %>%
             total_se = sd(Total_Live_Culms) / sqrt(n()),
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
+culm.change.avg.site <- culm.change %>% 
+  group_by(Year, StudyYear, Site) %>% 
+  summarise(repro_avg = mean(Change_Reproductive_culms),
+            repro_se = sd(Change_Reproductive_culms) / sqrt(n()),
+            total_avg = mean(Change_Total_Live_Culms),
+            total_se = sd(Change_Total_Live_Culms) / sqrt(n()),
+            Perc_dev_avg = mean(Perc_dev),
+            .groups = "keep")
 
+#   By site and aspect
 culm.avg.site.aspect <- dat %>% 
   group_by(Year, StudyYear, Site, Aspect) %>% 
   summarise(repro_avg = mean(Reproductive_culms),
@@ -36,13 +47,30 @@ culm.avg.site.aspect <- dat %>%
             total_se = sd(Total_Live_Culms) / sqrt(n()),
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
+culm.change.avg.site.aspect <- culm.change %>% 
+  group_by(Year, StudyYear, Site, Aspect) %>% 
+  summarise(repro_avg = mean(Change_Reproductive_culms),
+            repro_se = sd(Change_Reproductive_culms) / sqrt(n()),
+            total_avg = mean(Change_Total_Live_Culms),
+            total_se = sd(Change_Total_Live_Culms) / sqrt(n()),
+            Perc_dev_avg = mean(Perc_dev),
+            .groups = "keep")
 
+#   By aspect
 culm.avg.aspect <- dat %>% 
   group_by(Year, Aspect) %>% 
   summarise(repro_avg = mean(Reproductive_culms),
             repro_se = sd(Reproductive_culms) / sqrt(n()),
             total_avg = mean(Total_Live_Culms),
             total_se = sd(Total_Live_Culms) / sqrt(n()),
+            Perc_dev_avg = mean(Perc_dev),
+            .groups = "keep")
+culm.change.avg.aspect <- culm.change %>% 
+  group_by(Year, Aspect) %>% 
+  summarise(repro_avg = mean(Change_Reproductive_culms),
+            repro_se = sd(Change_Reproductive_culms) / sqrt(n()),
+            total_avg = mean(Change_Total_Live_Culms),
+            total_se = sd(Change_Total_Live_Culms) / sqrt(n()),
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
 
@@ -52,7 +80,14 @@ dat.plot <- dat %>%
   select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>% 
   distinct(.keep_all = TRUE)
 
+plot.change <- culm.change %>% 
+  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm,
+         -Change_Reproductive_culms, -Change_Total_Live_Culms) %>% 
+  distinct(.keep_all = TRUE)
+  
+
 # Create df of average and SE to make line graph for density & cover
+#   By site
 plot.avg.site <- dat.plot %>% 
   group_by(Year, StudyYear, Site) %>% 
   summarise(bgden_avg = mean(BGDensity),
@@ -67,7 +102,22 @@ plot.avg.site <- dat.plot %>%
             ng_se = sd(NGCover) / sqrt(n()),
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
+plot.change.avg.site <- plot.change %>% 
+  group_by(Year, StudyYear, Site) %>% 
+  summarise(bgden_avg = mean(Change_BGDensity),
+            bgden_se = sd(Change_BGDensity) / sqrt(n()),
+            bgcov_avg = mean(Change_BGCover),
+            bgcov_se   = sd(Change_BGCover) / sqrt(n()),
+            shrub_avg = mean(Change_ShrubCover),
+            shrub_se = sd(Change_ShrubCover) / sqrt(n()),
+            forb_avg = mean(Change_ForbCover),
+            forb_se = sd(Change_ForbCover) / sqrt(n()),
+            ng_avg = mean(Change_NGCover),
+            ng_se = sd(Change_NGCover) / sqrt(n()),
+            Perc_dev_avg = mean(Perc_dev),
+            .groups = "keep")
 
+#   By aspect
 plot.avg.aspect <- dat.plot %>% 
   group_by(Year, Aspect) %>% 
   summarise(bgden_avg = mean(BGDensity),
@@ -82,7 +132,22 @@ plot.avg.aspect <- dat.plot %>%
             ng_se = sd(NGCover) / sqrt(n()),
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
+plot.change.avg.aspect <- plot.change %>% 
+  group_by(Year, Aspect) %>% 
+  summarise(bgden_avg = mean(Change_BGDensity),
+            bgden_se = sd(Change_BGDensity) / sqrt(n()),
+            bgcov_avg = mean(Change_BGCover),
+            bgcov_se   = sd(Change_BGCover) / sqrt(n()),
+            shrub_avg = mean(Change_ShrubCover),
+            shrub_se = sd(Change_ShrubCover) / sqrt(n()),
+            forb_avg = mean(Change_ForbCover),
+            forb_se = sd(Change_ForbCover) / sqrt(n()),
+            ng_avg = mean(Change_NGCover),
+            ng_se = sd(Change_NGCover) / sqrt(n()),
+            Perc_dev_avg = mean(Perc_dev),
+            .groups = "keep")
 
+#   By site and aspect
 plot.avg.site.aspect <- dat.plot %>% 
   group_by(Year, StudyYear, Site, Aspect) %>% 
   summarise(bgden_avg = mean(BGDensity),
@@ -95,6 +160,20 @@ plot.avg.site.aspect <- dat.plot %>%
             forb_se = sd(ForbCover) / sqrt(n()),
             ng_avg = mean(NGCover),
             ng_se = sd(NGCover) / sqrt(n()),
+            Perc_dev_avg = mean(Perc_dev),
+            .groups = "keep")
+plot.change.avg.site.aspect <- plot.change %>% 
+  group_by(Year, StudyYear, Site, Aspect) %>% 
+  summarise(bgden_avg = mean(Change_BGDensity),
+            bgden_se = sd(Change_BGDensity) / sqrt(n()),
+            bgcov_avg = mean(Change_BGCover),
+            bgcov_se   = sd(Change_BGCover) / sqrt(n()),
+            shrub_avg = mean(Change_ShrubCover),
+            shrub_se = sd(Change_ShrubCover) / sqrt(n()),
+            forb_avg = mean(Change_ForbCover),
+            forb_se = sd(Change_ForbCover) / sqrt(n()),
+            ng_avg = mean(Change_NGCover),
+            ng_se = sd(Change_NGCover) / sqrt(n()),
             Perc_dev_avg = mean(Perc_dev),
             .groups = "keep")
 
@@ -316,7 +395,6 @@ repro.all.aspect.prevprecip.lm <- dat %>%
 repro.all.aspect.prevprecip.lm
 
 
-
 ## Repro: By site ---------------------------------------------------------
 
 # Repro: Site by Year (line graph, average)
@@ -362,8 +440,6 @@ culm.avg.site.aspect %>%
   scale_x_continuous(labels = scales::percent) +
   xlab("Precip deviation from average") +
   ylab("No. of reproductive culms")
-
-
 
 
 
@@ -575,7 +651,6 @@ culm.avg.site.aspect %>%
   ylab("Total number of culms")
 
 
-
 # Buffelgrass density -----------------------------------------------------
 
 ## BG density: All combined -----------------------------------------------
@@ -772,6 +847,46 @@ plot.avg.site.aspect %>%
 
 # Buffelgrass cover -------------------------------------------------------
 
+## BG cover: All combined -------------------------------------------------
+
+# BG cover: Linear regression by Perc_dev
+bgcov.all.lm <- dat.plot %>% 
+  ggplot(aes(x = Perc_dev, y = BGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_x_continuous(labels = percent) +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Precip deviation from average",
+       y = "Cover (%)",
+       title = "Buffelgrass cover")
+bgcov.all.lm
+
+# BG cover: geom_smooth() by Perc_dev
+dat.plot %>% 
+  ggplot(aes(x = Perc_dev, y = BGCover)) +
+  geom_point() +
+  geom_smooth() +
+  theme_bw() +
+  scale_x_continuous(labels = percent) +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Precip deviation from average",
+       y = "Cover (%)",
+       title = "Buffelgrass cover")
+
+# BG cover: scatterplot by Plot slope and Perc_dev
+dat.plot %>% 
+  ggplot(aes(x = PlotSlope, y = BGCover, color = Perc_dev)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1)
+
+
+
 ## BG cover: By aspect ----------------------------------------------------
 
 # BG cover: Aspect by Year (boxplot, all obs)
@@ -902,6 +1017,16 @@ plot.avg.site.aspect %>%
 
 # BG density & cover ------------------------------------------------------
 
+# All combined
+dat.plot %>% 
+  ggplot(aes(x = BGCover, y = BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  labs(x = "Cover (%)",
+       y = expression(paste("Density (individuals /  ", m^2, ")")),
+       title = "Buffelgrass density & cover") 
+
 # By aspect
 dat.plot %>% 
   ggplot(aes(x = BGCover, y = BGDensity)) +
@@ -916,6 +1041,33 @@ dat.plot %>%
 
 # Shrub cover -------------------------------------------------------------
 
+## Shrub cover: All combined ----------------------------------------------
+
+# Shrub cover: linear regression by Perc_dev 
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Shrub cover (%)")
+
+# Shrub cover: linear regression by Prev_year_precip 
+dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Prev year precip (mm)") +
+  ylab("Shrub cover (%)")
+
+
+
+## Shrub cover: By aspect -------------------------------------------------
+
+# Shrub cover: Aspect by Perc_dev (linear regression, all obs)
 dat %>% 
   ggplot(aes(x = Perc_dev, y = ShrubCover)) +
   geom_point() +
@@ -927,11 +1079,27 @@ dat %>%
   xlab("Precip deviation from average") +
   ylab("Shrub cover (%)")
 
+# Shrub cover: Aspect by Prev_year_precip (linear regression, all obs)
+dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~Aspect) +
+  xlab("Prev year precip (mm)") +
+  ylab("Shrub cover (%)")
+
+
+## Shrub cover: By site ---------------------------------------------------
+
+# Shrub cover: Site by Year (line graph, avg)
 plot.avg.site %>% 
   ggplot(aes(x = Year, y = shrub_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
+
+# Shrub cover: Site by Perc_dev (line graph, avg)
 plot.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = shrub_avg, color = Site)) +
   geom_point() +
@@ -943,13 +1111,18 @@ plot.avg.site %>%
   xlab("Precip deviation from average") +
   ylab("Shrub cover (%)")
 
-# By site and aspect (line graph)
+
+## Shrub cover: By site and aspect ----------------------------------------
+
+# Shrub cover: Site and aspect by Year (line graph, avg)
 plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = shrub_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
+
+# Shrub cover: Site and aspect by Perc_dev (line graph, avg)
 plot.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = shrub_avg, color = Aspect)) +
   geom_point() +
@@ -966,6 +1139,32 @@ plot.avg.site.aspect %>%
 
 # Forb cover --------------------------------------------------------------
 
+## Forb cover: All combined -----------------------------------------------
+
+# Forb cover: linear regression by Perc_dev 
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = ForbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Forb cover (%)")
+
+# Forb cover: linear regression by Prev_year_precip 
+dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = ForbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Prev year precip (mm)") +
+  ylab("Forb cover (%)")
+
+
+## Forb cover: By aspect --------------------------------------------------
+
+# Forb cover: Aspect by Perc_dev (linear regression, all obs)
 dat %>% 
   ggplot(aes(x = Perc_dev, y = ForbCover)) +
   geom_point() +
@@ -977,11 +1176,17 @@ dat %>%
   xlab("Precip deviation from average") +
   ylab("Forb cover (%)")
 
+
+# Forb cover: By site -----------------------------------------------------
+
+# Forb cover: Site by Year (line graph, avg)
 plot.avg.site %>% 
   ggplot(aes(x = Year, y = forb_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
+
+# Forb cover: Site by Perc_dev (line graph, avg)
 plot.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = forb_avg, color = Site)) +
   geom_point() +
@@ -993,13 +1198,18 @@ plot.avg.site %>%
   xlab("Precip deviation from average") +
   ylab("Forb cover (%)")
 
-# By site and aspect (line graph)
+
+## Forb cover: By site and aspect -----------------------------------------
+
+# Forb cover: Site and Aspect by Year (line graph, avg)
 plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = forb_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
+
+# Forb cover: Site and Aspect by Perc_dev (line graph, avg)
 plot.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = forb_avg, color = Aspect)) +
   geom_point() +
@@ -1013,8 +1223,35 @@ plot.avg.site.aspect %>%
   ylab("Forb cover (%)")    
 
 
+
 # Native grass cover ------------------------------------------------------
 
+## NG cover: All combined -------------------------------------------------
+
+# NG cover: linear regression by Perc_dev 
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = NGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Native grass cover (%)")
+
+# NG cover: linear regression by Prev_year_precip 
+dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = NGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Prev year precip (mm)") +
+  ylab("Native grass cover (%)")
+
+
+## NG cover: By aspect ----------------------------------------------------
+
+# NG cover: Aspect by Perc_dev (linear regression, all obs)
 dat %>% 
   ggplot(aes(x = Perc_dev, y = NGCover)) +
   geom_point() +
@@ -1024,13 +1261,19 @@ dat %>%
   geom_vline(xintercept = 0, linetype = "dashed") +
   scale_x_continuous(labels = scales::percent) +
   xlab("Precip deviation from average") +
-  ylab("Shrub cover (%)")
+  ylab("Native grass cover (%)")
 
+
+## NG cover: By site ------------------------------------------------------
+
+# NG cover: Site by Year (line graph, avg)
 plot.avg.site %>% 
   ggplot(aes(x = Year, y = ng_avg, color = Site)) +
   geom_point() +
   geom_line() +
   theme_bw()
+
+# NG cover: Site by Perc_dev (line graph, avg)
 plot.avg.site %>% 
   ggplot(aes(x = Perc_dev_avg, y = ng_avg, color = Site)) +
   geom_point() +
@@ -1042,13 +1285,18 @@ plot.avg.site %>%
   xlab("Precip deviation from average") +
   ylab("Native grass cover (%)")
 
-# By site and aspect (line graph)
+
+## NG cover: By site and aspect -------------------------------------------
+
+# NG cover: Site and aspect by Year (line graph, avg)
 plot.avg.site.aspect %>% 
   ggplot(aes(x = Year, y = ng_avg, color = Aspect)) +
   geom_point() +
   geom_line() +
   facet_wrap(~Site) +
   theme_bw()
+
+# NG cover: Site and aspect by Perc_dev (line graph, avg)
 plot.avg.site.aspect %>% 
   ggplot(aes(x = Perc_dev_avg, y = ng_avg, color = Aspect)) +
   geom_point() +
@@ -1063,6 +1311,341 @@ plot.avg.site.aspect %>%
 
 
 # Herb cover (grass & forb) -----------------------------------------------
+
+## Herb cover: All combined -----------------------------------------------
+
+# Herb cover: linear regression by Perc_dev 
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Herbaceous cover (%)")
+
+# Herb cover: linear regression by Prev_year_precip 
+dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Prev year precip (mm)") +
+  ylab("Herbaceous cover (%)")
+
+
+## Herb cover: By aspect --------------------------------------------------
+
+# Herb cover: Aspect by Perc_dev (linear regression, all obs)
+dat %>% 
+  ggplot(aes(x = Perc_dev, y = HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~Aspect) +
+  geom_vline(xintercept = 0, linetype = "dashed") +
+  scale_x_continuous(labels = scales::percent) +
+  xlab("Precip deviation from average") +
+  ylab("Herbaceous cover (%)")
+
+
+
+
+# Change in reproductive culms --------------------------------------------
+
+## Repro change: All combined ---------------------------------------------
+
+# Repro change: Linear regression by Prev_year_precip
+repro.change.all.lm <- culm.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Prev year precip (mm)") +
+  ylab("Change in reproductive culm count") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")  
+repro.change.all.lm
+
+# Repro change: scatterplot Plot slope and Prev_year_precip
+culm.change %>% 
+  ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms, color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+
+
+# Repro change: linear regression with buffelgrass density (change)
+culm.change %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+
+
+
+## Repro change: By aspect ------------------------------------------------
+
+# Repro change: Aspect, all conditions (boxplot)
+culm.change %>% 
+  ggplot(aes(x = Aspect, y = Change_Reproductive_culms)) +
+  geom_boxplot() +
+  theme_bw()
+
+# Repro change: Aspect by Prev_year_precip (linear regression, all obs)
+repro.change.all.aspect.lm <- culm.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~Aspect) +
+  theme_bw() +
+  xlab("Prev year precip (mm)") +
+  ylab("Change in reproductive culm count")
+repro.change.all.aspect.lm
+
+
+# Change in total culms ---------------------------------------------------
+
+## Total change: All combined ---------------------------------------------
+
+# Total change: Linear regression by Prev_year_precip
+total.change.all.lm <- culm.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Prev year precip (mm)") +
+  ylab("Change in total culm count") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")  
+total.change.all.lm
+
+# Total change: scatterplot Plot slope and Prev_year_precip
+culm.change %>% 
+  ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms, color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+
+
+# Total change: linear regression with buffelgrass density (change)
+culm.change %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+
+
+
+## Total change: By aspect ------------------------------------------------
+
+# Total change: Aspect, all conditions (boxplot)
+culm.change %>% 
+  ggplot(aes(x = Aspect, y = Change_Total_Live_Culms)) +
+  geom_boxplot() +
+  theme_bw()
+
+# Total change: Aspect by Prev_year_precip (linear regression, all obs)
+total.change.all.aspect.lm <- culm.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  facet_wrap(~Aspect) +
+  theme_bw() +
+  xlab("Prev year precip (mm)") +
+  ylab("Change in total culm count")
+total.change.all.aspect.lm
+
+
+# Change in buffelgrass density -------------------------------------------
+
+## BG density change: All combined ----------------------------------------
+
+# BG density change: Linear regression by Prev_year_precip
+bgden.change.all.lm <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Prev year precip (mm)",
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density")
+bgden.change.all.lm
+
+
+# BG density change: scatterplot by Plot slope and Prev_year_precip
+plot.change %>% 
+  ggplot(aes(x = PlotSlope, y = Change_BGDensity, color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed")
+
+
+## BG density change: By aspect -------------------------------------------
+
+# BG density change: Aspect by Prev_year_precip (linear regression, all obs)
+bgden.change.all.aspect.lm <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Prev year precip (mm)",
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density") +
+  facet_wrap(~Aspect)
+bgden.change.all.aspect.lm
+
+
+
+# Change in buffelgrass cover ---------------------------------------------
+
+## BG cover change: All combined ------------------------------------------
+
+# BG cover change: Linear regression by Prev_year_precip
+bgcov.change.all.lm <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_BGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Prev year precip (mm)",
+       y = expression(Delta ~ "Cover (%)"),
+       title = "Change in buffelgrass cover")
+bgcov.change.all.lm
+
+
+# BG cover change: scatterplot by Plot slope and Prev_year_precip
+plot.change %>% 
+  ggplot(aes(x = PlotSlope, y = Change_BGDensity, color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed")
+
+
+# BG cover change: By aspect ----------------------------------------------
+
+# BG cover change: Aspect by Prev_year_precip (linear regression, all obs)
+bgcov.change.all.aspect.lm <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_BGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Prev year precip (mm)",
+       y = expression(Delta ~ "Cover (%)"),
+       title = "Change in buffelgrass cover") +
+  facet_wrap(~Aspect)
+bgcov.change.all.aspect.lm
+
+
+# Change in shrub cover ---------------------------------------------------
+
+## Shrub cover change: All combined ---------------------------------------
+
+# Shrub cover change: Linear regression by Prev_year_precip
+plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Prev year precip (mm)",
+       y = expression(Delta ~ "Cover (%)"),
+       title = "Change in shrub cover")
+
+
+## Shrub cover change: By aspect ------------------------------------------
+
+# Shrub cover change: Aspect by Prev_year_precip (linear regression, all obs)
+plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Prev year precip (mm)",
+       y = expression(Delta ~ "Cover (%)"),
+       title = "Change in shrub cover") +
+  facet_wrap(~Aspect)
+
+
+
+
+# Change in herb cover ----------------------------------------------------
+
+
+## Herb cover change: All combined ----------------------------------------
+
+# Herb cover change: Linear regression by Prev_year_precip
+plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Prev year precip (mm)",
+       y = expression(Delta ~ "Cover (%)"),
+       title = "Change in herbaceous cover")
+
+
+## Herb cover change: By aspect -------------------------------------------
+
+# Herb cover change: Aspect by Prev_year_precip (linear regression, all obs)
+plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Prev year precip (mm)",
+       y = expression(Delta ~ "Cover (%)"),
+       title = "Change in herbaceous cover") +
+  facet_wrap(~Aspect)
 
 
 
@@ -1080,7 +1663,9 @@ precip.dev.aspect
 dev.off()
 
 
-## Reproductive culms -----------------------------------------------------
+## Raw values -------------------------------------------------------------
+
+### Reproductive culms ----------------------------------------------------
 
 # All observations
 tiff("figures/2025-02_draft-figures/Reproductive-culms_precip-dev_all_regression.tiff", 
@@ -1105,7 +1690,7 @@ repro.site.avg
 dev.off()
 
 
-## Total culms ------------------------------------------------------------
+### Total culms -----------------------------------------------------------
 
 # All observations
 tiff("figures/2025-02_draft-figures/Total-culms_precip-dev_all_regression.tiff", 
@@ -1130,7 +1715,7 @@ dev.off()
 
 
 
-## Buffelgrass density ----------------------------------------------------
+### Buffelgrass density ---------------------------------------------------
 
 # All observations
 tiff("figures/2025-02_draft-figures/BG-density_precip-dev-by-aspect_all_regression.tiff", 
@@ -1150,7 +1735,7 @@ bgden.site.avg
 dev.off()
 
 
-## Buffelgrass cover ------------------------------------------------------
+### Buffelgrass cover -----------------------------------------------------
 
 # All observations
 tiff("figures/2025-02_draft-figures/BG-cover_precip-dev-by-aspect_all_regression.tiff", 
@@ -1163,6 +1748,11 @@ tiff("figures/2025-02_draft-figures/BG-cover_precip-dev-by-site_avg.tiff",
      units = "in", height = 5, width = 6, res = 150)
 bgcov.site.avg
 dev.off()
+
+
+## Change in value --------------------------------------------------------
+
+
 
 
 save.image("RData/05_draft-figs.RData")
