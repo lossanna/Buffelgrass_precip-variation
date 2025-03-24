@@ -13,7 +13,7 @@
 #   Tested version of models with Prev_year_precip for reproductive culms.
 #   Added interaction term of Aspect * PlotSlope for culm models.
 #   Removed "flat" plot from plot-level data (there is only 1 plot and 3 data points),
-#     and also tried it for culm data (did not help with Perc_Dev * Aspect correlation, though).
+#     and also tried it for culm data (did not help with Perc_dev * Aspect correlation, though).
 
 # Zero-inflated Poisson models needed for models of both reproductive and total culms.
 # Mixed-effects linear models needed for buffelgrass density & cover (log transformed).

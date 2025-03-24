@@ -6,7 +6,7 @@
 
 # Culm counts have a Poisson distribution. Buffelgrass density & cover should be log-transformed to improve
 #   normality. Native grass, native forb, and herb (forb + grass) roughly have a Poisson distribution,
-#   with a lot of 0s.
+#   with a lot of 0s. Change in culm count BG density & cover, and native cover is roughly normally distributed.
 
 # MAT correlated with precip-related variables.
 
@@ -270,7 +270,6 @@ hist(culm.change$Change_BGCover, breaks = 20)
 hist(culm.change$Change_HerbCover, breaks = 20)
 hist(culm.change$Change_NGCover, breaks = 20)
 hist(culm.change$Change_ForbCover, breaks = 20)
-
 
 
 # Write out data to csv ---------------------------------------------------
