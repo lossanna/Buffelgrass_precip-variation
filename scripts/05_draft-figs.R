@@ -1393,6 +1393,19 @@ culm.change %>%
              linetype = "dashed",
              color = "red") 
 
+# Repro change: linear regression with buffelgrass cover (change)
+culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+
 
 
 ## Repro change: By aspect ------------------------------------------------

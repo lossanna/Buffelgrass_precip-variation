@@ -1,9 +1,9 @@
 # Created: 2025-03-24
 # Updated: 2025-03-24
 
-# Purpose: Run generalized linear models with Change_Reproductive_culms and 
-#   Change_Total_Live_Culms as response variable, and linear models with 
-#   Change_BGDensity and Change_BGCover as response variable.
+# Purpose: Run linear models with Change_Reproductive_culms and 
+#   Change_Total_Live_Culms, 
+#   Change_BGDensity, and Change_BGCover as response variable.
 
 # Continuous explanatory variables are centered and scaled. 
 
@@ -19,6 +19,7 @@ library(DHARMa)
 library(nlme)
 library(performance)
 library(lme4)
+library(MuMIn)
 
 # Load data ---------------------------------------------------------------
 
@@ -78,19 +79,14 @@ plotQQunif(res.gtb.repro1)
 plotResiduals(res.gtb.repro1)
 check_collinearity(gtb.repro1) 
 
-# 4: With Prev_year_precip, add interactions
-nlme.repro2 <- lme(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled +
-                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                     Change_HerbCover_scaled +
-                     Prev_year_precip_scaled * Aspect +
-                     Prev_year_precip_scaled * PlotSlope_scaled + 
-                     Aspect * PlotSlope_scaled,
-                   random = ~ 1 | Site / Transect,
-                   data = culm.change)
-summary(nlme.repro2)
-r2(nlme.repro2)
-check_model(nlme.repro2)
+#   1: Model selection
+options(na.action = "na.fail")
+gtb.repro1_set <- dredge(gtb.repro1)
+gtb.repro1_best_model <- get.models(gtb.repro1_set, 1)[[1]]
+summary(gtb.repro1_best_model)
 
+
+# 2: With Prev_year_precip, add precip interactions
 gtb.repro2 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
                         Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                         Change_BGDensity_scaled +
@@ -106,3 +102,27 @@ res.gtb.repro2 <- simulateResiduals(gtb.repro2)
 plotQQunif(res.gtb.repro2)
 plotResiduals(res.gtb.repro2)
 check_collinearity(gtb.repro2) # Prev_year_precip & Aspect highly correlated
+
+
+# 3: Change precip*aspect interaction for precip*density
+gtb.repro3 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                        Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                        Change_BGDensity_scaled +
+                        Prev_year_precip_scaled * Change_BGDensity_scaled +
+                        Prev_year_precip_scaled * PlotSlope_scaled + 
+                        Aspect * PlotSlope_scaled +
+                        (1 | Site / Transect),
+                      data = culm.change,
+                      family = gaussian) 
+summary(gtb.repro3)
+r2(gtb.repro3)
+res.gtb.repro3 <- simulateResiduals(gtb.repro3)
+plotQQunif(res.gtb.repro3)
+plotResiduals(res.gtb.repro3)
+check_collinearity(gtb.repro3)
+
+#   3: Model selection
+options(na.action = "na.fail")
+gtb.repro3_set <- dredge(gtb.repro3)
+gtb.repro3_best_model <- get.models(gtb.repro3_set, 1)[[1]]
+summary(gtb.repro3_best_model)
