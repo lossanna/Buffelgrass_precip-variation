@@ -1380,8 +1380,8 @@ culm.change %>%
              color = "red") 
 
 
-# Repro change: linear regression with buffelgrass density (change)
-culm.change %>% 
+# Repro change: linear regression by buffelgrass density (change)
+repro.change.all.bgden.lm <- culm.change %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_smooth(method = "lm") +
@@ -1391,7 +1391,78 @@ culm.change %>%
              color = "red") +
   geom_vline(xintercept = 0,
              linetype = "dashed",
-             color = "red") 
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
+       title = "Change in reproductive culm count vs. plot density")
+repro.change.all.bgden.lm
+
+# Repro change: linear regression by shrub cover (change)
+repro.change.all.shrub.lm <- culm.change %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in reproductive culm count vs. plot shrub cover")
+repro.change.all.shrub.lm
+
+# Repro change: linear regression by herb cover (change)
+repro.change.all.herb.lm <- culm.change %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ "Native grass and forb cover (%)"),
+       title = "Change in reproductive culm count vs. plot herb cover")
+repro.change.all.herb.lm
+
+# Repro change: scatterplot buffelgrass density (change) and Prev_year_precip
+repro.change.bgden.prevprecip <- culm.change %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms, color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
+       title = "Change in reproductive culm count vs. plot density") 
+repro.change.bgden.prevprecip
+
+# Repro change: scatterplot PlotSlope and Prev_year_precip
+repro.change.plotslope.prevprecip <- culm.change %>% 
+  ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms, color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = "Plot slope (degrees)",
+       title = "Change in reproductive culm count vs. plot slope") 
+repro.change.plotslope.prevprecip
 
 # Repro change: linear regression with buffelgrass cover (change)
 culm.change %>% 
@@ -1411,10 +1482,19 @@ culm.change %>%
 ## Repro change: By aspect ------------------------------------------------
 
 # Repro change: Aspect, all conditions (boxplot)
-culm.change %>% 
+repro.change.all.aspect <- culm.change %>% 
   ggplot(aes(x = Aspect, y = Change_Reproductive_culms)) +
   geom_boxplot() +
-  theme_bw()
+  geom_jitter(alpha = 0.3) +
+  theme_bw() +
+  labs(title = "Change in reproductive culm count by aspect",
+       y = expression(Delta ~ "Reproductive culm count"),
+       x = NULL) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+  
+repro.change.all.aspect
 
 # Repro change: Aspect by Prev_year_precip (linear regression, all obs)
 repro.change.all.aspect.lm <- culm.change %>% 
@@ -1765,6 +1845,43 @@ dev.off()
 
 ## Change in value --------------------------------------------------------
 
+### Repro change ----------------------------------------------------------
+
+# Repro change vs. BG density change
+tiff("figures/2025-03_draft-figures/Repro-change_by-BG-density-change_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.change.all.bgden.lm
+dev.off()
+
+# Repro change vs. BG density change by Prev_year_precip
+tiff("figures/2025-03_draft-figures/Repro-change_by-BG-density-change-and-prev-year-precip.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.change.bgden.prevprecip
+dev.off()
+
+# Repro change vs. PlotSlope by Prev_year_precip
+tiff("figures/2025-03_draft-figures/Repro-change_by-plot-slope-and-prev-year-precip.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.change.plotslope.prevprecip
+dev.off()
+
+# Repro change vs. shrub cover
+tiff("figures/2025-03_draft-figures/Repro-change_by-shrub-cover_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.change.all.shrub.lm
+dev.off()
+
+# Repro change vs. herb cover
+tiff("figures/2025-03_draft-figures/Repro-change_by-herb-cover_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.change.all.herb.lm
+dev.off()
+
+# Repro change by aspect, all conditions
+tiff("figures/2025-03_draft-figures/Repro-change_by-aspect_boxplot.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.change.all.aspect
+dev.off()
 
 
 
