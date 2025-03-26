@@ -1369,17 +1369,6 @@ repro.change.all.lm <- culm.change %>%
              color = "red")  
 repro.change.all.lm
 
-# Repro change: scatterplot Plot slope and Prev_year_precip
-culm.change %>% 
-  ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms, color = Prev_year_precip)) +
-  geom_point() +
-  theme_bw() +
-  scale_color_viridis(option = "viridis", direction = -1) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") 
-
-
 # Repro change: linear regression by buffelgrass density (change)
 repro.change.all.bgden.lm <- culm.change %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
@@ -1526,19 +1515,8 @@ total.change.all.lm <- culm.change %>%
              color = "red")  
 total.change.all.lm
 
-# Total change: scatterplot Plot slope and Prev_year_precip
-culm.change %>% 
-  ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms, color = Prev_year_precip)) +
-  geom_point() +
-  theme_bw() +
-  scale_color_viridis(option = "viridis", direction = -1) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") 
-
-
-# Total change: linear regression with buffelgrass density (change)
-culm.change %>% 
+# Total change: linear regression by buffelgrass density (change)
+total.change.all.bgden.lm <- culm.change %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms)) +
   geom_point() +
   geom_smooth(method = "lm") +
@@ -1548,17 +1526,81 @@ culm.change %>%
              color = "red") +
   geom_vline(xintercept = 0,
              linetype = "dashed",
-             color = "red") 
+             color = "red") +
+  labs(y = expression(Delta ~ "Totalductive culm count"),
+       x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
+       title = "Change in total culm count vs. plot density")
+total.change.all.bgden.lm
+
+# Total change: linear regression by shrub cover (change)
+total.change.all.shrub.lm <- culm.change %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Totalductive culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in total culm count vs. plot shrub cover")
+total.change.all.shrub.lm
+
+# Total change: scatterplot buffelgrass density (change) and Prev_year_precip
+total.change.bgden.prevprecip <- culm.change %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms, color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Totalductive culm count"),
+       x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
+       title = "Change in total culm count vs. plot density") 
+total.change.bgden.prevprecip
+
+# Total change: scatterplot PlotSlope and Prev_year_precip
+total.change.plotslope.prevprecip <- culm.change %>% 
+  ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms, color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Totalductive culm count"),
+       x = "Plot slope (degrees)",
+       title = "Change in total culm count vs. plot slope") 
+total.change.plotslope.prevprecip
+
 
 
 
 ## Total change: By aspect ------------------------------------------------
 
 # Total change: Aspect, all conditions (boxplot)
-culm.change %>% 
+total.change.all.aspect <- culm.change %>% 
   ggplot(aes(x = Aspect, y = Change_Total_Live_Culms)) +
   geom_boxplot() +
-  theme_bw()
+  geom_jitter(alpha = 0.3) +
+  theme_bw() +
+  labs(title = "Change in total culm count by aspect",
+       y = expression(Delta ~ "Total culm count"),
+       x = NULL) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+
+total.change.all.aspect
 
 # Total change: Aspect by Prev_year_precip (linear regression, all obs)
 total.change.all.aspect.lm <- culm.change %>% 
@@ -1571,6 +1613,7 @@ total.change.all.aspect.lm <- culm.change %>%
   xlab("Prev year precip (mm)") +
   ylab("Change in total culm count")
 total.change.all.aspect.lm
+
 
 
 # Change in buffelgrass density -------------------------------------------
@@ -1881,6 +1924,40 @@ dev.off()
 tiff("figures/2025-03_draft-figures/Repro-change_by-aspect_boxplot.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.change.all.aspect
+dev.off()
+
+
+
+### Total change ----------------------------------------------------------
+
+# Total change vs. BG density change
+tiff("figures/2025-03_draft-figures/Total-change_by-BG-density-change_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+total.change.all.bgden.lm
+dev.off()
+
+# Total change vs. BG density change by Prev_year_precip
+tiff("figures/2025-03_draft-figures/Total-change_by-BG-density-change-and-prev-year-precip.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total.change.bgden.prevprecip
+dev.off()
+
+# Total change vs. PlotSlope by Prev_year_precip
+tiff("figures/2025-03_draft-figures/Total-change_by-plot-slope-and-prev-year-precip.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total.change.plotslope.prevprecip
+dev.off()
+
+# Total change vs. shrub cover
+tiff("figures/2025-03_draft-figures/Total-change_by-shrub-cover_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+total.change.all.shrub.lm
+dev.off()
+
+# Total change by aspect, all conditions
+tiff("figures/2025-03_draft-figures/Total-change_by-aspect_boxplot.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total.change.all.aspect
 dev.off()
 
 
