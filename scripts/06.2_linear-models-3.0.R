@@ -1,5 +1,5 @@
 # Created: 2025-03-24
-# Updated: 2025-03-25
+# Updated: 2025-04-03
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -15,6 +15,7 @@
 
 # Not all models for change in total culms converge during model selection when including  
 #   Change_BGDensity*Prev_year_precip interaction, which does not allow for model averaging.
+# This is also true for change in BG density and BG cover models.
 
 library(tidyverse)
 library(glmmTMB)
@@ -195,6 +196,7 @@ res.repro3_best.model <- simulateResiduals(repro3_best.model)
 plotQQunif(res.repro3_best.model)
 plotResiduals(res.repro3_best.model)
 check_collinearity(repro3_best.model)
+check_model(repro3_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
 repro3_top <- subset(repro3_set, delta <= 2)
@@ -385,8 +387,8 @@ for (i in 1:nrow(total3_top)) {
   assign(paste0("total3_model", i), get.models(total1_top, subset = i)[[1]])
 } 
 
-# Model averaging of top models
-total3_avg <- model.avg(total3_set, subset = delta <= 2) # does not run
+# Model averaging of top models - cannot average because some models did not converge
+
 
 
 
@@ -541,6 +543,7 @@ res.bgden3_best.model <- simulateResiduals(bgden3_best.model)
 plotQQunif(res.bgden3_best.model)
 plotResiduals(res.bgden3_best.model)
 check_collinearity(bgden3_best.model)
+check_model(bgden3_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
 bgden3_top <- subset(bgden3_set, delta <= 2)
@@ -571,6 +574,150 @@ bgden3_importance.all.df %>%
   geom_col() +
   coord_flip() +
   theme_bw()
+
+
+
+# Buffelgrass cover -------------------------------------------------------
+
+## BG cover 1: All variables, no interactions -----------------------------
+
+# 1: lme4 version
+lme4.bgcov1 <- lmer(Change_BGCover ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                      Change_HerbCover_scaled + (1 | Site),
+                    data = plot.change)
+summary(lme4.bgcov1)
+r2(lme4.bgcov1) # marginal: 0.251
+check_model(lme4.bgcov1)
+
+# 1: glmmTMB version
+bgcov1 <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + (1 | Site),
+                  data = plot.change,
+                  family = gaussian)
+summary(bgcov1)
+r2(bgcov1) # marginal: 0.255
+res.bgcov1 <- simulateResiduals(bgcov1)
+plotQQunif(res.bgcov1)
+plotResiduals(res.bgcov1)
+check_collinearity(bgcov1) 
+
+
+### 1: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgcov1_set <- dredge(bgcov1)
+
+# Examine best model
+bgcov1_best.model <- get.models(bgcov1_set, 1)[[1]]
+summary(bgcov1_best.model)
+r2(bgcov1_best.model) # marginal: 0.249
+check_model(bgcov1_best.model)
+res.bgcov1_best.model <- simulateResiduals(bgcov1_best.model)
+plotQQunif(res.bgcov1_best.model)
+plotResiduals(res.bgcov1_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+bgcov1_top <- subset(bgcov1_set, delta <= 2)  %>% 
+  filter(!is.na(df))
+for (i in 1:nrow(bgcov1_top)) {
+  assign(paste0("bgcov1_model", i), get.models(bgcov1_top, subset = i)[[1]])
+}
+
+# Model averaging of top models - cannot average because some models did not converge
+
+
+
+
+## BG cover 2: Add precip interactions ------------------------------------
+
+# 2: lme4 version
+lme4.bgcov2 <- lmer(Change_BGCover ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                      Change_HerbCover_scaled +
+                      Prev_year_precip_scaled * Aspect +
+                      Prev_year_precip_scaled * PlotSlope_scaled + 
+                      Aspect * PlotSlope_scaled + 
+                      (1 | Site),
+                    data = plot.change)
+summary(lme4.bgcov2)
+r2(lme4.bgcov2) # marginal: 0.373
+check_model(lme4.bgcov2)
+
+# 2: glmmTMB version
+bgcov2 <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + 
+                    Prev_year_precip_scaled * Aspect +
+                    Prev_year_precip_scaled * PlotSlope_scaled + 
+                    Aspect * PlotSlope_scaled + 
+                    (1 | Site),
+                  data = plot.change,
+                  family = gaussian)
+summary(bgcov2)
+r2(bgcov2) # marginal: 0.409
+res.bgcov2 <- simulateResiduals(bgcov2)
+plotQQunif(res.bgcov2)
+plotResiduals(res.bgcov2)
+check_collinearity(bgcov2) # Prev_year_precip & Aspect correlated; Aspect & PlotSlope correlated
+
+
+
+## BG cover 3: Remove collinear interactions ------------------------------
+
+# 3: lme4 version
+lme4.bgcov3 <- lmer(Change_BGCover ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                      Change_HerbCover_scaled + 
+                      Prev_year_precip_scaled * PlotSlope_scaled +
+                      (1 | Site),
+                    data = plot.change)
+summary(lme4.bgcov3)
+r2(lme4.bgcov3) # marginal: 0.251
+check_model(lme4.bgcov3)
+
+# 3: glmmTMB version
+bgcov3 <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + 
+                    Prev_year_precip_scaled * PlotSlope_scaled +
+                    (1 | Site),
+                  data = plot.change,
+                  family = gaussian)
+summary(bgcov3)
+r2(bgcov3) # marginal: 0.258
+res.bgcov3 <- simulateResiduals(bgcov3)
+plotQQunif(res.bgcov3)
+plotResiduals(res.bgcov3)
+check_collinearity(bgcov3) 
+
+
+### 3: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgcov3_set <- dredge(bgcov3)
+
+# Examine best model
+bgcov3_best.model <- get.models(bgcov3_set, 1)[[1]]
+summary(bgcov3_best.model)
+r2(bgcov3_best.model) # marginal: 0.249
+res.bgcov3_best.model <- simulateResiduals(bgcov3_best.model)
+plotQQunif(res.bgcov3_best.model)
+plotResiduals(res.bgcov3_best.model)
+check_collinearity(bgcov3_best.model)
+check_model(bgcov3_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+bgcov3_top <- subset(bgcov3_set, delta <= 2) %>% 
+  filter(!is.na(df))
+for (i in 1:nrow(bgcov3_top)) {
+  assign(paste0("bgcov3_model", i), get.models(bgcov1_top, subset = i)[[1]])
+}
+
+# Model averaging of top models - cannot average because some models did not converge
 
 
 save.image("RData/06.2_linear-models-3.0.RData")
