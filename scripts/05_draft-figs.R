@@ -1363,7 +1363,8 @@ repro.change.all.lm <- culm.change %>%
   geom_smooth(method = "lm") +
   theme_bw() +
   xlab("Prev year precip (mm)") +
-  ylab("Change in reproductive culm count") +
+  ggtitle("Change in reproductive culm count") +
+  labs(y = expression(Delta ~ "Reproductive culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")  
@@ -1509,7 +1510,8 @@ total.change.all.lm <- culm.change %>%
   geom_smooth(method = "lm") +
   theme_bw() +
   xlab("Prev year precip (mm)") +
-  ylab("Change in total culm count") +
+  ggtitle("Change in total culm count") +
+  labs(y = expression(Delta ~ "Total culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")  
@@ -1527,7 +1529,7 @@ total.change.all.bgden.lm <- culm.change %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  labs(y = expression(Delta ~ "Totalductive culm count"),
+  labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
        title = "Change in total culm count vs. plot density")
 total.change.all.bgden.lm
@@ -1544,7 +1546,7 @@ total.change.all.shrub.lm <- culm.change %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  labs(y = expression(Delta ~ "Totalductive culm count"),
+  labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ "Native shrub cover (%)"),
        title = "Change in total culm count vs. plot shrub cover")
 total.change.all.shrub.lm
@@ -1562,7 +1564,7 @@ total.change.bgden.prevprecip <- culm.change %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  labs(y = expression(Delta ~ "Totalductive culm count"),
+  labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
        title = "Change in total culm count vs. plot density") 
 total.change.bgden.prevprecip
@@ -1577,7 +1579,7 @@ total.change.plotslope.prevprecip <- culm.change %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") +
-  labs(y = expression(Delta ~ "Totalductive culm count"),
+  labs(y = expression(Delta ~ "Total culm count"),
        x = "Plot slope (degrees)",
        title = "Change in total culm count vs. plot slope") 
 total.change.plotslope.prevprecip
@@ -1634,6 +1636,37 @@ bgden.change.all.lm <- plot.change %>%
        title = "Change in buffelgrass density")
 bgden.change.all.lm
 
+# BG density change: linear regression by shrub cover (change)
+bgden.change.all.shrub.lm <- plot.change %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in buffegrass density vs. shrub cover")
+bgden.change.all.shrub.lm
+
+# BG density change: linear regression by elevation
+bgden.change.all.elev.lm <- plot.change %>% 
+  ggplot(aes(x = Elevation_ft, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = "Elevation (ft)",
+       title = "Change in buffelgrass density vs. elevation")
+bgden.change.all.elev.lm
+
 
 # BG density change: scatterplot by Plot slope and Prev_year_precip
 plot.change %>% 
@@ -1646,6 +1679,21 @@ plot.change %>%
 
 
 ## BG density change: By aspect -------------------------------------------
+
+# BG density change: Aspect, all conditions (boxplot)
+bgden.change.all.aspect <- plot.change %>% 
+  ggplot(aes(x = Aspect, y = Change_BGDensity)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  theme_bw() +
+  labs(title = "Change in buffelgrass density by aspect",
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = NULL) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+
+bgden.change.all.aspect
 
 # BG density change: Aspect by Prev_year_precip (linear regression, all obs)
 bgden.change.all.aspect.lm <- plot.change %>% 
@@ -1926,6 +1974,11 @@ tiff("figures/2025-03_draft-figures/Repro-change_by-aspect_boxplot.tiff",
 repro.change.all.aspect
 dev.off()
 
+# Repro change by Prev_year_precip
+tiff("figures/2025-03_draft-figures/Repro-change_by-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.change.all.lm
+dev.off()
 
 
 ### Total change ----------------------------------------------------------
@@ -1960,6 +2013,20 @@ tiff("figures/2025-03_draft-figures/Total-change_by-aspect_boxplot.tiff",
 total.change.all.aspect
 dev.off()
 
+# Total change by Prev_year_precip
+tiff("figures/2025-03_draft-figures/Total-change_by-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+total.change.all.lm
+dev.off()
 
+
+
+### Buffelgrass density change --------------------------------------------
+
+# BG density change by Prev_year_precip
+tiff("figures/2025-03_draft-figures/BG-density-change_by-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgden.change.all.lm
+dev.off()
 
 save.image("RData/05_draft-figs.RData")
