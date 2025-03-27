@@ -5,6 +5,7 @@
 #   Change_BGDensity, and Change_BGCover as response variable.
 
 # Continuous explanatory variables are centered and scaled. 
+# Use (1 | Site / Transect) for culm counts and (1 | Site) for density and cover.
 
 # Updates from 06.1.R script:
 #   Response variables refer to change in culm count, density, or cover to better
@@ -12,6 +13,8 @@
 #   Used model selection to identify important explanatory variables (HPC not needed for
 #     these models; they run in a couple of minutes on local machine NMSU-DHJYFZ3).
 
+# Not all models for change in total culms converge during model selection when including  
+#   Change_BGDensity*Prev_year_precip interaction, which does not allow for model averaging.
 
 library(tidyverse)
 library(glmmTMB)
@@ -370,6 +373,9 @@ total3_set <- dredge(total3)
 total3_best.model <- get.models(total3_set, 1)[[1]]
 summary(total3_best.model)
 r2(total3_best.model) # marginal: 0.195
+res.total3_best.model <- simulateResiduals(total3_best.model)
+plotQQunif(res.total3_best.model)
+plotResiduals(res.total3_best.model)
 check_model(total3_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
@@ -381,32 +387,30 @@ for (i in 1:nrow(total3_top)) {
 
 # Model averaging of top models
 total3_avg <- model.avg(total3_set, subset = delta <= 2) # does not run
-summary(total3_avg)
-sw(total3_avg)
 
 
 
 # Buffelgrass density -----------------------------------------------------
 
-# BG density 1: All variables, no interactions ----------------------------
+## BG density 1: All variables, no interactions ---------------------------
 
 # 1: lme4 version
 lme4.bgden1 <- lmer(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled +
                       Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                      Change_HerbCover_scaled + (1 | Site / Transect),
+                      Change_HerbCover_scaled + (1 | Site),
                     data = plot.change)
 summary(lme4.bgden1)
-r2(lme4.bgden1) # marginal: 314
+r2(lme4.bgden1) # marginal: 0.366
 check_model(lme4.bgden1)
 
 # 1: glmmTMB version
 bgden1 <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled +
                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                    Change_HerbCover_scaled + (1 | Site / Transect),
+                    Change_HerbCover_scaled + (1 | Site),
                   data = plot.change,
                   family = gaussian)
 summary(bgden1)
-r2(bgden1) # marginal: 0.369
+r2(bgden1) # marginal: 0.426
 res.bgden1 <- simulateResiduals(bgden1)
 plotQQunif(res.bgden1)
 plotResiduals(res.bgden1)
@@ -422,19 +426,151 @@ bgden1_set <- dredge(bgden1)
 # Examine best model
 bgden1_best.model <- get.models(bgden1_set, 1)[[1]]
 summary(bgden1_best.model)
-r2(bgden1_best.model)
+r2(bgden1_best.model) # marginal: 0.426; can't calculate random effects
 check_model(bgden1_best.model)
+res.bgden1_best.model <- simulateResiduals(bgden1_best.model)
+plotQQunif(res.bgden1_best.model)
+plotResiduals(res.bgden1_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-bgden1_top <- subset(bgden1_set, delta <= 2) %>% 
-  filter(!is.na(df))
+bgden1_top <- subset(bgden1_set, delta <= 2)
 for (i in 1:nrow(bgden1_top)) {
   assign(paste0("bgden1_model", i), get.models(bgden1_top, subset = i)[[1]])
 }
 
 # Model averaging of top models
-bgden1_avg <- model.avg(bgden1_set, delta <= 2) # does not run
+bgden1_avg <- model.avg(bgden1_set, delta <= 2) 
+summary(bgden1_avg)
+bgden1_importance <- sw(bgden1_avg)
+bgden1_importance.df <- data.frame(variable = names(bgden1_importance),
+                                   importance = bgden1_importance)
+bgden1_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
 
+# Model averaging of all models
+bgden1_avg.all <- model.avg(bgden1_set)
+summary(bgden1_avg.all)
+bgden1_importance.all <- sw(bgden1_avg.all)
+bgden1_importance.all.df <- data.frame(variable = names(bgden1_importance.all),
+                                       importance = bgden1_importance.all)
+bgden1_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
+
+## BG density 2: Add precip interactions ----------------------------------
+
+# 2: lme4 version
+lme4.bgden2 <- lmer(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                      Change_HerbCover_scaled +
+                      Prev_year_precip_scaled * Aspect +
+                      Prev_year_precip_scaled * PlotSlope_scaled + 
+                      Aspect * PlotSlope_scaled + 
+                      (1 | Site),
+                    data = plot.change)
+summary(lme4.bgden2)
+r2(lme4.bgden2) # marginal: 0.607
+check_model(lme4.bgden2)
+
+# 2: glmmTMB version
+bgden2 <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + 
+                    Prev_year_precip_scaled * Aspect +
+                    Prev_year_precip_scaled * PlotSlope_scaled + 
+                    Aspect * PlotSlope_scaled + 
+                    (1 | Site),
+                  data = plot.change,
+                  family = gaussian)
+summary(bgden2)
+r2(bgden2) # marginal: 0.612; can't calculate random effects
+res.bgden2 <- simulateResiduals(bgden2)
+plotQQunif(res.bgden2)
+plotResiduals(res.bgden2)
+check_collinearity(bgden2) # Prev_year_precip & Aspect correlated; Aspect & PlotSlope correlated
+
+
+
+## BG density 3: Remove collinear interactions ----------------------------
+
+# 3: lme4 version
+lme4.bgden3 <- lmer(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                      Change_HerbCover_scaled + 
+                      Prev_year_precip_scaled * PlotSlope_scaled +
+                      (1 | Site),
+                    data = plot.change)
+summary(lme4.bgden3)
+r2(lme4.bgden3) # marginal: 0.367
+check_model(lme4.bgden3)
+
+# 3: glmmTMB version
+bgden3 <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + 
+                    Prev_year_precip_scaled * PlotSlope_scaled +
+                    (1 | Site),
+                  data = plot.change,
+                  family = gaussian)
+summary(bgden3)
+r2(bgden3) # marginal: 0.427; can't calculate random effects
+res.bgden3 <- simulateResiduals(bgden3)
+plotQQunif(res.bgden3)
+plotResiduals(res.bgden3)
+check_collinearity(bgden3) 
+
+
+### 3: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgden3_set <- dredge(bgden3)
+
+# Examine best model
+bgden3_best.model <- get.models(bgden3_set, 1)[[1]]
+summary(bgden3_best.model)
+r2(bgden3_best.model) # marginal: 0.426; can't calculate random effects
+res.bgden3_best.model <- simulateResiduals(bgden3_best.model)
+plotQQunif(res.bgden3_best.model)
+plotResiduals(res.bgden3_best.model)
+check_collinearity(bgden3_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+bgden3_top <- subset(bgden3_set, delta <= 2)
+for (i in 1:nrow(bgden3_top)) {
+  assign(paste0("bgden3_model", i), get.models(bgden1_top, subset = i)[[1]])
+}
+
+# Model averaging of top models
+bgden3_avg <- model.avg(bgden3_set, subset = delta <= 2) 
+summary(bgden3_avg)
+bgden3_importance <- sw(bgden3_avg)
+bgden3_importance.df <- data.frame(variable = names(bgden3_importance),
+                                   importance = bgden3_importance)
+bgden3_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+bgden3_avg.all <- model.avg(bgden3_set)
+summary(bgden3_avg.all)
+bgden3_importance.all <- sw(bgden3_avg.all)
+bgden3_importance.all.df <- data.frame(variable = names(bgden3_importance.all),
+                                       importance = bgden3_importance.all)
+bgden3_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
 
 
 save.image("RData/06.2_linear-models-3.0.RData")
