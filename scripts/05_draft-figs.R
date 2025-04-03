@@ -1782,7 +1782,11 @@ bgden.change.all.shrub.lm <- plot.change %>%
              color = "red") +
   labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals /  ", m^2, ")")),
        x = expression(Delta ~ "Native shrub cover (%)"),
+<<<<<<< HEAD
        title = "Change in buffegrass density vs. shrub cover change")
+=======
+       title = "Change in buffegrass density vs. shrub cover")
+>>>>>>> fcad81967c3c77f7b1a8337309da38f0446e4630
 bgden.change.all.shrub.lm
 
 # BG density change: linear regression by elevation
@@ -1824,6 +1828,10 @@ bgden.change.all.aspect <- plot.change %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
+<<<<<<< HEAD
+=======
+
+>>>>>>> fcad81967c3c77f7b1a8337309da38f0446e4630
 bgden.change.all.aspect
 
 # BG density change: Aspect by Prev_year_precip (linear regression, all obs)
@@ -2236,6 +2244,7 @@ tiff("figures/2025-03_draft-figures/Total-change_by-prev-year-precip_regression.
      units = "in", height = 4, width = 5, res = 150)
 total.change.all.lm
 dev.off()
+<<<<<<< HEAD
 
 
 
@@ -2287,6 +2296,17 @@ tiff("figures/2025-03_draft-figures/BG-cover-change_by-aspect_boxplot.tiff",
 bgcov.change.all.aspect
 dev.off()
 
+=======
+>>>>>>> fcad81967c3c77f7b1a8337309da38f0446e4630
 
+
+
+### Buffelgrass density change --------------------------------------------
+
+# BG density change by Prev_year_precip
+tiff("figures/2025-03_draft-figures/BG-density-change_by-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgden.change.all.lm
+dev.off()
 
 save.image("RData/05_draft-figs.RData")
