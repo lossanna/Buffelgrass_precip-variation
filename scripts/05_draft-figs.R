@@ -1404,6 +1404,25 @@ repro.change.all.shrub.lm <- culm.change %>%
        title = "Change in reproductive culm count vs. plot shrub cover")
 repro.change.all.shrub.lm
 
+# Repro change: linear regression by shrub cover (change) and previous year precipitation
+repro.change.shrub.prevprecip.lm <- culm.change %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in reproductive culm count vs. plot shrub cover")
+repro.change.shrub.prevprecip.lm
+
 # Repro change: linear regression by herb cover (change)
 repro.change.all.herb.lm <- culm.change %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
@@ -1420,6 +1439,25 @@ repro.change.all.herb.lm <- culm.change %>%
        x = expression(Delta ~ "Native grass and forb cover (%)"),
        title = "Change in reproductive culm count vs. plot herb cover")
 repro.change.all.herb.lm
+
+# Repro change: linear regression by herb cover (change) and previous year precipitation
+repro.change.herb.prevprecip.lm <- culm.change %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ "Native grass and forb cover (%)"),
+       title = "Change in reproductive culm count vs. plot herb cover")
+repro.change.herb.prevprecip.lm
 
 # Repro change: scatterplot buffelgrass density (change) and Prev_year_precip
 repro.change.bgden.prevprecip <- culm.change %>% 
@@ -1570,6 +1608,61 @@ total.change.all.shrub.lm <- culm.change %>%
        x = expression(Delta ~ "Native shrub cover (%)"),
        title = "Change in total culm count vs. plot shrub cover")
 total.change.all.shrub.lm
+
+# Total change: linear regression by shrub cover (change) and previous year precipitation
+total.change.shrub.prevprecip.lm <- culm.change %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in total culm count vs. plot shrub cover")
+total.change.shrub.prevprecip.lm
+
+# Total change: linear regression by herb cover (change)
+total.change.all.herb.lm <- culm.change %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in total culm count vs. plot herb cover")
+total.change.all.herb.lm
+
+# Total change: linear regression by herb cover (change) and previous year precipitation
+total.change.herb.prevprecip.lm <- culm.change %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in total culm count vs. plot herb cover")
+total.change.herb.prevprecip.lm
 
 # Total change: scatterplot buffelgrass density (change) and Prev_year_precip
 total.change.bgden.prevprecip <- culm.change %>% 
@@ -2051,10 +2144,22 @@ tiff("figures/2025-03_draft-figures/Repro-change_by-shrub-cover_regression.tiff"
 repro.change.all.shrub.lm
 dev.off()
 
+# Repro change vs. shrub cover by Prev_year_precip (linear regression)
+tiff("figures/2025-03_draft-figures/Repro-change_by-shrub-cover-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.change.shrub.prevprecip.lm
+dev.off()
+
 # Repro change vs. herb cover
 tiff("figures/2025-03_draft-figures/Repro-change_by-herb-cover_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.change.all.herb.lm
+dev.off()
+
+# Repro change vs. herb cover by Prev_year_precip (linear regression)
+tiff("figures/2025-03_draft-figures/Repro-change_by-herb-cover-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.change.herb.prevprecip.lm
 dev.off()
 
 # Repro change by aspect, all conditions
@@ -2100,6 +2205,24 @@ dev.off()
 tiff("figures/2025-03_draft-figures/Total-change_by-shrub-cover_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.change.all.shrub.lm
+dev.off()
+
+# Total change vs. shrub cover by Prev_year_precip (linear regression)
+tiff("figures/2025-03_draft-figures/Total-change_by-shrub-cover-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total.change.shrub.prevprecip.lm
+dev.off()
+
+# Total change vs. herb cover
+tiff("figures/2025-03_draft-figures/Total-change_by-herb-cover_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+total.change.all.herb.lm
+dev.off()
+
+# Total change vs. herb cover by Prev_year_precip (linear regression)
+tiff("figures/2025-03_draft-figures/Total-change_by-herb-cover-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total.change.herb.prevprecip.lm
 dev.off()
 
 # Total change by aspect, all conditions
