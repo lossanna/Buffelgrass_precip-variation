@@ -1,5 +1,5 @@
 # Created: 2024-07-25
-# Last updated: 2024-07-29
+# Last updated: 2025-04-16
 
 # Purpose: Wrangle PRISM data to add Prev_year_precip, MAT, and MAP cols to monitoring info.
 
@@ -8,14 +8,18 @@
 #   a single transect of the same year. However, they are all assigned the same normals. Normals
 #   are unique to site and transect only.
 
+# As of March 2025, PRISM released the 800m resolution daily data for free, so I downloaded that to
+#   compare and it is basically the same. Will just keep using 4km data going forward.
 
 library(readxl)
 library(tidyverse)
 
 # Load data ---------------------------------------------------------------
 
-prism.daily.raw <- read_xlsx("data/data-wrangling-intermediate/02_monitoring-events-with-PRISM-csv-file-name.xlsx",
-                             sheet = "daily")
+prism.daily.4km.raw <- read_xlsx("data/data-wrangling-intermediate/02_monitoring-events-with-PRISM-csv-file-name.xlsx",
+                             sheet = "daily_4km")
+prism.daily.800m.raw <- read_xlsx("data/data-wrangling-intermediate/02_monitoring-events-with-PRISM-csv-file-name.xlsx",
+                                 sheet = "daily_800m")
 
 prism.normals.raw <- read_xlsx("data/data-wrangling-intermediate/02_monitoring-events-with-PRISM-csv-file-name.xlsx",
                                sheet = "normals")
@@ -26,7 +30,9 @@ monitor <- read_csv("data/cleaned/01_site-and-monitoring-info_clean.csv")
 # Add complete path to prism.daily columns --------------------------------
 
 # Add complete path to file names for daily values
-prism.daily <- prism.daily.raw %>% 
+prism.daily.4km <- prism.daily.4km.raw %>% 
+  mutate(precip_file = paste0("data/prism-dat/", path_beginning, "/", file_name))
+prism.daily.800m <- prism.daily.800m.raw %>% 
   mutate(precip_file = paste0("data/prism-dat/", path_beginning, "/", file_name))
 
 # Add complete path for normals
@@ -59,10 +65,26 @@ process_csv <- function(file.names) {
 }
 
 # Use purrr::map to apply the function to each row of df
-prism.daily <- prism.daily %>%
+prism.daily.4km <- prism.daily.4km %>%
   mutate(Prev_year_precip = map_dbl(precip_file, process_csv)) %>% 
-  select(-path_beginning, -file_name, -precip_file)
+  select(-path_beginning, -file_name, -precip_file) %>% 
+  arrange(SiteDateTransectID)
 
+prism.daily.800m <- prism.daily.800m %>%
+  mutate(Prev_year_precip = map_dbl(precip_file, process_csv)) %>% 
+  select(-path_beginning, -file_name, -precip_file) %>% 
+  arrange(SiteDateTransectID)
+
+
+# Compare 4km and 800m
+prism.compare <- prism.daily.4km %>% 
+  rename(Prev_year_precip_4km = Prev_year_precip) %>% 
+  left_join(prism.daily.800m) 
+prism.compare <- prism.compare %>% 
+  mutate(difference = Prev_year_precip_4km - Prev_year_precip)
+summary(prism.compare$difference) # lol it is no different
+summary(prism.compare$Prev_year_precip_4km)
+summary(prism.compare$Prev_year_precip)
 
 
 # Extract 30-year normals for MAT & MAP -----------------------------------
@@ -105,32 +127,28 @@ prism.normals <- prism.normals %>%
   select(-path_beginning, -file_name, -precip_file)
 
 
-# Combine monitoring info with PRISM cols ---------------------------------
 
-# Combine
-monitor.prism <- left_join(monitor, prism.daily)
-monitor.prism$Prev_year_precip # creates NAs - something doesn't match
+# Check that monitoring info matches --------------------------------------
 
-# See that Longitude and Latitude are slightly different, so left_join() won't work
-#   (I'm not sure why this is, but I think it's how the values were rounded/stored in a csv vs xlsx?)
-monitor$Latitude == prism.daily$Latitude
-monitor$Longitude == prism.daily$Longitude
+monitor.check <- prism.daily.4km %>% 
+  left_join(monitor)
 
-# Drop Lat & Long cols
-prism.daily <- prism.daily %>% 
-  select(-Latitude, -Longitude)
-prism.normals <- prism.normals %>% 
-  select(-Latitude, -Longitude)
 
-# Attempt left_join() again
-monitor.prism <- monitor.prism %>% 
-  select(-Prev_year_precip) %>% 
-  left_join(prism.daily) %>% 
+# Combine normals with daily values ---------------------------------------
+
+monitor.prism.4km <- prism.daily.4km %>% 
   left_join(prism.normals)
+
+monitor.prism.800m <- prism.daily.800m %>% 
+  left_join(prism.normals)
+
 
 
 # Write to csv ------------------------------------------------------------
 
-write_csv(monitor.prism,
+write_csv(monitor.prism.4km,
           file = "data/cleaned/02_monitoring-info-with-PRISM-data_clean.csv")
+
+write_csv(monitor.prism.800m,
+          file = "data/cleaned/02_monitoring-info-with-PRISM-data-800m_clean.csv")
 
