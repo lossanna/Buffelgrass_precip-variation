@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-04-03
+# Updated: 2025-04-10
 
 # Purpose: Graph culm, cover and density response to precip variation.
 
@@ -530,6 +530,27 @@ dat %>%
 # Total: linear regression with buffelgrass cover
 dat %>% 
   ggplot(aes(x = BGCover, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+# Total: linear regression with plot slope
+dat %>% 
+  ggplot(aes(x = PlotSlope, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+# Total: linear regression with shrub cover
+dat %>% 
+  ggplot(aes(x = ShrubCover, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+# Total: linear regression with herb cover
+dat %>% 
+  ggplot(aes(x = HerbCover, y = Total_Live_Culms)) +
   geom_point() +
   geom_smooth(method = "lm") +
   theme_bw()
@@ -1349,6 +1370,15 @@ dat %>%
   geom_smooth(method = "lm") +
   theme_bw() +
   xlab("Prev year precip (mm)") +
+  ylab("Herbaceous cover (%)")
+
+# Herb cover: linear regression by PlotSlope 
+dat %>% 
+  ggplot(aes(x = PlotSlope, y = HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Plot slope") +
   ylab("Herbaceous cover (%)")
 
 

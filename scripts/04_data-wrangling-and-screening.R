@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-03-20
+# Updated: 2025-04-11
 
 # Purpose: Examine distributions; write out clean data with precip deviation variable added.
 #   Also write out different data table with change in culm/cover/density as response variable.
@@ -18,9 +18,11 @@ library(GGally)
 
 culms.raw <- read_xlsx("data/raw/2024-09_LO_Buffelgrass-culm-demography_master.xlsx", sheet = "Demography")
 monitor.prism <- read_csv("data/cleaned/02_monitoring-info-with-PRISM-data_clean.csv")
+survival.raw <- read_xlsx("data/raw/2025-04_LO_Buffelgrass-seedling-survival.xlsx", sheet = "survival_R")
 
 # Data wrangling ----------------------------------------------------------
 
+# Add PRISM data
 dat <- culms.raw %>% 
   left_join(monitor.prism)
 
@@ -49,6 +51,16 @@ dat <- dat %>%
 dat <- dat %>% 
   mutate(HerbCover = NGCover + ForbCover)
 
+# Add survival data
+survival.join <- survival.raw %>% 
+  filter(!is.na(Year)) %>%  # remove observations from 09/2021
+  select(Site, Transect, Plot, Year, survival_perc) %>% 
+  mutate(Year = as.character(Year))
+
+dat <- dat %>% 
+  left_join(survival.join)
+
+
 # Separate out continuous explanatory variables
 exp.cont <- dat %>% 
   select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm)
@@ -58,6 +70,24 @@ res.cont <- dat %>%
   select(BGCover, BGDensity, ShrubCover, ForbCover, NGCover, HerbCover,
          Vegetative_culms, Reproductive_culms, Total_Live_Culms,
          Longestleaflength_cm)
+
+
+# Create new df with change in culm count, density & cover between years as new response variables
+culm.change <- dat %>%
+  arrange(Plant_ID, Year) %>%
+  group_by(Plant_ID) %>%
+  mutate(Change_Reproductive_culms = Reproductive_culms - lag(Reproductive_culms),
+         Change_Total_Live_Culms = Total_Live_Culms - lag(Total_Live_Culms)) %>% 
+  mutate(Change_BGDensity = BGDensity - lag(BGDensity),
+         Change_BGCover = BGCover - lag(BGCover)) %>% 
+  mutate(Change_NGCover = NGCover - lag(NGCover),
+         Change_ForbCover = ForbCover - lag(ForbCover),
+         Change_HerbCover = HerbCover - lag(HerbCover),
+         Change_ShrubCover = ShrubCover - lag(ShrubCover)) %>% 
+  filter(!is.na(Change_Total_Live_Culms))
+
+
+
 
 
 
@@ -247,21 +277,7 @@ dat %>%
   ggpairs()
 
 
-
-# Create response variable: change in total culm count --------------------
-
-culm.change <- dat %>%
-  arrange(Plant_ID, Year) %>%
-  group_by(Plant_ID) %>%
-  mutate(Change_Reproductive_culms = Reproductive_culms - lag(Reproductive_culms),
-         Change_Total_Live_Culms = Total_Live_Culms - lag(Total_Live_Culms)) %>% 
-  mutate(Change_BGDensity = BGDensity - lag(BGDensity),
-         Change_BGCover = BGCover - lag(BGCover)) %>% 
-  mutate(Change_NGCover = NGCover - lag(NGCover),
-         Change_ForbCover = ForbCover - lag(ForbCover),
-         Change_HerbCover = HerbCover - lag(HerbCover),
-         Change_ShrubCover = ShrubCover - lag(ShrubCover)) %>% 
-  filter(!is.na(Change_Total_Live_Culms))
+# Response variable: change in total culm count ---------------------------
 
 hist(culm.change$Change_Reproductive_culms, breaks = 20)
 hist(culm.change$Change_Total_Live_Culms, breaks = 20)
