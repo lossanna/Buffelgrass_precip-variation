@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-04-11
+# Updated: 2025-04-17
 
 # Purpose: Examine distributions; write out clean data with precip deviation variable added.
 #   Also write out different data table with change in culm/cover/density as response variable.
@@ -85,10 +85,6 @@ culm.change <- dat %>%
          Change_HerbCover = HerbCover - lag(HerbCover),
          Change_ShrubCover = ShrubCover - lag(ShrubCover)) %>% 
   filter(!is.na(Change_Total_Live_Culms))
-
-
-
-
 
 
 
@@ -286,6 +282,12 @@ hist(culm.change$Change_BGCover, breaks = 20)
 hist(culm.change$Change_HerbCover, breaks = 20)
 hist(culm.change$Change_NGCover, breaks = 20)
 hist(culm.change$Change_ForbCover, breaks = 20)
+
+
+
+# Response variable: survival ---------------------------------------------
+
+hist(dat$survival_perc)
 
 
 # Write out data to csv ---------------------------------------------------
