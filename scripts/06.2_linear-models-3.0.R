@@ -1,5 +1,5 @@
 # Created: 2025-03-24
-# Updated: 2025-04-03
+# Updated: 2025-04-28
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -13,12 +13,10 @@
 #   Used model selection to identify important explanatory variables (HPC not needed for
 #     these models; they run in a couple of minutes on local machine NMSU-DHJYFZ3).
 
-# Not all models for change in total culms converge during model selection when including  
-#   Change_BGDensity*Prev_year_precip interaction, which does not allow for model averaging.
-# This is also true for change in BG density and BG cover models.
-
-# Dropped terms in total culm models 6-8 to attempt to achieve convergence on all models
-#   and therefore allow model averaging, but this did not work.
+# Dropping observations from "flat" aspect (20 obs total) allows for full model convergence during
+#   model selection, which then allows for model averaging for total culms.
+# Not all models converge during model selection when including herb*precip and shrub*precip for
+#  BG cover models.
 
 library(tidyverse)
 library(glmmTMB)
@@ -61,340 +59,6 @@ plot.change <- plot.change %>%
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1]) %>% 
   filter(Aspect != "flat")
-
-
-# Reproductive culms ------------------------------------------------------
-
-## Repro 1: All variables, no interactions --------------------------------
-
-# 1: lme4 version
-lme4.repro1 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled +
-                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                     Change_HerbCover_scaled + Change_BGDensity_scaled + (1 | Site / Transect),
-                   data = culm.change)
-summary(lme4.repro1)
-r2(lme4.repro1) # marginal: 0.086
-check_model(lme4.repro1)
-
-# 1: glmmTMB version
-repro1 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled +
-                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                    Change_HerbCover_scaled + Change_BGDensity_scaled + (1 | Site / Transect),
-                  data = culm.change,
-                  family = gaussian)
-summary(repro1)
-r2(repro1) # marginal: 0.095
-res.repro1 <- simulateResiduals(repro1)
-plotQQunif(res.repro1)
-plotResiduals(res.repro1)
-check_collinearity(repro1) 
-
-
-### 1: Model selection ----------------------------------------------------
-
-# Model selection
-options(na.action = "na.fail")
-repro1_set <- dredge(repro1)
-
-# Examine best model
-repro1_best.model <- get.models(repro1_set, 1)[[1]]
-summary(repro1_best.model)
-r2(repro1_best.model) # marginal: 0.091
-check_model(repro1_best.model)
-
-# Examine models within 2 AICc units of best and assign each top model to separate object
-repro1_top <- subset(repro1_set, delta <= 2)
-for (i in 1:nrow(repro1_top)) {
-  assign(paste0("repro1_model", i), get.models(repro1_top, subset = i)[[1]])
-}
-
-# Model averaging of top models
-repro1_avg <- model.avg(repro1_set, delta <= 2)
-summary(repro1_avg)
-repro1_importance <- sw(repro1_avg)
-repro1_importance.df <- data.frame(variable = names(repro1_importance),
-                                   importance = repro1_importance)
-repro1_importance.df %>% 
-  ggplot(aes(x = reorder(variable, importance), y = importance)) +
-  geom_col() +
-  coord_flip() +
-  theme_bw()
-
-
-## Repro 2: Add precip interactions --------------------------------------
-
-# 2: lme4 version
-lme4.repro2 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                      Change_BGDensity_scaled +
-                      Prev_year_precip_scaled * Aspect +
-                      Prev_year_precip_scaled * PlotSlope_scaled + 
-                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
-                    data = culm.change) 
-summary(lme4.repro2)
-r2(lme4.repro2) # marginal: 0.178
-check_model(lme4.repro2) # collinearity issues
-
-# 2: glmmTMB version
-repro2 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                    Change_BGDensity_scaled +
-                    Prev_year_precip_scaled * Aspect +
-                    Prev_year_precip_scaled * PlotSlope_scaled + 
-                    Aspect * PlotSlope_scaled +
-                    (1 | Site / Transect),
-                  data = culm.change,
-                  family = gaussian) 
-summary(repro2)
-r2(repro2) # marginal: 0.217
-res.repro2 <- simulateResiduals(repro2)
-plotQQunif(res.repro2)
-plotResiduals(res.repro2)
-check_collinearity(repro2) # Prev_year_precip & Aspect highly correlated
-
-
-
-## Repro 3: Change precip*aspect to precip*density -----------------------
-
-# 3: lme4 version
-lme4.repro3 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                      Change_BGDensity_scaled +
-                      Prev_year_precip_scaled * Change_BGDensity_scaled +
-                      Prev_year_precip_scaled * PlotSlope_scaled + 
-                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
-                   data = culm.change)
-summary(lme4.repro3)
-r2(lme4.repro3) # marginal: 0.133
-check_model(lme4.repro3)
-
-# 3: glmmTMB version
-repro3 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                        Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                        Change_BGDensity_scaled +
-                        Prev_year_precip_scaled * Change_BGDensity_scaled +
-                        Prev_year_precip_scaled * PlotSlope_scaled + 
-                        Aspect * PlotSlope_scaled + (1 | Site / Transect),
-                      data = culm.change,
-                      family = gaussian) 
-summary(repro3)
-r2(repro3) # marginal: 0.152
-res.repro3 <- simulateResiduals(repro3)
-plotQQunif(res.repro3)
-plotResiduals(res.repro3)
-check_collinearity(repro3)
-
-
-### 3: Model selection ----------------------------------------------------
-
-# Model selection
-options(na.action = "na.fail")
-repro3_set <- dredge(repro3)
-
-# Examine best model
-repro3_best.model <- get.models(repro3_set, 1)[[1]]
-summary(repro3_best.model)
-r2(repro3_best.model) # marginal: 0.125
-res.repro3_best.model <- simulateResiduals(repro3_best.model)
-plotQQunif(res.repro3_best.model)
-plotResiduals(res.repro3_best.model)
-check_collinearity(repro3_best.model)
-check_model(repro3_best.model)
-
-# Examine models within 2 AICc units of best and assign each top model to separate object
-repro3_top <- subset(repro3_set, delta <= 2)
-for (i in 1:nrow(repro3_top)) {
-  assign(paste0("repro3_model", i), get.models(repro1_top, subset = i)[[1]])
-}
-
-# Model averaging of top models
-repro3_avg <- model.avg(repro3_set, subset = delta <= 2)
-summary(repro3_avg)
-repro3_importance <- sw(repro3_avg)
-repro3_importance.df <- data.frame(variable = names(repro3_importance),
-                                   importance = repro3_importance)
-repro3_importance.df %>% 
-  ggplot(aes(x = reorder(variable, importance), y = importance)) +
-  geom_col() +
-  coord_flip() +
-  theme_bw()
-
-# Model averaging of all models
-repro3_avg.all <- model.avg(repro3_set)
-summary(repro3_avg.all)
-repro3_importance.all <- sw(repro3_avg.all)
-repro3_importance.all.df <- data.frame(variable = names(repro3_importance.all),
-                                   importance = repro3_importance.all)
-repro3_importance.all.df %>% 
-  ggplot(aes(x = reorder(variable, importance), y = importance)) +
-  geom_col() +
-  coord_flip() +
-  theme_bw()
-
-
-## Repro 4: Add shrub*precip interaction ----------------------------------
-
-# 4: lme4 version
-lme4.repro4 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                      Change_BGDensity_scaled +
-                      Prev_year_precip_scaled * Change_BGDensity_scaled +
-                      Prev_year_precip_scaled * PlotSlope_scaled + 
-                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
-                    data = culm.change)
-summary(lme4.repro4)
-r2(lme4.repro4) # marginal: 0.134
-check_model(lme4.repro4)
-
-# 4: glmmTMB version
-repro4 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                    Change_BGDensity_scaled +
-                    Prev_year_precip_scaled * Change_BGDensity_scaled +
-                    Prev_year_precip_scaled * PlotSlope_scaled + 
-                    Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                    Aspect * PlotSlope_scaled + (1 | Site / Transect),
-                  data = culm.change,
-                  family = gaussian) 
-summary(repro4)
-r2(repro4) # marginal: 0.154
-res.repro4 <- simulateResiduals(repro4)
-plotQQunif(res.repro4)
-plotResiduals(res.repro4)
-check_collinearity(repro4)
-check_model(repro4)
-
-
-### 4: Model selection ----------------------------------------------------
-
-# Model selection
-options(na.action = "na.fail")
-repro4_set <- dredge(repro4)
-
-# Examine best model
-repro4_best.model <- get.models(repro4_set, 1)[[1]]
-summary(repro4_best.model)
-r2(repro4_best.model) # marginal: 0.125
-res.repro4_best.model <- simulateResiduals(repro4_best.model)
-plotQQunif(res.repro4_best.model)
-plotResiduals(res.repro4_best.model)
-check_model(repro4_best.model)
-
-# Examine models within 2 AICc units of best and assign each top model to separate object
-repro4_top <- subset(repro4_set, delta <= 2)
-for (i in 1:nrow(repro4_top)) {
-  assign(paste0("repro4_model", i), get.models(repro1_top, subset = i)[[1]])
-} 
-
-# Model averaging of top models
-repro4_avg <- model.avg(repro4_set, subset = delta <= 2)
-summary(repro4_avg)
-repro4_importance <- sw(repro4_avg)
-repro4_importance.df <- data.frame(variable = names(repro4_importance),
-                                   importance = repro4_importance)
-repro4_importance.df %>% 
-  ggplot(aes(x = reorder(variable, importance), y = importance)) +
-  geom_col() +
-  coord_flip() +
-  theme_bw()
-
-# Model averaging of all models
-repro4_avg.all <- model.avg(repro4_set)
-summary(repro4_avg.all)
-repro4_importance.all <- sw(repro4_avg.all)
-repro4_importance.all.df <- data.frame(variable = names(repro4_importance.all),
-                                       importance = repro4_importance.all)
-repro4_importance.all.df %>% 
-  ggplot(aes(x = reorder(variable, importance), y = importance)) +
-  geom_col() +
-  coord_flip() +
-  theme_bw()
-
-
-
-
-## Repro 5: Add herb*precip interaction -----------------------------------
-
-# 5: lme4 version
-lme4.repro5 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                      Change_BGDensity_scaled +
-                      Prev_year_precip_scaled * Change_BGDensity_scaled +
-                      Prev_year_precip_scaled * PlotSlope_scaled + 
-                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                      Prev_year_precip_scaled * Change_HerbCover_scaled +
-                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
-                    data = culm.change)
-summary(lme4.repro5)
-r2(lme4.repro5) # marginal: 0.136
-check_model(lme4.repro5)
-
-# 5: glmmTMB version
-repro5 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                    Change_BGDensity_scaled +
-                    Prev_year_precip_scaled * Change_BGDensity_scaled +
-                    Prev_year_precip_scaled * PlotSlope_scaled + 
-                    Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                    Prev_year_precip_scaled * Change_HerbCover_scaled +
-                    Aspect * PlotSlope_scaled + (1 | Site / Transect),
-                  data = culm.change,
-                  family = gaussian) 
-summary(repro5)
-r2(repro5) # marginal: 0.156
-res.repro5 <- simulateResiduals(repro5)
-plotQQunif(res.repro5)
-plotResiduals(res.repro5)
-check_collinearity(repro5)
-check_model(repro5)
-
-
-### 5: Model selection ----------------------------------------------------
-
-# Model selection
-options(na.action = "na.fail")
-repro5_set <- dredge(repro5)
-
-# Examine best model
-repro5_best.model <- get.models(repro5_set, 1)[[1]]
-summary(repro5_best.model)
-r2(repro5_best.model) # marginal: 0.125
-res.repro5_best.model <- simulateResiduals(repro5_best.model)
-plotQQunif(res.repro5_best.model)
-plotResiduals(res.repro5_best.model)
-check_model(repro5_best.model)
-
-# Examine models within 2 AICc units of best and assign each top model to separate object
-repro5_top <- subset(repro5_set, delta <= 2) 
-for (i in 1:nrow(repro5_top)) {
-  assign(paste0("repro5_model", i), get.models(repro1_top, subset = i)[[1]])
-} 
-
-
-# Model averaging of top models
-repro5_avg <- model.avg(repro5_set, subset = delta <= 2)
-summary(repro5_avg)
-repro5_importance <- sw(repro5_avg)
-repro5_importance.df <- data.frame(variable = names(repro5_importance),
-                                   importance = repro5_importance)
-repro5_importance.df %>% 
-  ggplot(aes(x = reorder(variable, importance), y = importance)) +
-  geom_col() +
-  coord_flip() +
-  theme_bw()
-
-# Model averaging of all models
-repro5_avg.all <- model.avg(repro5_set)
-summary(repro5_avg.all)
-repro5_importance.all <- sw(repro5_avg.all)
-repro5_importance.all.df <- data.frame(variable = names(repro5_importance.all),
-                                       importance = repro5_importance.all)
-repro5_importance.all.df %>% 
-  ggplot(aes(x = reorder(variable, importance), y = importance)) +
-  geom_col() +
-  coord_flip() +
-  theme_bw()
 
 
 
@@ -500,6 +164,7 @@ res.total2 <- simulateResiduals(total2)
 plotQQunif(res.total2)
 plotResiduals(res.total2)
 check_collinearity(total2) # Prev_year_precip & Aspect highly correlated
+
 
 
 ## Total 3: Change precip*aspect to precip*density ------------------------
@@ -615,6 +280,9 @@ for (i in 1:nrow(total4_top)) {
   assign(paste0("total4_model", i), get.models(total1_top, subset = i)[[1]])
 } 
 
+# Model averaging of top models - cannot average because some models did not converge
+
+
 
 ## Total 5: Add herb*precip interaction -----------------------------------
 
@@ -679,7 +347,7 @@ for (i in 1:nrow(total5_top)) {
 
 
 
-## Total 6: Drop aspect*slope interaction ---------------------------------
+## Total 6: Drop flat obs -------------------------------------------------
 
 # 6: lme4 version
 lme4.total6 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
@@ -689,10 +357,10 @@ lme4.total6 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled + Elevatio
                       Prev_year_precip_scaled * PlotSlope_scaled + 
                       Prev_year_precip_scaled * Change_ShrubCover_scaled +
                       Prev_year_precip_scaled * Change_HerbCover_scaled +
-                      (1 | Site / Transect),
-                    data = culm.change)
+                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                    data = culm.change.flat.rm)
 summary(lme4.total6)
-r2(lme4.total6) # marginal: 0.200
+r2(lme4.total6) # marginal: 0.210
 check_model(lme4.total6)
 
 # 6: glmmTMB version
@@ -703,11 +371,11 @@ total6 <- glmmTMB(Change_Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_
                     Prev_year_precip_scaled * PlotSlope_scaled + 
                     Prev_year_precip_scaled * Change_ShrubCover_scaled +
                     Prev_year_precip_scaled * Change_HerbCover_scaled +
-                    (1 | Site / Transect),
-                  data = culm.change,
+                    Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                  data = culm.change.flat.rm,
                   family = gaussian) 
 summary(total6)
-r2(total6) # marginal: 0.225
+r2(total6) # marginal: 0.235
 res.total6 <- simulateResiduals(total6)
 plotQQunif(res.total6)
 plotResiduals(res.total6)
@@ -731,136 +399,454 @@ plotResiduals(res.total6_best.model)
 check_model(total6_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-total6_top <- subset(total6_set, delta <= 2) %>% 
-  filter(!is.na(df)) # not all models converged
+total6_top <- subset(total6_set, delta <= 2) 
 for (i in 1:nrow(total6_top)) {
   assign(paste0("total6_model", i), get.models(total1_top, subset = i)[[1]])
 } 
 
-# Model averaging of top models - cannot average because some models did not converge
+# Model averaging of top models
+total6_avg <- model.avg(total6_set, subset = delta <= 2)
+summary(total6_avg)
+total6_importance <- sw(total6_avg)
+total6_importance.df <- data.frame(variable = names(total6_importance),
+                                   importance = total6_importance)
+total6_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+total6_avg.all <- model.avg(total6_set)
+summary(total6_avg.all)
+total6_importance.all <- sw(total6_avg.all)
+total6_importance.all.df <- data.frame(variable = names(total6_importance.all),
+                                       importance = total6_importance.all)
+total6_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
 
 
 
-## Total 7: Drop Aspect ---------------------------------------------------
 
-# 7: lme4 version
-lme4.total7 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                      PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+# Reproductive culms ------------------------------------------------------
+
+## Repro 1: All variables, no interactions --------------------------------
+
+# 1: lme4 version
+lme4.repro1 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                     Change_HerbCover_scaled + Change_BGDensity_scaled + (1 | Site / Transect),
+                   data = culm.change)
+summary(lme4.repro1)
+r2(lme4.repro1) # marginal: 0.086
+check_model(lme4.repro1)
+
+# 1: glmmTMB version
+repro1 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + Change_BGDensity_scaled + (1 | Site / Transect),
+                  data = culm.change,
+                  family = gaussian)
+summary(repro1)
+r2(repro1) # marginal: 0.095
+res.repro1 <- simulateResiduals(repro1)
+plotQQunif(res.repro1)
+plotResiduals(res.repro1)
+check_collinearity(repro1) 
+
+
+### 1: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+repro1_set <- dredge(repro1)
+
+# Examine best model
+repro1_best.model <- get.models(repro1_set, 1)[[1]]
+summary(repro1_best.model)
+r2(repro1_best.model) # marginal: 0.091
+check_model(repro1_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+repro1_top <- subset(repro1_set, delta <= 2)
+for (i in 1:nrow(repro1_top)) {
+  assign(paste0("repro1_model", i), get.models(repro1_top, subset = i)[[1]])
+}
+
+# Model averaging of top models
+repro1_avg <- model.avg(repro1_set, delta <= 2)
+summary(repro1_avg)
+repro1_importance <- sw(repro1_avg)
+repro1_importance.df <- data.frame(variable = names(repro1_importance),
+                                   importance = repro1_importance)
+repro1_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
+
+## Repro 2: Add precip interactions --------------------------------------
+
+# 2: lme4 version
+lme4.repro2 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                      Change_BGDensity_scaled +
+                      Prev_year_precip_scaled * Aspect +
+                      Prev_year_precip_scaled * PlotSlope_scaled + 
+                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                    data = culm.change) 
+summary(lme4.repro2)
+r2(lme4.repro2) # marginal: 0.178
+check_model(lme4.repro2) # collinearity issues
+
+# 2: glmmTMB version
+repro2 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                    Change_BGDensity_scaled +
+                    Prev_year_precip_scaled * Aspect +
+                    Prev_year_precip_scaled * PlotSlope_scaled + 
+                    Aspect * PlotSlope_scaled +
+                    (1 | Site / Transect),
+                  data = culm.change,
+                  family = gaussian) 
+summary(repro2)
+r2(repro2) # marginal: 0.217
+res.repro2 <- simulateResiduals(repro2)
+plotQQunif(res.repro2)
+plotResiduals(res.repro2)
+check_collinearity(repro2) # Prev_year_precip & Aspect highly correlated
+
+
+
+## Repro 3: Change precip*aspect to precip*density -----------------------
+
+# 3: lme4 version
+lme4.repro3 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                      Change_BGDensity_scaled +
+                      Prev_year_precip_scaled * Change_BGDensity_scaled +
+                      Prev_year_precip_scaled * PlotSlope_scaled + 
+                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                   data = culm.change)
+summary(lme4.repro3)
+r2(lme4.repro3) # marginal: 0.133
+check_model(lme4.repro3)
+
+# 3: glmmTMB version
+repro3 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                        Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                        Change_BGDensity_scaled +
+                        Prev_year_precip_scaled * Change_BGDensity_scaled +
+                        Prev_year_precip_scaled * PlotSlope_scaled + 
+                        Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                      data = culm.change,
+                      family = gaussian) 
+summary(repro3)
+r2(repro3) # marginal: 0.152
+res.repro3 <- simulateResiduals(repro3)
+plotQQunif(res.repro3)
+plotResiduals(res.repro3)
+check_collinearity(repro3)
+
+
+### 3: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+repro3_set <- dredge(repro3)
+
+# Examine best model
+repro3_best.model <- get.models(repro3_set, 1)[[1]]
+summary(repro3_best.model)
+r2(repro3_best.model) # marginal: 0.125
+res.repro3_best.model <- simulateResiduals(repro3_best.model)
+plotQQunif(res.repro3_best.model)
+plotResiduals(res.repro3_best.model)
+check_collinearity(repro3_best.model)
+check_model(repro3_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+repro3_top <- subset(repro3_set, delta <= 2)
+for (i in 1:nrow(repro3_top)) {
+  assign(paste0("repro3_model", i), get.models(repro1_top, subset = i)[[1]])
+}
+
+# Model averaging of top models
+repro3_avg <- model.avg(repro3_set, subset = delta <= 2)
+summary(repro3_avg)
+repro3_importance <- sw(repro3_avg)
+repro3_importance.df <- data.frame(variable = names(repro3_importance),
+                                   importance = repro3_importance)
+repro3_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+repro3_avg.all <- model.avg(repro3_set)
+summary(repro3_avg.all)
+repro3_importance.all <- sw(repro3_avg.all)
+repro3_importance.all.df <- data.frame(variable = names(repro3_importance.all),
+                                   importance = repro3_importance.all)
+repro3_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
+
+## Repro 4: Add shrub*precip interaction ----------------------------------
+
+# 4: lme4 version
+lme4.repro4 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                      Change_BGDensity_scaled +
+                      Prev_year_precip_scaled * Change_BGDensity_scaled +
+                      Prev_year_precip_scaled * PlotSlope_scaled + 
+                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                    data = culm.change)
+summary(lme4.repro4)
+r2(lme4.repro4) # marginal: 0.134
+check_model(lme4.repro4)
+
+# 4: glmmTMB version
+repro4 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                    Change_BGDensity_scaled +
+                    Prev_year_precip_scaled * Change_BGDensity_scaled +
+                    Prev_year_precip_scaled * PlotSlope_scaled + 
+                    Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                    Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                  data = culm.change,
+                  family = gaussian) 
+summary(repro4)
+r2(repro4) # marginal: 0.154
+res.repro4 <- simulateResiduals(repro4)
+plotQQunif(res.repro4)
+plotResiduals(res.repro4)
+check_collinearity(repro4)
+check_model(repro4)
+
+
+### 4: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+repro4_set <- dredge(repro4)
+
+# Examine best model
+repro4_best.model <- get.models(repro4_set, 1)[[1]]
+summary(repro4_best.model)
+r2(repro4_best.model) # marginal: 0.125
+res.repro4_best.model <- simulateResiduals(repro4_best.model)
+plotQQunif(res.repro4_best.model)
+plotResiduals(res.repro4_best.model)
+check_model(repro4_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+repro4_top <- subset(repro4_set, delta <= 2)
+for (i in 1:nrow(repro4_top)) {
+  assign(paste0("repro4_model", i), get.models(repro1_top, subset = i)[[1]])
+} 
+
+# Model averaging of top models
+repro4_avg <- model.avg(repro4_set, subset = delta <= 2)
+summary(repro4_avg)
+repro4_importance <- sw(repro4_avg)
+repro4_importance.df <- data.frame(variable = names(repro4_importance),
+                                   importance = repro4_importance)
+repro4_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+repro4_avg.all <- model.avg(repro4_set)
+summary(repro4_avg.all)
+repro4_importance.all <- sw(repro4_avg.all)
+repro4_importance.all.df <- data.frame(variable = names(repro4_importance.all),
+                                       importance = repro4_importance.all)
+repro4_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
+
+## Repro 5: Add herb*precip interaction -----------------------------------
+
+# 5: lme4 version
+lme4.repro5 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                       Change_BGDensity_scaled +
                       Prev_year_precip_scaled * Change_BGDensity_scaled +
                       Prev_year_precip_scaled * PlotSlope_scaled + 
                       Prev_year_precip_scaled * Change_ShrubCover_scaled +
                       Prev_year_precip_scaled * Change_HerbCover_scaled +
-                      (1 | Site / Transect),
+                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
                     data = culm.change)
-summary(lme4.total7)
-r2(lme4.total7) # marginal: 0.202
-check_model(lme4.total7)
+summary(lme4.repro5)
+r2(lme4.repro5) # marginal: 0.136
+check_model(lme4.repro5)
 
-# 7: glmmTMB version
-total7 <- glmmTMB(Change_Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
-                    PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+# 5: glmmTMB version
+repro5 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                     Change_BGDensity_scaled +
                     Prev_year_precip_scaled * Change_BGDensity_scaled +
                     Prev_year_precip_scaled * PlotSlope_scaled + 
                     Prev_year_precip_scaled * Change_ShrubCover_scaled +
                     Prev_year_precip_scaled * Change_HerbCover_scaled +
-                    (1 | Site / Transect),
+                    Aspect * PlotSlope_scaled + (1 | Site / Transect),
                   data = culm.change,
                   family = gaussian) 
-summary(total7)
-r2(total7) # marginal: 0.237
-res.total7 <- simulateResiduals(total7)
-plotQQunif(res.total7)
-plotResiduals(res.total7)
-check_collinearity(total7)
-check_model(total7)
+summary(repro5)
+r2(repro5) # marginal: 0.156
+res.repro5 <- simulateResiduals(repro5)
+plotQQunif(res.repro5)
+plotResiduals(res.repro5)
+check_collinearity(repro5)
+check_model(repro5)
 
 
-### 7: Model selection ----------------------------------------------------
+### 5: Model selection ----------------------------------------------------
 
 # Model selection
 options(na.action = "na.fail")
-total7_set <- dredge(total7)
+repro5_set <- dredge(repro5)
 
 # Examine best model
-total7_best.model <- get.models(total7_set, 1)[[1]]
-summary(total7_best.model)
-r2(total7_best.model) # marginal: 0.236
-res.total7_best.model <- simulateResiduals(total7_best.model)
-plotQQunif(res.total7_best.model)
-plotResiduals(res.total7_best.model)
-check_model(total7_best.model)
+repro5_best.model <- get.models(repro5_set, 1)[[1]]
+summary(repro5_best.model)
+r2(repro5_best.model) # marginal: 0.125
+res.repro5_best.model <- simulateResiduals(repro5_best.model)
+plotQQunif(res.repro5_best.model)
+plotResiduals(res.repro5_best.model)
+check_model(repro5_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-total7_top <- subset(total7_set, delta <= 2) %>% 
-  filter(!is.na(df)) # not all models converged
-for (i in 1:nrow(total7_top)) {
-  assign(paste0("total7_model", i), get.models(total1_top, subset = i)[[1]])
+repro5_top <- subset(repro5_set, delta <= 2) 
+for (i in 1:nrow(repro5_top)) {
+  assign(paste0("repro5_model", i), get.models(repro1_top, subset = i)[[1]])
 } 
 
-# Model averaging of top models - cannot average because some models did not converge
+
+# Model averaging of top models
+repro5_avg <- model.avg(repro5_set, subset = delta <= 2)
+summary(repro5_avg)
+repro5_importance <- sw(repro5_avg)
+repro5_importance.df <- data.frame(variable = names(repro5_importance),
+                                   importance = repro5_importance)
+repro5_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+repro5_avg.all <- model.avg(repro5_set)
+summary(repro5_avg.all)
+repro5_importance.all <- sw(repro5_avg.all)
+repro5_importance.all.df <- data.frame(variable = names(repro5_importance.all),
+                                       importance = repro5_importance.all)
+repro5_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
 
 
 
-## Total 8: Drop precip*slope interaction ---------------------------------
+## Repro 6: Drop flat obs -------------------------------------------------
 
-# 8: lme4 version
-lme4.total8 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+# 6: lme4 version
+lme4.repro6 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
                       Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                       Change_BGDensity_scaled +
                       Prev_year_precip_scaled * Change_BGDensity_scaled +
+                      Prev_year_precip_scaled * PlotSlope_scaled + 
                       Prev_year_precip_scaled * Change_ShrubCover_scaled +
                       Prev_year_precip_scaled * Change_HerbCover_scaled +
-                      (1 | Site / Transect),
-                    data = culm.change)
-summary(lme4.total8)
-r2(lme4.total8) # marginal: 0.157
-check_model(lme4.total8)
+                      Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                    data = culm.change.flat.rm)
+summary(lme4.repro6)
+r2(lme4.repro6) # marginal: 0.134
+check_model(lme4.repro6)
 
-# 8: glmmTMB version
-total8 <- glmmTMB(Change_Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
+# 6: glmmTMB version
+repro6 <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled + Elevation_ft_scaled + 
                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                     Change_BGDensity_scaled +
                     Prev_year_precip_scaled * Change_BGDensity_scaled +
+                    Prev_year_precip_scaled * PlotSlope_scaled + 
                     Prev_year_precip_scaled * Change_ShrubCover_scaled +
                     Prev_year_precip_scaled * Change_HerbCover_scaled +
-                    (1 | Site / Transect),
-                  data = culm.change,
+                    Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                  data = culm.change.flat.rm,
                   family = gaussian) 
-summary(total8)
-r2(total8) # marginal: 0.177
-res.total8 <- simulateResiduals(total8)
-plotQQunif(res.total8)
-plotResiduals(res.total8)
-check_collinearity(total8)
-check_model(total8)
+summary(repro6)
+r2(repro6) # marginal: 0.154
+res.repro6 <- simulateResiduals(repro6)
+plotQQunif(res.repro6)
+plotResiduals(res.repro6)
+check_collinearity(repro6)
+check_model(repro6)
 
 
-### 8: Model selection ----------------------------------------------------
+### 6: Model selection ----------------------------------------------------
 
 # Model selection
 options(na.action = "na.fail")
-total8_set <- dredge(total8)
+repro6_set <- dredge(repro6)
 
- # Examine best model
-total8_best.model <- get.models(total8_set, 1)[[1]]
-summary(total8_best.model)
-r2(total8_best.model) # marginal: 0.135
-res.total8_best.model <- simulateResiduals(total8_best.model)
-plotQQunif(res.total8_best.model)
-plotResiduals(res.total8_best.model)
-check_model(total8_best.model)
+# Examine best model
+repro6_best.model <- get.models(repro6_set, 1)[[1]]
+summary(repro6_best.model)
+r2(repro6_best.model) # marginal: 0.123
+res.repro6_best.model <- simulateResiduals(repro6_best.model)
+plotQQunif(res.repro6_best.model)
+plotResiduals(res.repro6_best.model)
+check_model(repro6_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-total8_top <- subset(total8_set, delta <= 2) %>% 
-  filter(!is.na(df)) # not all models converged
-for (i in 1:nrow(total8_top)) {
-  assign(paste0("total8_model", i), get.models(total1_top, subset = i)[[1]])
+repro6_top <- subset(repro6_set, delta <= 2) 
+for (i in 1:nrow(repro6_top)) {
+  assign(paste0("repro6_model", i), get.models(repro1_top, subset = i)[[1]])
 } 
 
-# Model averaging of top models - cannot average because some models did not converge
-#   also not sure why it created a bunch of null models
+# Model averaging of top models
+repro6_avg <- model.avg(repro6_set, subset = delta <= 2)
+summary(repro6_avg)
+repro6_importance <- sw(repro6_avg)
+repro6_importance.df <- data.frame(variable = names(repro6_importance),
+                                   importance = repro6_importance)
+repro6_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+repro6_avg.all <- model.avg(repro6_set)
+summary(repro6_avg.all)
+repro6_importance.all <- sw(repro6_avg.all)
+repro6_importance.all.df <- data.frame(variable = names(repro6_importance.all),
+                                       importance = repro6_importance.all)
+repro6_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
 
 
 
@@ -1049,6 +1035,7 @@ bgden3_importance.all.df %>%
   theme_bw()
 
 
+
 ## BG density 4: Add shrub*precip interaction -----------------------------
 
 # 4: lme4 version
@@ -1211,6 +1198,7 @@ bgden5_importance.all.df %>%
 
 
 
+
 # Buffelgrass cover -------------------------------------------------------
 
 ## BG cover 1: All variables, no interactions -----------------------------
@@ -1261,7 +1249,6 @@ for (i in 1:nrow(bgcov1_top)) {
 }
 
 # Model averaging of top models - cannot average because some models did not converge
-
 
 
 
