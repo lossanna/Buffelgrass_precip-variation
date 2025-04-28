@@ -401,8 +401,14 @@ check_model(total6_best.model)
 # Examine models within 2 AICc units of best and assign each top model to separate object
 total6_top <- subset(total6_set, delta <= 2) 
 for (i in 1:nrow(total6_top)) {
-  assign(paste0("total6_model", i), get.models(total1_top, subset = i)[[1]])
+  assign(paste0("total6_model", i), get.models(total6_top, subset = i)[[1]])
 } 
+
+# R^2 of top models
+r2(total6_model1) # marginal: 0.230
+r2(total6_model2) # marginal: 0.229
+r2(total6_model3) # marginal: 0.230
+r2(total6_model4) # marginal: 0.225
 
 # Model averaging of top models
 total6_avg <- model.avg(total6_set, subset = delta <= 2)
@@ -821,8 +827,16 @@ check_model(repro6_best.model)
 # Examine models within 2 AICc units of best and assign each top model to separate object
 repro6_top <- subset(repro6_set, delta <= 2) 
 for (i in 1:nrow(repro6_top)) {
-  assign(paste0("repro6_model", i), get.models(repro1_top, subset = i)[[1]])
+  assign(paste0("repro6_model", i), get.models(repro6_top, subset = i)[[1]])
 } 
+
+# R^2 of top models
+r2(repro6_model1) # marginal: 0.123
+r2(repro6_model2) # marginal: 0.125
+r2(repro6_model3) # marginal: 0.126
+r2(repro6_model4) # marginal: 0.128
+r2(repro6_model5) # marginal: 0.137
+r2(repro6_model6) # marginal: 0.140
 
 # Model averaging of top models
 repro6_avg <- model.avg(repro6_set, subset = delta <= 2)
