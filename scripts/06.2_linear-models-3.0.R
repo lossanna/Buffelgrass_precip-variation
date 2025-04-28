@@ -217,7 +217,7 @@ check_model(total3_best.model)
 total3_top <- subset(total3_set, delta <= 2) %>% 
   filter(!is.na(df)) # not all models converged
 for (i in 1:nrow(total3_top)) {
-  assign(paste0("total3_model", i), get.models(total1_top, subset = i)[[1]])
+  assign(paste0("total3_model", i), get.models(total4_top, subset = i)[[1]])
 } 
 
 # Model averaging of top models - cannot average because some models did not converge
@@ -277,7 +277,7 @@ check_model(total4_best.model)
 total4_top <- subset(total4_set, delta <= 2) %>% 
   filter(!is.na(df)) # not all models converged
 for (i in 1:nrow(total4_top)) {
-  assign(paste0("total4_model", i), get.models(total1_top, subset = i)[[1]])
+  assign(paste0("total4_model", i), get.models(total4_top, subset = i)[[1]])
 } 
 
 # Model averaging of top models - cannot average because some models did not converge
@@ -339,7 +339,7 @@ check_model(total5_best.model)
 total5_top <- subset(total5_set, delta <= 2) %>% 
   filter(!is.na(df)) # not all models converged
 for (i in 1:nrow(total5_top)) {
-  assign(paste0("total5_model", i), get.models(total1_top, subset = i)[[1]])
+  assign(paste0("total5_model", i), get.models(total5_top, subset = i)[[1]])
 } 
 
 
@@ -579,7 +579,7 @@ check_model(repro3_best.model)
 # Examine models within 2 AICc units of best and assign each top model to separate object
 repro3_top <- subset(repro3_set, delta <= 2)
 for (i in 1:nrow(repro3_top)) {
-  assign(paste0("repro3_model", i), get.models(repro1_top, subset = i)[[1]])
+  assign(paste0("repro3_model", i), get.models(repro3_top, subset = i)[[1]])
 }
 
 # Model averaging of top models
@@ -660,7 +660,7 @@ check_model(repro4_best.model)
 # Examine models within 2 AICc units of best and assign each top model to separate object
 repro4_top <- subset(repro4_set, delta <= 2)
 for (i in 1:nrow(repro4_top)) {
-  assign(paste0("repro4_model", i), get.models(repro1_top, subset = i)[[1]])
+  assign(paste0("repro4_model", i), get.models(repro4_top, subset = i)[[1]])
 } 
 
 # Model averaging of top models
@@ -743,9 +743,8 @@ check_model(repro5_best.model)
 # Examine models within 2 AICc units of best and assign each top model to separate object
 repro5_top <- subset(repro5_set, delta <= 2) 
 for (i in 1:nrow(repro5_top)) {
-  assign(paste0("repro5_model", i), get.models(repro1_top, subset = i)[[1]])
+  assign(paste0("repro5_model", i), get.models(repro5_top, subset = i)[[1]])
 } 
-
 
 # Model averaging of top models
 repro5_avg <- model.avg(repro5_set, subset = delta <= 2)
@@ -1021,7 +1020,7 @@ check_model(bgden3_best.model)
 # Examine models within 2 AICc units of best and assign each top model to separate object
 bgden3_top <- subset(bgden3_set, delta <= 2)
 for (i in 1:nrow(bgden3_top)) {
-  assign(paste0("bgden3_model", i), get.models(bgden1_top, subset = i)[[1]])
+  assign(paste0("bgden3_model", i), get.models(bgden3_top, subset = i)[[1]])
 }
 
 # Model averaging of top models
@@ -1101,7 +1100,7 @@ check_model(bgden4_best.model)
 # Examine models within 2 AICc units of best and assign each top model to separate object
 bgden4_top <- subset(bgden4_set, delta <= 2)
 for (i in 1:nrow(bgden4_top)) {
-  assign(paste0("bgden4_model", i), get.models(bgden1_top, subset = i)[[1]])
+  assign(paste0("bgden4_model", i), get.models(bgden4_top, subset = i)[[1]])
 }
 
 # Model averaging of top models
@@ -1183,8 +1182,15 @@ check_model(bgden5_best.model)
 # Examine models within 2 AICc units of best and assign each top model to separate object
 bgden5_top <- subset(bgden5_set, delta <= 2)
 for (i in 1:nrow(bgden5_top)) {
-  assign(paste0("bgden5_model", i), get.models(bgden1_top, subset = i)[[1]])
+  assign(paste0("bgden5_model", i), get.models(bgden5_top, subset = i)[[1]])
 }
+
+r2(bgden5_model1) # marginal: 0.454
+r2(bgden5_model2) # marginal: 0.449
+r2(bgden5_model3) # marginal: 0.428
+r2(bgden5_model4) # marginal: 0.442
+r2(bgden5_model5) # marginal: 0.411
+r2(bgden5_model6) # marginal: 0.450
 
 # Model averaging of top models
 bgden5_avg <- model.avg(bgden5_set, subset = delta <= 2) 
@@ -1349,7 +1355,7 @@ check_model(bgcov3_best.model)
 bgcov3_top <- subset(bgcov3_set, delta <= 2) %>% 
   filter(!is.na(df))
 for (i in 1:nrow(bgcov3_top)) {
-  assign(paste0("bgcov3_model", i), get.models(bgcov1_top, subset = i)[[1]])
+  assign(paste0("bgcov3_model", i), get.models(bgcov3_top, subset = i)[[1]])
 }
 
 # Model averaging of top models - cannot average because some models did not converge
@@ -1408,7 +1414,7 @@ check_model(bgcov4_best.model)
 bgcov4_top <- subset(bgcov4_set, delta <= 2) %>% 
   filter(!is.na(df)) # not all models converged
 for (i in 1:nrow(bgcov4_top)) {
-  assign(paste0("bgcov4_model", i), get.models(bgcov1_top, subset = i)[[1]])
+  assign(paste0("bgcov4_model", i), get.models(bgcov4_top, subset = i)[[1]])
 }
 
 # Model averaging of top models - cannot average because some models did not converge
@@ -1469,7 +1475,7 @@ check_model(bgcov5_best.model)
 bgcov5_top <- subset(bgcov5_set, delta <= 2) %>% 
   filter(!is.na(df)) # not all models converged
 for (i in 1:nrow(bgcov5_top)) {
-  assign(paste0("bgcov5_model", i), get.models(bgcov1_top, subset = i)[[1]])
+  assign(paste0("bgcov5_model", i), get.models(bgcov5_top, subset = i)[[1]])
 }
 
 # Model averaging of top models - cannot average because some models did not converge
