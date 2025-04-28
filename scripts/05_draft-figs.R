@@ -1769,7 +1769,6 @@ repro.change.all.aspect <- culm.change %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
-  
 repro.change.all.aspect
 
 # Repro change: Aspect by Prev_year_precip (linear regression, all obs)
@@ -2041,7 +2040,7 @@ bgden.change.all.shrub.lm <- plot.change %>%
              color = "red") +
   labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals /  ", m^2, ")")),
        x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in buffegrass density vs. shrub cover change")
+       title = "Change in buffelgrass density vs. shrub cover change")
 bgden.change.all.shrub.lm
 
 # BG density change: linear regression by shrub cover (change) and Prev_year_precip
@@ -2060,7 +2059,7 @@ bgden.change.shrub.prevprecip.lm <- plot.change %>%
              color = "red") +
   labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals /  ", m^2, ")")),
        x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in buffegrass density vs. shrub cover change")
+       title = "Change in buffelgrass density vs. shrub cover change")
 bgden.change.shrub.prevprecip.lm
 
 # BG density change: linear regression by elevation
