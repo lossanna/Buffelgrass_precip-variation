@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-04-10
+# Updated: 2025-04-24
 
 # Purpose: Graph culm, cover and density response to precip variation.
 
@@ -199,6 +199,19 @@ dat %>%
 
 # Precip ------------------------------------------------------------------
 
+# 30-year averages by site
+dat.plot %>% 
+  select(Site, Transect, MAP) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  print(n = 27)
+
+map.avg <- dat.plot %>% 
+  select(Site, Transect, MAP) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  group_by(Site) %>% 
+  summarise(MAP_avg = mean(MAP))
+map.avg
+
 # By site
 precip.site <- plot.avg.site %>% 
   ggplot(aes(x = Year, y = Prev_year_precip_avg)) +
@@ -209,7 +222,10 @@ precip.site <- plot.avg.site %>%
   xlab(NULL) +
   ylab("Precipitation (mm)") +
   theme_bw() +
-  theme(axis.text.x = element_text(color = "black"))
+  theme(axis.text.x = element_text(color = "black")) +
+  geom_hline(data = map.avg, 
+             aes(yintercept = MAP_avg), 
+             linetype = "dashed", color = "red")
 precip.site
 
 
