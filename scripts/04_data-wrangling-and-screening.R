@@ -1,5 +1,5 @@
 # Created: 2024-09-23
-# Updated: 2025-04-17
+# Updated: 2025-04-29
 
 # Purpose: Examine distributions; write out clean data with precip deviation variable added.
 #   Also write out different data table with change in culm/cover/density as response variable.
@@ -36,6 +36,10 @@ na.culm <- dat %>%
 # Remove NA culm count - plants could not be located and weren't sampled
 dat <- dat %>% 
   filter(!is.na(Vegetative_culms))
+
+# Add col with elevation in meters
+dat <- dat %>% 
+  mutate(Elevation_m = Elevation_ft * 0.3048)
 
 # Add Perc_dev and Deviation_mm cols
 dat <- dat %>% 
@@ -258,17 +262,19 @@ dat %>%
 
 # Summary
 summary(dat$Elevation_ft)
+summary(dat$Elevation_m)
 summary(dat$PlotSlope)
 summary(dat$MAT)
 
 # Distribution
 hist(dat$Elevation_ft)
+hist(dat$Elevation_m)
 hist(dat$PlotSlope)
 hist(dat$MAT)
 
 # Pair plot
 dat %>% 
-  select(PlotSlope, Elevation_ft, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm) %>% 
+  select(PlotSlope, Elevation_m, Prev_year_precip, MAT, MAP, Perc_dev, Deviation_mm) %>% 
   distinct(.keep_all = TRUE) %>% 
   ggpairs()
 
