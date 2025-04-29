@@ -1991,7 +1991,6 @@ total.change.all.aspect <- culm.change %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
-
 total.change.all.aspect
 
 # Total change: Aspect by Prev_year_precip (linear regression, all obs)
