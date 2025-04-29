@@ -1,11 +1,11 @@
 # Created: 2025-03-24
-# Updated: 2025-04-28
+# Updated: 2025-04-29
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
 
 # Continuous explanatory variables are centered and scaled. 
-# Use (1 | Site / Transect) for culm counts and (1 | Site) for density and cover.
+# Use (1 | Site / Transect) for culm counts. 
 
 # Updates from 06.1.R script:
 #   Response variables refer to change in culm count, density, or cover to better
@@ -15,8 +15,11 @@
 
 # Dropping observations from "flat" aspect (20 obs total) allows for full model convergence during
 #   model selection, which then allows for model averaging for total culms.
-# Not all models converge during model selection when including herb*precip and shrub*precip for
-#  BG cover models.
+
+# Dropping (1 | Site) random effect allows for full model convergence during model selection for
+#   change in BG cover.
+# Because conditional R^2 can't be calculated for bgden5, bgden6 (with random effect dropped) should be
+#   used instead. Also, this allows for better comparison with BG cover models.
 
 library(tidyverse)
 library(glmmTMB)
@@ -1219,6 +1222,93 @@ bgden5_importance.all.df %>%
 
 
 
+## BG density 6: Drop (1 | Site) ------------------------------------------
+
+# 6: lm version
+lm.bgden6 <- lm(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                  Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                  Change_HerbCover_scaled + 
+                  Prev_year_precip_scaled * PlotSlope_scaled +
+                  Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                  Prev_year_precip_scaled * Change_HerbCover_scaled,
+                data = plot.change)
+summary(lm.bgden6)
+r2(lm.bgden6) # adjusted: 0.426
+check_model(lm.bgden6)
+
+# 6: glmmTMB version
+bgden6 <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + 
+                    Prev_year_precip_scaled * PlotSlope_scaled +
+                    Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                    Prev_year_precip_scaled * Change_HerbCover_scaled,
+                  data = plot.change,
+                  family = gaussian)
+summary(bgden6)
+r2(bgden6) # adjusted: 0.423
+res.bgden6 <- simulateResiduals(bgden6)
+plotQQunif(res.bgden6)
+plotResiduals(res.bgden6)
+check_collinearity(bgden6) 
+check_model(bgden6)
+
+
+### 6: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgden6_set <- dredge(bgden6)
+
+# Examine best model
+bgden6_best.model <- get.models(bgden6_set, 1)[[1]]
+summary(bgden6_best.model)
+r2(bgden6_best.model) # adjusted: 0.427
+res.bgden6_best.model <- simulateResiduals(bgden6_best.model)
+plotQQunif(res.bgden6_best.model)
+plotResiduals(res.bgden6_best.model)
+check_collinearity(bgden6_best.model)
+check_model(bgden6_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+bgden6_top <- subset(bgden6_set, delta <= 2)
+for (i in 1:nrow(bgden6_top)) {
+  assign(paste0("bgden6_model", i), get.models(bgden6_top, subset = i)[[1]])
+}
+
+r2(bgden6_model1) # adjusted: 0.427
+r2(bgden6_model2) # adjusted: 0.424
+r2(bgden6_model3) # adjusted: 0.419
+r2(bgden6_model4) # adjusted: 0.422
+r2(bgden6_model5) # adjusted: 0.422
+r2(bgden6_model6) # adjusted: 0.425
+
+# Model averaging of top models
+bgden6_avg <- model.avg(bgden6_set, subset = delta <= 2) 
+summary(bgden6_avg)
+bgden6_importance <- sw(bgden6_avg)
+bgden6_importance.df <- data.frame(variable = names(bgden6_importance),
+                                   importance = bgden6_importance)
+bgden6_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+bgden6_avg.all <- model.avg(bgden6_set)
+summary(bgden6_avg.all)
+bgden6_importance.all <- sw(bgden6_avg.all)
+bgden6_importance.all.df <- data.frame(variable = names(bgden6_importance.all),
+                                       importance = bgden6_importance.all)
+bgden6_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
+
 # Buffelgrass cover -------------------------------------------------------
 
 ## BG cover 1: All variables, no interactions -----------------------------
@@ -1481,6 +1571,92 @@ for (i in 1:nrow(bgcov5_top)) {
 # Model averaging of top models - cannot average because some models did not converge
 
 
+
+## BG cover 6: Drop (1 | Site) --------------------------------------------
+
+# 6: lm version
+lm.bgcov6 <- lm(Change_BGCover ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                      Change_HerbCover_scaled + 
+                      Prev_year_precip_scaled * PlotSlope_scaled +
+                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                      Prev_year_precip_scaled * Change_HerbCover_scaled,
+                    data = plot.change)
+summary(lm.bgcov6)
+r2(lm.bgcov6) # adjusted: 0.228
+check_model(lm.bgcov6)
+
+# 6: glmmTMB version
+bgcov6 <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled + Elevation_ft_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + 
+                    Prev_year_precip_scaled * PlotSlope_scaled +
+                    Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                    Prev_year_precip_scaled * Change_HerbCover_scaled,
+                  data = plot.change,
+                  family = gaussian)
+summary(bgcov6)
+r2(bgcov6) # adjusted: 0.224
+res.bgcov6 <- simulateResiduals(bgcov6)
+plotQQunif(res.bgcov6)
+plotResiduals(res.bgcov6)
+check_collinearity(bgcov6) 
+check_model(bgcov6)
+
+
+### 6: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgcov6_set <- dredge(bgcov6)
+
+# Examine best model
+bgcov6_best.model <- get.models(bgcov6_set, 1)[[1]]
+summary(bgcov6_best.model)
+r2(bgcov6_best.model) # adjusted: 0.220
+res.bgcov6_best.model <- simulateResiduals(bgcov6_best.model)
+plotQQunif(res.bgcov6_best.model)
+plotResiduals(res.bgcov6_best.model)
+check_collinearity(bgcov6_best.model)
+check_model(bgcov6_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+bgcov6_top <- subset(bgcov6_set, delta <= 2)
+for (i in 1:nrow(bgcov6_top)) {
+  assign(paste0("bgcov6_model", i), get.models(bgcov6_top, subset = i)[[1]])
+}
+
+r2(bgcov6_model1) # adjusted: 0.220
+r2(bgcov6_model2) # adjusted: 0.231
+r2(bgcov6_model3) # adjusted: 0.227
+r2(bgcov6_model4) # adjusted: 0.223
+r2(bgcov6_model5) # adjusted: 0.222
+r2(bgcov6_model6) # adjusted: 0.224
+r2(bgcov6_model7) # adjusted: 0.230
+
+# Model averaging of top models
+bgcov6_avg <- model.avg(bgcov6_set, subset = delta <= 2) 
+summary(bgcov6_avg)
+bgcov6_importance <- sw(bgcov6_avg)
+bgcov6_importance.df <- data.frame(variable = names(bgcov6_importance),
+                                   importance = bgcov6_importance)
+bgcov6_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+bgcov6_avg.all <- model.avg(bgcov6_set)
+summary(bgcov6_avg.all)
+bgcov6_importance.all <- sw(bgcov6_avg.all)
+bgcov6_importance.all.df <- data.frame(variable = names(bgcov6_importance.all),
+                                       importance = bgcov6_importance.all)
+bgcov6_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
 
 
 save.image("RData/06.2_linear-models-3.0.RData")
