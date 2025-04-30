@@ -1,9 +1,8 @@
 # Created: 2025-04-28
-# Updated: 2025-04-29
+# Updated: 2025-04-30
 
 # Purpose: Visualize relationships relevant to linear models from 06.2.R:
-#   total7, repro7, bgden7, bgcov7.
-# Also graph seedling survival (no corresponding linear models).
+#   total7, repro7, bgden7, bgcov7, survival7.
 
 library(tidyverse)
 library(scales)
@@ -796,6 +795,7 @@ bgcov.change.plotslope.prevprecip.lm <- plot.change %>%
 bgcov.change.plotslope.prevprecip.lm
 
 
+
 # Shrub & herb cover ------------------------------------------------------
 
 # Shrub cover change: Linear regression by Prev_year_precip
@@ -827,11 +827,15 @@ herb.change.precip.lm <- plot.change %>%
 herb.change.precip.lm
 
 
+
 # Survival ----------------------------------------------------------------
+
+## Survival: Significant --------------------------------------------------
 
 # Survival: linear regression by Prev_year_precip
 survival.precip.lm <- dat %>% 
-  filter(!is.na(survival_perc)) %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
   ggplot(aes(x = Prev_year_precip, y = survival_perc)) +
   geom_point() +
   geom_smooth(method = "lm") +
@@ -842,160 +846,122 @@ survival.precip.lm <- dat %>%
        title = "Buffelgrass seedling survival vs. precip")
 survival.precip.lm
 
-
-# Change in culms
-# Survival: linear regression by total culms (change)
-culm.change %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = Change_Total_Live_Culms)) +
+# Survival: linear regression by PlotSlope
+survival.plotslope.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = Prev_year_precip, y = survival_perc)) +
   geom_point() +
   geom_smooth(method = "lm") +
-  scale_x_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent) +
   theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(x = "Seedling survival (%)",
-       y = expression(Delta ~ "Total culm count"),
-       title = "Seedling survival vs. change in total culms")
+  labs(x = "Plot slope (\u00B0)",
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. plot slope")
+survival.plotslope.lm
 
-# Survival: scatterplot by total culms (change) and Prev_year_precip
-survival.total.change.prevprecip <- culm.change %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = Change_Total_Live_Culms)) +
-  geom_point(aes(color = Prev_year_precip)) +
-  scale_x_continuous(labels = scales::percent) +
-  scale_color_viridis(option = "viridis", direction = -1,
-                      name = "Previous year \nprecip (mm)") +
+# Survival: linear regression by shrub cover 
+survival.shrub.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = ShrubCover, y = survival_perc)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(labels = scales::percent) +
   theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(y = expression(Delta ~ "Total culm count"),
-       x = "Seedling survival (%)",
-       title = "Seedling survival vs. change in total culms") 
-survival.total.change.prevprecip
+  labs(y = "Buffelgrass seedling survival (%)",
+       x = "Native shrub cover (%)",
+       title = "Buffegrass seedling survival vs. shrub cover")
+survival.shrub.lm
 
-# Survival: linear regression by total culms (change) and Prev_year_precip
-survival.total.change.prevprecip.lm <- culm.change %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = Change_Total_Live_Culms)) +
+# Survival: linear regression by herb cover 
+survival.herb.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = HerbCover, y = survival_perc)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw() +
+  labs(y = "Buffelgrass seedling survival (%)",
+       x = "Native grass & forb cover (%)",
+       title = "Buffegrass seedling survival vs. herb cover")
+survival.herb.lm
+
+
+## Survival: Not significant -----------------------------------------------
+
+# Survival: linear regression by Elevation
+survival.elev.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = Elevation_m, y = survival_perc)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw() +
+  labs(x = "Elevation (m)",
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. elevation")
+survival.elev.lm
+
+# Survival: linear regression by shrub cover and Prev_year_precip
+survival.shrub.prevprecip.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = ShrubCover, y = survival_perc)) +
   geom_point(aes(color = Prev_year_precip)) +
   geom_smooth(method = "lm") +
-  scale_x_continuous(labels = scales::percent) +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
+  scale_y_continuous(labels = scales::percent) +
   theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(y = expression(Delta ~ "Total culm count"),
-       x = "Seedling survival (%)",
-       title = "Seedling survival vs. change in total culms") 
-survival.total.change.prevprecip.lm
+  labs(y = "Buffelgrass seedling survival (%)",
+       x = "Native shrub cover (%)",
+       title = "Buffegrass seedling survival vs. shrub cover")
+survival.shrub.prevprecip.lm
 
-# Survival: scatterplot by repro culms (change) and Prev_year_precip
-survival.repro.change.prevprecip <- culm.change %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = Change_Reproductive_culms)) +
-  geom_point(aes(color = Prev_year_precip)) +
-  scale_x_continuous(labels = scales::percent) +
-  scale_color_viridis(option = "viridis", direction = -1,
-                      name = "Previous year \nprecip (mm)") +
-  theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(y = expression(Delta ~ "Reproductive culm count"),
-       x = "Seedling survival (%)",
-       title = "Seedling survival vs. change in reproductive culms") 
-survival.repro.change.prevprecip
-
-# Survival: scatterplot by repro culms (change) and Prev_year_precip
-survival.repro.change.prevprecip.lm <- culm.change %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = Change_Reproductive_culms)) +
+# Survival: linear regression by herb cover and Prev_year_precip
+survival.herb.prevprecip.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = HerbCover, y = survival_perc)) +
   geom_point(aes(color = Prev_year_precip)) +
   geom_smooth(method = "lm") +
-  scale_x_continuous(labels = scales::percent) +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
+  scale_y_continuous(labels = scales::percent) +
   theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(y = expression(Delta ~ "Reproductive culm count"),
-       x = "Seedling survival (%)",
-       title = "Seedling survival vs. change in reproductive culms") 
-survival.repro.change.prevprecip.lm
+  labs(y = "Buffelgrass seedling survival (%)",
+       x = "Native grass & forb cover (%)",
+       title = "Buffegrass seedling survival vs. herb cover")
+survival.herb.prevprecip.lm
 
-
-# Raw culm counts
-# Survival: linear regression by total culms and Prev_year_precip
-dat %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = Total_Live_Culms)) +
+# BG cover change: linear regression by PlotSlope and Prev_year_precip
+survival.plotslope.prevprecip.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = PlotSlope, y = survival_perc)) +
   geom_point(aes(color = Prev_year_precip)) +
   geom_smooth(method = "lm") +
-  scale_x_continuous(labels = scales::percent) + 
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
   theme_bw() +
-  labs(y = "No. of culms",
-       x = "Seedling survival (%)",
-       title = "Buffelgrass seedling survival vs. total culm count") 
-
-# Survival: linear regression by repro culms and Prev_year_precip
-dat %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = Reproductive_culms)) +
-  geom_point(aes(color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
-  scale_x_continuous(labels = scales::percent) + 
-  scale_color_viridis(option = "viridis", direction = -1,
-                      name = "Previous year \nprecip (mm)") +
-  theme_bw() +
-  labs(y = "No. of reproductive culms",
-       x = "Seedling survival (%)",
-       title = "Buffelgrass seedling survival vs. reproductive culm count") 
+  scale_y_continuous(labels = scales::percent) +
+  labs(y = expression(Delta ~ "Seedling survival (%)"),
+       x = "Plot slope (\u00B0)",
+       title = "Buffelgrass seedling survival vs. plot slope")
+survival.plotslope.prevprecip.lm
 
 
-# Survival: linear regression by buffelgrass density (change) and Prev_year_precip
-culm.change %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = Change_BGDensity)) +
-  geom_point(aes(color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
-  scale_x_continuous(labels = scales::percent) + 
-  scale_color_viridis(option = "viridis", direction = -1,
-                      name = "Previous year \nprecip (mm)") +
-  theme_bw() +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
-       x = "Seedling survival (%)",
-       title = "Buffelgrass seedling survival vs. change in plot density") +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red")
 
-# Survival: linear regression by buffelgrass density and previous precip
-dat %>% 
-  filter(!is.na(survival_perc)) %>% 
-  ggplot(aes(x = survival_perc, y = BGDensity)) +
-  geom_point(aes(color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
-  scale_x_continuous(labels = scales::percent) + 
-  scale_color_viridis(option = "viridis", direction = -1,
-                      name = "Previous year \nprecip (mm)") +
-  theme_bw() +
-  labs(y = expression(paste("Density (individuals /  ", m^2, ")")),
-       x = "Seedling survival (%)",
-       title = "Buffelgrass seedling survival vs. plot density") 
+
 
 
 
 # Other -------------------------------------------------------------------
 
-# Total change: linear regression with buffelgrass cover (change)
+# Total change: linear regression by buffelgrass cover (change)
 culm.change %>% 
   ggplot(aes(x = Change_BGCover, y = Change_Total_Live_Culms)) +
   geom_point() +
@@ -1006,7 +972,80 @@ culm.change %>%
              color = "red") +
   geom_vline(xintercept = 0,
              linetype = "dashed",
-             color = "red") 
+             color = "red") +
+  labs(x = expression(Delta ~ "Cover (%)"),
+       y = expression(Delta ~ "Total live culms"),
+       title = "Buffelgrass culm count vs. cover")
+
+# Total change: linear regression by buffelgrass cover (change) and Prev_year_precip
+total.change.bgcov.prevprecip.lm <- culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = expression(Delta ~ "Cover (%)"),
+       y = expression(Delta ~ "Total live culms"),
+       title = "Buffelgrass total culm count vs. cover") +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)")
+total.change.bgcov.prevprecip.lm
+
+# Total culms: linear regression by buffelgrass seedling survival and Prev_year_precip
+total.survival.prevprecip.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = survival_perc, y = Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  labs(x = "Seedling survival (%)",
+       y = "Number of live culms",
+       title = "Buffelgrass total culm count vs. seedling survival") +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  scale_x_continuous(labels = scales::percent) 
+total.survival.prevprecip.lm
+
+# BG density & cover linear regression
+culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = expression(Delta ~ "Cover (%)"),
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density vs. cover")
+
+# BG density & cover linear regression by Prev_year_precip
+bgden.bgcov.change.prevprecip.lm <- culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = expression(Delta ~ "Cover (%)"),
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density vs. cover") +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)")
+bgden.bgcov.change.prevprecip.lm
 
 
 
@@ -1296,6 +1335,58 @@ tiff("figures/2025-05_draft-figures/Herb-change_by-prev-year-precip_regression.t
 herb.change.precip.lm
 dev.off()
 
+
+## Survival ---------------------------------------------------------------
+
+# Significant
+# Survival vs. Prev_year_precip
+tiff("figures/2025-05_draft-figures/Survival_by-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.precip.lm
+dev.off()
+
+# Survival vs. PlotSlope
+tiff("figures/2025-05_draft-figures/Survival_by-plot-slope_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.plotslope.lm
+dev.off()
+
+# Survival vs. shrub cover
+tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.shrub.lm
+dev.off()
+
+# Survival vs. herb cover
+tiff("figures/2025-05_draft-figures/Survival_by-herb-cover_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.herb.lm
+dev.off()
+
+# Not significant
+# Survival vs. Elevation
+tiff("figures/2025-05_draft-figures/Survival_by-elevation_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.elev.lm
+dev.off()
+
+# Survival vs. shrub cover by Prev_year_precip (linear regression)
+tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival.shrub.prevprecip.lm
+dev.off()
+
+# Survival vs. herb cover by Prev_year_precip (linear regression)
+tiff("figures/2025-05_draft-figures/Survival_by-herb-cover-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival.herb.prevprecip.lm
+dev.off()
+
+# Survival vs. PlotSlope by Prev_year_precip
+tiff("figures/2025-05_draft-figures/Survival_by-plot-slope-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival.plotslope.prevprecip.lm
+dev.off()
 
 
 save.image("RData/05.1_draft-figs-for-lm-3.0.RData")
