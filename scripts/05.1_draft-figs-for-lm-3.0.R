@@ -1,5 +1,5 @@
 # Created: 2025-04-28
-# Updated: 2025-04-30
+# Updated: 2025-05-01
 
 # Purpose: Visualize relationships relevant to linear models from 06.2.R:
 #   total7, repro7, bgden7, bgcov7, survival7.
@@ -996,6 +996,32 @@ total.change.bgcov.prevprecip.lm <- culm.change %>%
                       name = "Previous year \nprecip (mm)")
 total.change.bgcov.prevprecip.lm
 
+# Total culms: linear regression by buffelgrass cover
+dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = BGCover, y = Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  labs(x = "Cover (%)",
+       y = "Number of live culms",
+       title = "Buffelgrass total culm count vs. cover")
+
+# Total culms: linear regression by buffelgrass cover and Prev_year_precip
+dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = BGCover, y = Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  labs(x = "Cover (%)",
+       y = "Number of live culms",
+       title = "Buffelgrass total culm count vs. cover") +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)")
+
 # Total culms: linear regression by buffelgrass seedling survival and Prev_year_precip
 total.survival.prevprecip.lm <- dat %>% 
   filter(!is.na(survival_perc),
@@ -1114,7 +1140,7 @@ dev.off()
 # Total change vs. PlotSlope
 tiff("figures/2025-05_draft-figures/Total-change_by-plot-slope_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
-total.change.elev.lm
+total.change.plotslope.lm
 dev.off()
 
 # Total change vs. herb cover change
