@@ -796,38 +796,6 @@ bgcov.change.plotslope.prevprecip.lm
 
 
 
-# Shrub & herb cover ------------------------------------------------------
-
-# Shrub cover change: Linear regression by Prev_year_precip
-shrub.change.precip.lm <- plot.change %>% 
-  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(x = "Previous year precip (mm)",
-       y = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in shrub cover vs. precip")
-shrub.change.precip.lm
-
-# Herb cover change: Linear regression by Prev_year_precip
-herb.change.precip.lm <- plot.change %>% 
-  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(x = "Previous year precip (mm)",
-       y = expression(Delta ~ "Native herb cover (%)"),
-       title = "Change in grass & forb cover vs. precip")
-herb.change.precip.lm
-
-
-
 # Survival ----------------------------------------------------------------
 
 ## Survival: Significant --------------------------------------------------
@@ -955,6 +923,36 @@ survival.plotslope.prevprecip.lm
 
 
 
+
+# Shrub & herb cover ------------------------------------------------------
+
+# Shrub cover change: Linear regression by Prev_year_precip
+shrub.change.precip.lm <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Previous year precip (mm)",
+       y = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in shrub cover vs. precip")
+shrub.change.precip.lm
+
+# Herb cover change: Linear regression by Prev_year_precip
+herb.change.precip.lm <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Previous year precip (mm)",
+       y = expression(Delta ~ "Native herb cover (%)"),
+       title = "Change in grass & forb cover vs. precip")
+herb.change.precip.lm
 
 
 

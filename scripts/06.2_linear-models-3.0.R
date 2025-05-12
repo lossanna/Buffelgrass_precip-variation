@@ -1,5 +1,5 @@
 # Created: 2025-03-24
-# Updated: 2025-04-29
+# Updated: 2025-05-12
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -68,6 +68,14 @@ plot.change <- plot.change %>%
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1]) %>% 
   filter(Aspect != "flat")
+
+
+dat.plot <- dat %>% 
+  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>% 
+  distinct(.keep_all = TRUE)
+dat.plot <- dat.plot %>% 
+  filter(Aspect != "flat") %>% 
+  mutate(Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1])
 
 
 # Prepare survival data
@@ -1509,7 +1517,7 @@ bgden6_importance.all.df %>%
 
 
 
-# BG density 7: Switch elevation from ft to m -----------------------------
+## BG density 7: Switch elevation from ft to m ----------------------------
 
 # 7: lm version
 lm.bgden7 <- lm(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_m_scaled +
@@ -1947,7 +1955,7 @@ bgcov6_importance.all.df %>%
 
 
 
-# BG cover 7: Switch elevation from ft to m -------------------------------
+## BG cover 7: Switch elevation from ft to m ------------------------------
 
 # 7: lm version
 lm.bgcov7 <- lm(Change_BGCover ~ Prev_year_precip_scaled + Elevation_m_scaled +
@@ -2122,6 +2130,43 @@ survival7_importance.all.df %>%
   geom_col() +
   coord_flip() +
   theme_bw()
+
+
+
+# Native cover & precip ---------------------------------------------------
+
+## Change in shrub cover --------------------------------------------------
+
+lm.shrub.change <- lm(Change_ShrubCover ~ Prev_year_precip_scaled,
+                      data = plot.change)
+summary(lm.shrub.change)
+check_model(lm.shrub.change)
+
+
+## Shrub cover (all years) ------------------------------------------------
+
+lm.shrub <- lm(ShrubCover ~ Prev_year_precip,
+               data = dat.plot)
+summary(lm.shrub)
+check_model(lm.shrub)
+
+
+## Change in herb cover ---------------------------------------------------
+
+lm.herb.change <- lm(Change_HerbCover ~ Prev_year_precip_scaled,
+                     data = plot.change)
+summary(lm.herb.change)
+check_model(lm.herb.change)
+
+
+## Herb cover (all years) -------------------------------------------------
+
+lm.herb <- lm(HerbCover ~ Prev_year_precip,
+              data = dat.plot)
+summary(lm.herb)
+check_model(lm.herb)
+
+
 
 
 save.image("RData/06.2_linear-models-3.0.RData")
