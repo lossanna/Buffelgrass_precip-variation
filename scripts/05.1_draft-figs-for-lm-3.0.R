@@ -1,5 +1,5 @@
 # Created: 2025-04-28
-# Updated: 2025-05-01
+# Updated: 2025-06-20
 
 # Purpose: Visualize relationships relevant to linear models from 06.2.R:
 #   total7, repro7, bgden7, bgcov7, survival7.
@@ -42,7 +42,9 @@ plot.avg.site <- dat.plot %>%
             .groups = "keep")
 
 
-# Aspects at each site ----------------------------------------------------
+# Site characteristics ----------------------------------------------------
+
+## Aspects at each site ---------------------------------------------------
 
 dat %>% 
   filter(Site == "ApachePeak") %>% 
@@ -57,6 +59,47 @@ dat %>%
   filter(Site == "TumamocHill") %>% 
   count(Aspect) # E, N, S, W
 
+
+## Plot slopes ------------------------------------------------------------
+
+# By site
+dat.plot %>% 
+  group_by(Site) %>% 
+  summarise(PlotSlope_min = min(PlotSlope),
+            PlotSlope_max = max(PlotSlope),
+            PlotSlope_avg = mean(PlotSlope),
+            PlotSlope_median = median(PlotSlope))
+
+# Overall
+summary(dat.plot$PlotSlope)
+
+
+## Number of plots --------------------------------------------------------
+
+length(unique(dat.plot$Plot)) # 79
+
+# Transects with two plots
+dat.plot %>% 
+  select(Site, Transect, Plot) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  group_by(Transect) %>% 
+  summarise(PlotCount = n()) %>% 
+  print(n = 27) %>% 
+  filter(PlotCount == 2)
+
+
+## Survival ---------------------------------------------------------------
+
+survival <- dat %>% 
+  filter(!is.na(survival_perc)) %>% 
+  select(Date, Year, StudyYear, Site, Transect, Plot, survival_perc) %>% 
+  distinct(.keep_all = TRUE)
+nrow(survival)
+nrow(dat.plot)
+
+length(unique(survival$Plot))
+
+setdiff(unique(dat.plot$Plot), unique(survival$Plot))
 
 
 # Precip ------------------------------------------------------------------
