@@ -57,7 +57,7 @@ dat <- dat %>%
 
 # Add survival data
 survival.join <- survival.raw %>% 
-  filter(!is.na(Year)) %>%  # remove observations from 09/2021
+  filter(!is.na(Year)) %>%  # remove observations from 09/2021 (all other obs from spring)
   select(Site, Transect, Plot, Year, survival_perc) %>% 
   mutate(Year = as.character(Year))
 
