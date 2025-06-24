@@ -105,10 +105,11 @@ setdiff(unique(dat.plot$Plot), unique(survival$Plot))
 # Precip ------------------------------------------------------------------
 
 # 30-year averages by site
-dat.plot %>% 
+MAP <- dat.plot %>% 
   select(Site, Transect, MAP) %>% 
   distinct(.keep_all = TRUE) %>% 
   print(n = 27)
+mean(MAP$MAP)
 
 map.avg <- dat.plot %>% 
   select(Site, Transect, MAP) %>% 
