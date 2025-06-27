@@ -1,5 +1,5 @@
 # Created: 2025-03-24
-# Updated: 2025-05-12
+# Updated: 2025-06-27
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -86,7 +86,8 @@ dat.survival <- dat %>%
          ShrubCover_scaled = scale(ShrubCover, center = TRUE, scale = TRUE)[, 1],
          HerbCover_scaled = scale(HerbCover, center = TRUE, scale = TRUE)[, 1],
          Elevation_m_scaled = scale(Elevation_m, center = TRUE, scale = TRUE)[, 1],
-         PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1])
+         PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
+         BGDensity_scaled = scale(BGDensity, center = TRUE, scale = TRUE)[, 1])
 
 dat.survival.plot <- dat.survival %>% 
   select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>% 
@@ -2126,6 +2127,94 @@ survival7_importance.all <- sw(survival7_avg.all)
 survival7_importance.all.df <- data.frame(variable = names(survival7_importance.all),
                                           importance = survival7_importance.all)
 survival7_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
+
+## Survival 8: Add BGDensity & precip interaction -------------------------
+
+# 8: lm version
+lm.survival8 <- lm(survival_perc ~ Prev_year_precip_scaled + Elevation_m_scaled +
+                     Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                     HerbCover_scaled + BGDensity_scaled +
+                     Prev_year_precip_scaled * PlotSlope_scaled +
+                     Prev_year_precip_scaled * ShrubCover_scaled +
+                     Prev_year_precip_scaled * HerbCover_scaled +
+                     Prev_year_precip_scaled * BGDensity_scaled,
+                   data = dat.survival.plot)
+summary(lm.survival8)
+r2(lm.survival8) # adjusted: 0.535
+check_model(lm.survival8)
+
+# 8: glmmTMB version
+survival8 <- glmmTMB(survival_perc ~ Prev_year_precip_scaled + Elevation_m_scaled +
+                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                       HerbCover_scaled + BGDensity_scaled +
+                       Prev_year_precip_scaled * PlotSlope_scaled +
+                       Prev_year_precip_scaled * ShrubCover_scaled +
+                       Prev_year_precip_scaled * HerbCover_scaled +
+                       Prev_year_precip_scaled * BGDensity_scaled,
+                     data = dat.survival.plot,
+                     family = gaussian)
+summary(survival8)
+r2(survival8) # adjusted: 0.533
+res.survival8 <- simulateResiduals(survival8)
+plotQQunif(res.survival8)
+plotResiduals(res.survival8)
+check_collinearity(survival8) 
+check_model(survival8)
+
+
+# Model selection
+options(na.action = "na.fail")
+survival8_set <- dredge(survival8)
+
+# Examine best model
+survival8_best.model <- get.models(survival8_set, 1)[[1]]
+summary(survival8_best.model)
+r2(survival8_best.model) # adjusted: 0.530
+res.survival8_best.model <- simulateResiduals(survival8_best.model)
+plotQQunif(res.survival8_best.model)
+plotResiduals(res.survival8_best.model)
+check_collinearity(survival8_best.model)
+check_model(survival8_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+survival8_top <- subset(survival8_set, delta <= 2)
+for (i in 1:nrow(survival8_top)) {
+  assign(paste0("survival8_model", i), get.models(survival8_top, subset = i)[[1]])
+}
+
+r2(survival8_model1) # adjusted: 0.530
+r2(survival8_model2) # adjusted: 0.527
+r2(survival8_model3) # adjusted: 0.526
+r2(survival8_model4) # adjusted: 0.525
+r2(survival8_model5) # adjusted: 0.523
+r2(survival8_model6) # adjusted: 0.525
+r2(survival8_model7) # adjusted: 0.527
+
+# Model averaging of top models
+survival8_avg <- model.avg(survival8_set, subset = delta <= 2) 
+summary(survival8_avg)
+survival8_importance <- sw(survival8_avg)
+survival8_importance.df <- data.frame(variable = names(survival8_importance),
+                                      importance = survival8_importance)
+survival8_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Model averaging of all models
+survival8_avg.all <- model.avg(survival8_set)
+summary(survival8_avg.all)
+survival8_importance.all <- sw(survival8_avg.all)
+survival8_importance.all.df <- data.frame(variable = names(survival8_importance.all),
+                                          importance = survival8_importance.all)
+survival8_importance.all.df %>% 
   ggplot(aes(x = reorder(variable, importance), y = importance)) +
   geom_col() +
   coord_flip() +
