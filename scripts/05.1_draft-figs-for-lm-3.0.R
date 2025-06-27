@@ -1,8 +1,8 @@
 # Created: 2025-04-28
-# Updated: 2025-06-20
+# Updated: 2025-06-27
 
 # Purpose: Visualize relationships relevant to linear models from 06.2.R:
-#   total7, repro7, bgden7, bgcov7, survival7.
+#   total7, repro7, bgden7, bgcov7, survival8.
 
 library(tidyverse)
 library(scales)
@@ -872,20 +872,6 @@ survival.plotslope.lm <- dat %>%
        title = "Buffelgrass seedling survival vs. plot slope")
 survival.plotslope.lm
 
-# Survival: linear regression by shrub cover 
-survival.shrub.lm <- dat %>% 
-  filter(!is.na(survival_perc),
-         Aspect != "flat") %>% 
-  ggplot(aes(x = ShrubCover, y = survival_perc)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  scale_y_continuous(labels = scales::percent) +
-  theme_bw() +
-  labs(y = "Buffelgrass seedling survival (%)",
-       x = "Native shrub cover (%)",
-       title = "Buffegrass seedling survival vs. shrub cover")
-survival.shrub.lm
-
 # Survival: linear regression by herb cover 
 survival.herb.lm <- dat %>% 
   filter(!is.na(survival_perc),
@@ -899,6 +885,37 @@ survival.herb.lm <- dat %>%
        x = "Native grass & forb cover (%)",
        title = "Buffegrass seedling survival vs. herb cover")
 survival.herb.lm
+
+# Survival: scatterplot by BG density and Prev_year_precip
+survival.bgden.prevprecip <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = BGDensity, y = survival_perc)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  scale_y_continuous(labels = scales::percent) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  theme_bw() +
+  labs(x = expression(paste("Density (individuals / ", m^2, ")")),
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. density")
+survival.bgden.prevprecip
+
+# Survival: linear regression by PlotSlope and Prev_year_precip
+survival.plotslope.prevprecip.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = PlotSlope, y = survival_perc)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(y = "Seedling survival (%)",
+       x = "Plot slope (\u00B0)",
+       title = "Buffelgrass seedling survival vs. plot slope")
+survival.plotslope.prevprecip.lm
 
 
 ## Survival: Not significant -----------------------------------------------
@@ -917,13 +934,40 @@ survival.elev.lm <- dat %>%
        title = "Buffelgrass seedling survival vs. elevation")
 survival.elev.lm
 
-# Survival: linear regression by shrub cover and Prev_year_precip
-survival.shrub.prevprecip.lm <- dat %>% 
+# Survival: linear regression by BG density
+survival.bgden.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = BGDensity, y = survival_perc)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw() +
+  labs(x = expression(paste("Density (individuals / ", m^2, ")")),
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. density")
+survival.bgden.lm
+
+# Survival: linear regression by shrub cover 
+survival.shrub.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = ShrubCover, y = survival_perc)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw() +
+  labs(y = "Buffelgrass seedling survival (%)",
+       x = "Native shrub cover (%)",
+       title = "Buffegrass seedling survival vs. shrub cover")
+survival.shrub.lm
+
+# Survival: scatterplot by shrub cover and Prev_year_precip
+survival.shrub.prevprecip <- dat %>% 
   filter(!is.na(survival_perc),
          Aspect != "flat") %>% 
   ggplot(aes(x = ShrubCover, y = survival_perc)) +
   geom_point(aes(color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
   scale_y_continuous(labels = scales::percent) +
@@ -931,7 +975,7 @@ survival.shrub.prevprecip.lm <- dat %>%
   labs(y = "Buffelgrass seedling survival (%)",
        x = "Native shrub cover (%)",
        title = "Buffegrass seedling survival vs. shrub cover")
-survival.shrub.prevprecip.lm
+survival.shrub.prevprecip
 
 # Survival: linear regression by herb cover and Prev_year_precip
 survival.herb.prevprecip.lm <- dat %>% 
@@ -948,22 +992,6 @@ survival.herb.prevprecip.lm <- dat %>%
        x = "Native grass & forb cover (%)",
        title = "Buffegrass seedling survival vs. herb cover")
 survival.herb.prevprecip.lm
-
-# BG cover change: linear regression by PlotSlope and Prev_year_precip
-survival.plotslope.prevprecip.lm <- dat %>% 
-  filter(!is.na(survival_perc),
-         Aspect != "flat") %>% 
-  ggplot(aes(x = PlotSlope, y = survival_perc)) +
-  geom_point(aes(color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
-  scale_color_viridis(option = "viridis", direction = -1,
-                      name = "Previous year \nprecip (mm)") +
-  theme_bw() +
-  scale_y_continuous(labels = scales::percent) +
-  labs(y = expression(Delta ~ "Seedling survival (%)"),
-       x = "Plot slope (\u00B0)",
-       title = "Buffelgrass seedling survival vs. plot slope")
-survival.plotslope.prevprecip.lm
 
 
 
@@ -1419,16 +1447,22 @@ tiff("figures/2025-05_draft-figures/Survival_by-plot-slope_regression.tiff",
 survival.plotslope.lm
 dev.off()
 
-# Survival vs. shrub cover
-tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover_regression.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-survival.shrub.lm
-dev.off()
-
 # Survival vs. herb cover
 tiff("figures/2025-05_draft-figures/Survival_by-herb-cover_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.herb.lm
+dev.off()
+
+# Survival vs. BG density by Prev_year_precip
+tiff("figures/2025-05_draft-figures/Survival_by-BG-density-and-prev-year-precip.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival.bgden.prevprecip
+dev.off()
+
+# Survival vs. PlotSlope by Prev_year_precip (linear regression)
+tiff("figures/2025-05_draft-figures/Survival_by-plot-slope-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival.plotslope.prevprecip.lm
 dev.off()
 
 # Not significant
@@ -1438,10 +1472,22 @@ tiff("figures/2025-05_draft-figures/Survival_by-elevation_regression.tiff",
 survival.elev.lm
 dev.off()
 
-# Survival vs. shrub cover by Prev_year_precip (linear regression)
-tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover-and-prev-year-precip_regression.tiff",
+# Survival vs. shrub cover
+tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.shrub.lm
+dev.off()
+
+# Survival vs. BG density
+tiff("figures/2025-05_draft-figures/Survival_by-BG-density_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.bgden.lm
+dev.off()
+
+# Survival vs. shrub cover by Prev_year_precip 
+tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover-and-prev-year-precip.tiff",
      units = "in", height = 4, width = 6, res = 150)
-survival.shrub.prevprecip.lm
+survival.shrub.prevprecip
 dev.off()
 
 # Survival vs. herb cover by Prev_year_precip (linear regression)
@@ -1450,11 +1496,7 @@ tiff("figures/2025-05_draft-figures/Survival_by-herb-cover-and-prev-year-precip_
 survival.herb.prevprecip.lm
 dev.off()
 
-# Survival vs. PlotSlope by Prev_year_precip
-tiff("figures/2025-05_draft-figures/Survival_by-plot-slope-and-prev-year-precip_regression.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-survival.plotslope.prevprecip.lm
-dev.off()
+
 
 
 save.image("RData/05.1_draft-figs-for-lm-3.0.RData")
