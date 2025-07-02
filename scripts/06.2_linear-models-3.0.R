@@ -468,7 +468,7 @@ total6_importance.all.df %>%
 
 
 
-# Total change 7: Switch elevation from ft to m ---------------------------
+## Total change 7: Switch elevation from ft to m --------------------------
 
 # 7: lme4 version
 lme4.total7 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled + Elevation_m_scaled + 
