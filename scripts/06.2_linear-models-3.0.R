@@ -1,5 +1,5 @@
 # Created: 2025-03-24
-# Updated: 2025-07-02
+# Updated: 2025-07-03
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -23,7 +23,7 @@
 
 # Centering and scaling variables means that Elevation_ft and Elevation_m are basically the same,
 #   but I ran new models anyway. 
-# Update 7/2: I decided to drop Elevation from candidate models.
+# Update 7/2: I decided to drop Elevation from candidate models (version 8).
 
 library(tidyverse)
 library(glmmTMB)
@@ -521,7 +521,7 @@ plotResiduals(res.total7_best.model)
 check_model(total7_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-total7_top <- subset(total7_set, delta <= 2) 
+total7_top <- subset(total7_set, delta <= 2) # 4 models
 for (i in 1:nrow(total7_top)) {
   assign(paste0("total7_model", i), get.models(total7_top, subset = i)[[1]])
 } 
@@ -599,6 +599,7 @@ check_model(total8)
 # Model selection
 options(na.action = "na.fail")
 total8_set <- dredge(total8)
+total8.lme4_set <- dredge(lme4.total8) # some might have failed to converge? (lme4 version)
 
 # Examine best model
 total8_best.model <- get.models(total8_set, 1)[[1]]
@@ -607,10 +608,19 @@ r2(total8_best.model) # marginal: 0.147; conditional: 0.356
 res.total8_best.model <- simulateResiduals(total8_best.model)
 plotQQunif(res.total8_best.model)
 plotResiduals(res.total8_best.model)
-check_model(total8_best.model)
+check_model
+
+# Best model, lme4 version
+#   no model averaging needed, only 1 top model
+#   also, it is the same as the global candidate model
+total8.lme4_best.model <- get.models(total8.lme4_set, 1)[[1]]
+summary(total8.lme4_best.model)
+r2(total8.lme4_best.model) # marginal: 0.132; conditional: 0.411
+check_model(total8.lme4_best.model)
+
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-total8_top <- subset(total8_set, delta <= 2) 
+total8_top <- subset(total8_set, delta <= 2) # 4 models
 for (i in 1:nrow(total8_top)) {
   assign(paste0("total8_model", i), get.models(total8_top, subset = i)[[1]])
 } 
@@ -1149,7 +1159,7 @@ plotResiduals(res.repro7_best.model)
 check_model(repro7_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-repro7_top <- subset(repro7_set, delta <= 2) 
+repro7_top <- subset(repro7_set, delta <= 2) # 6 models
 for (i in 1:nrow(repro7_top)) {
   assign(paste0("repro7_model", i), get.models(repro7_top, subset = i)[[1]])
 } 
@@ -1229,6 +1239,7 @@ check_model(repro8)
 # Model selection
 options(na.action = "na.fail")
 repro8_set <- dredge(repro8)
+repro8.lme4_set <- dredge(lme4.repro8) # some might have failed to converge? (lme4 version)
 
 # Examine best model
 repro8_best.model <- get.models(repro8_set, 1)[[1]]
@@ -1239,17 +1250,35 @@ plotQQunif(res.repro8_best.model)
 plotResiduals(res.repro8_best.model)
 check_model(repro8_best.model)
 
+# Best model, lme4 version
+repro8.lme4_best.model <- get.models(repro8.lme4_set, 1)[[1]]
+summary(repro8.lme4_best.model)
+r2(repro8.lme4_best.model) # marginal: 0.115; conditional: 0.287
+check_model(repro8.lme4_best.model)
+
 # Examine models within 2 AICc units of best and assign each top model to separate object
-repro8_top <- subset(repro8_set, delta <= 2) 
+repro8_top <- subset(repro8_set, delta <= 2) # 4 models
 for (i in 1:nrow(repro8_top)) {
   assign(paste0("repro8_model", i), get.models(repro8_top, subset = i)[[1]])
 } 
+
+repro8.lme4_top <- subset(repro8.lme4_set, delta <= 2) # 4 models
+for (i in 1:nrow(repro8.lme4_top)) {
+  assign(paste0("repro8.lme4_model", i), get.models(repro8.lme4_top, subset = i)[[1]])
+} 
+
 
 # R^2 of top models
 r2(repro8_model1) # marginal: 0.123; conditional: 0.239
 r2(repro8_model2) # marginal: 0.125; conditional: 0.238
 r2(repro8_model3) # marginal: 0.126; conditional: 0.237
 r2(repro8_model4) # marginal: 0.128; conditional: 0.236
+
+r2(repro8.lme4_model1) # marginal: 0.115; conditional: 0.287
+r2(repro8.lme4_model2) # marginal: 0.113; conditional: 0.290
+r2(repro8.lme4_model3) # marginal: 0.117; conditional: 0.286
+r2(repro8.lme4_model4) # marginal: 0.115; conditional: 0.289
+
 
 # Model averaging of top models
 repro8_avg <- model.avg(repro8_set, subset = delta <= 2)
@@ -1262,6 +1291,11 @@ repro8_importance.df %>%
   geom_col() +
   coord_flip() +
   theme_bw()
+
+# Top model averaging, lme4 version
+repro8.lme4_avg <- model.avg(repro8.lme4_set, subset = delta <= 2)
+summary(repro8.lme4_avg)
+
 
 # Model averaging of all models
 repro8_avg.all <- model.avg(repro8_set)
@@ -1663,7 +1697,7 @@ lm.bgden6 <- lm(Change_BGDensity ~ Prev_year_precip_scaled + Elevation_ft_scaled
                   Prev_year_precip_scaled * Change_HerbCover_scaled,
                 data = plot.change)
 summary(lm.bgden6)
-r2(lm.bgden6) # adjusted: 0.426; conditional: 0.455
+r2(lm.bgden6) # adjusted: 0.426
 check_model(lm.bgden6)
 
 # 6: glmmTMB version
@@ -1789,7 +1823,7 @@ check_collinearity(bgden7_best.model)
 check_model(bgden7_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-bgden7_top <- subset(bgden7_set, delta <= 2)
+bgden7_top <- subset(bgden7_set, delta <= 2) # 6 models
 for (i in 1:nrow(bgden7_top)) {
   assign(paste0("bgden7_model", i), get.models(bgden7_top, subset = i)[[1]])
 }
@@ -1877,7 +1911,7 @@ check_collinearity(bgden8_best.model)
 check_model(bgden8_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-bgden8_top <- subset(bgden8_set, delta <= 2)
+bgden8_top <- subset(bgden8_set, delta <= 2) # 2 models
 for (i in 1:nrow(bgden8_top)) {
   assign(paste0("bgden8_model", i), get.models(bgden8_top, subset = i)[[1]])
 }
@@ -1909,6 +1943,8 @@ bgden8_importance.all.df %>%
   geom_col() +
   coord_flip() +
   theme_bw()
+
+
 
 
 
@@ -2313,7 +2349,7 @@ check_collinearity(bgcov7_best.model)
 check_model(bgcov7_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-bgcov7_top <- subset(bgcov7_set, delta <= 2)
+bgcov7_top <- subset(bgcov7_set, delta <= 2) # 7 models
 for (i in 1:nrow(bgcov7_top)) {
   assign(paste0("bgcov7_model", i), get.models(bgcov7_top, subset = i)[[1]])
 }
@@ -2324,7 +2360,7 @@ r2(bgcov7_model2) # adjusted: 0.231
 r2(bgcov7_model3) # adjusted: 0.227
 r2(bgcov7_model4) # adjusted: 0.223
 r2(bgcov7_model5) # adjusted: 0.222
-r2(bgcov7_model7) # adjusted: 0.230
+r2(bgcov7_model6) # adjusted: 0.224
 r2(bgcov7_model7) # adjusted: 0.230
 
 # Model averaging of top models
@@ -2402,7 +2438,7 @@ check_collinearity(bgcov8_best.model)
 check_model(bgcov8_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-bgcov8_top <- subset(bgcov8_set, delta <= 2)
+bgcov8_top <- subset(bgcov8_set, delta <= 2) # 7 models
 for (i in 1:nrow(bgcov8_top)) {
   assign(paste0("bgcov8_model", i), get.models(bgcov8_top, subset = i)[[1]])
 }
@@ -2410,6 +2446,11 @@ for (i in 1:nrow(bgcov8_top)) {
 # R^2 of top models
 r2(bgcov8_model1) # adjusted: 0.203
 r2(bgcov8_model2) # adjusted: 0.209
+r2(bgcov8_model3) # adjusted: 0.202
+r2(bgcov8_model4) # adjusted: 0.201
+r2(bgcov8_model5) # adjusted: 0.208
+r2(bgcov8_model6) # adjusted: 0.201
+r2(bgcov8_model7) # adjusted: 0.208
 
 # Model averaging of top models
 bgcov8_avg <- model.avg(bgcov8_set, subset = delta <= 2) 
@@ -2434,6 +2475,7 @@ bgcov8_importance.all.df %>%
   geom_col() +
   coord_flip() +
   theme_bw()
+
 
 
 
@@ -2579,7 +2621,7 @@ check_collinearity(survival8_best.model)
 check_model(survival8_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-survival8_top <- subset(survival8_set, delta <= 2)
+survival8_top <- subset(survival8_set, delta <= 2) # 7 models
 for (i in 1:nrow(survival8_top)) {
   assign(paste0("survival8_model", i), get.models(survival8_top, subset = i)[[1]])
 }
@@ -2670,7 +2712,7 @@ check_collinearity(survival9_best.model)
 check_model(survival9_best.model)
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-survival9_top <- subset(survival9_set, delta <= 2)
+survival9_top <- subset(survival9_set, delta <= 2) # 4 models
 for (i in 1:nrow(survival9_top)) {
   assign(paste0("survival9_model", i), get.models(survival9_top, subset = i)[[1]])
 }
