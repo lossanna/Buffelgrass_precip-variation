@@ -1,8 +1,9 @@
 # Created: 2025-04-28
-# Updated: 2025-06-27
+# Updated: 2025-07-03
 
 # Purpose: Visualize relationships relevant to linear models from 06.2.R:
-#   total7, repro7, bgden7, bgcov7, survival8.
+#   total8, repro8, bgden8, bgcov8, survival9.
+# Elevation plots still remain from version 7 models.
 
 library(tidyverse)
 library(scales)
@@ -166,20 +167,6 @@ total.change.precip.lm <- culm.change %>%
              color = "red")  
 total.change.precip.lm
 
-# Total change: Linear regression by Elevation
-total.change.elev.lm <- culm.change %>% 
-  ggplot(aes(x = Elevation_m, y = Change_Total_Live_Culms)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() +
-  xlab("Elevation (m)") +
-  ggtitle("Change in total culm count vs. elevation") +
-  labs(y = expression(Delta ~ "Total culm count")) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red")  
-total.change.elev.lm
-
 # Total change: linear regression by buffelgrass density (change)
 total.change.bgden.lm <- culm.change %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms)) +
@@ -194,7 +181,7 @@ total.change.bgden.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
-       title = "Change in total culm count vs. plot density")
+       title = "Change in total culm count vs. plot density change")
 total.change.bgden.lm
 
 # Total change: linear regression by shrub cover (change)
@@ -211,7 +198,7 @@ total.change.shrub.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in total culm count vs. plot shrub cover")
+       title = "Change in total culm count vs. shrub cover change")
 total.change.shrub.lm
 
 # Total change: linear regression by shrub cover (change) and Prev_year_precip
@@ -230,7 +217,7 @@ total.change.shrub.prevprecip.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in total culm count vs. plot shrub cover")
+       title = "Change in total culm count vs. shrub cover change")
 total.change.shrub.prevprecip.lm
 
 # Total change: scatterplot by herb cover (change) and Prev_year_precip
@@ -248,7 +235,7 @@ total.change.herb.prevprecip <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ "Native grass & forb cover (%)"),
-       title = "Change in total culm count vs. plot herb cover")
+       title = "Change in total culm count vs. herb cover change")
 total.change.herb.prevprecip
 
 # Total change: scatterplot PlotSlope and Prev_year_precip
@@ -291,7 +278,7 @@ total.change.plotslope.lm <- culm.change %>%
   geom_smooth(method = "lm") +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
-  ggtitle("Change in total culm count") +
+  ggtitle("Change in total culm count vs. plot slope") +
   labs(y = expression(Delta ~ "Total culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
@@ -312,7 +299,7 @@ total.change.herb.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ "Native grass & forb cover (%)"),
-       title = "Change in total culm count vs. plot herb cover")
+       title = "Change in total culm count vs. herb cover change")
 total.change.herb.lm
 
 # Total change: scatterplot buffelgrass density (change) and Prev_year_precip
@@ -330,7 +317,7 @@ total.change.bgden.prevprecip <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
-       title = "Change in total culm count vs. plot density") 
+       title = "Change in total culm count vs. plot density change") 
 total.change.bgden.prevprecip
 
 # Total change: linear regression buffelgrass density (change) and Prev_year_precip
@@ -349,7 +336,7 @@ total.change.bgden.prevprecip.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
-       title = "Change in total culm count vs. plot density") 
+       title = "Change in total culm count vs. plot density change") 
 total.change.bgden.prevprecip.lm
 
 # Total change: linear regression by herb cover (change) and previous year precipitation
@@ -368,8 +355,23 @@ total.change.herb.prevprecip.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ "Native grass & forb cover (%)"),
-       title = "Change in total culm count vs. plot herb cover")
+       title = "Change in total culm count vs. herb cover change")
 total.change.herb.prevprecip.lm
+
+
+# Total change: Linear regression by Elevation
+total.change.elev.lm <- culm.change %>% 
+  ggplot(aes(x = Elevation_m, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Elevation (m)") +
+  ggtitle("Change in total culm count vs. elevation") +
+  labs(y = expression(Delta ~ "Total culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")  
+total.change.elev.lm
 
 
 
@@ -406,7 +408,7 @@ repro.change.bgden.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
-       title = "Change in reproductive culm count vs. plot density")
+       title = "Change in repro culm count vs. plot density change")
 repro.change.bgden.lm
 
 # Repro change: linear regression by shrub cover (change)
@@ -423,7 +425,7 @@ repro.change.shrub.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in reproductive culm count vs. plot shrub cover")
+       title = "Change in repro culm count vs. shrub cover change")
 repro.change.shrub.lm
 
 # Repro change: linear regression by herb cover (change)
@@ -440,7 +442,7 @@ repro.change.herb.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ "Native grass and forb cover (%)"),
-       title = "Change in reproductive culm count vs. plot herb cover")
+       title = "Change in repro culm count vs. herb cover change")
 repro.change.herb.lm
 
 # Repro change: linear regression buffelgrass density (change) and Prev_year_precip
@@ -459,7 +461,7 @@ repro.change.bgden.prevprecip.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
-       title = "Change in reproductive culm count vs. plot density") 
+       title = "Change in reproductive culm count vs. plot density change") 
 repro.change.bgden.prevprecip.lm
 
 # Repro change: scatterplot buffelgrass density (change) and Prev_year_precip
@@ -477,7 +479,7 @@ repro.change.bgden.prevprecip <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
-       title = "Change in reproductive culm count vs. plot density") 
+       title = "Change in reproductive culm count vs. plot density change") 
 repro.change.bgden.prevprecip
 
 # Repro change: scatterplot PlotSlope and Prev_year_precip
@@ -512,20 +514,6 @@ repro.change.precip.lm <- culm.change %>%
              color = "red")  
 repro.change.precip.lm
 
-# Repro change: Linear regression by Elevation
-repro.change.elev.lm <- culm.change %>% 
-  ggplot(aes(x = Elevation_m, y = Change_Reproductive_culms)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() +
-  xlab("Elevation (m)") +
-  ggtitle("Change in reproductive culm count vs. elevation") +
-  labs(y = expression(Delta ~ "Reproductive culm count")) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red")  
-repro.change.elev.lm
-
 # Repro change: Linear regression by PlotSlope
 repro.change.plotslope.lm <- culm.change %>% 
   ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms)) +
@@ -556,7 +544,7 @@ repro.change.shrub.prevprecip.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in reproductive culm count vs. plot shrub cover")
+       title = "Change in reproductive culm count vs. shrub cover change")
 repro.change.shrub.prevprecip.lm
 
 # Repro change: linear regression by herb cover (change) and Prev_year_precip
@@ -575,10 +563,22 @@ repro.change.herb.prevprecip.lm <- culm.change %>%
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ "Native grass and forb cover (%)"),
-       title = "Change in reproductive culm count vs. plot herb cover")
+       title = "Change in reproductive culm count vs. herb cover change")
 repro.change.herb.prevprecip.lm
 
-
+# Repro change: Linear regression by Elevation
+repro.change.elev.lm <- culm.change %>% 
+  ggplot(aes(x = Elevation_m, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab("Elevation (m)") +
+  ggtitle("Change in reproductive culm count vs. elevation") +
+  labs(y = expression(Delta ~ "Reproductive culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")  
+repro.change.elev.lm
 
 
 
@@ -656,20 +656,6 @@ bgden.change.shrub.prevprecip.lm
 
 ## BG density change: Not significant -------------------------------------
 
-# BG density change: Linear regression by Elevation
-bgden.change.elev.lm <- plot.change %>% 
-  ggplot(aes(x = Elevation_m, y = Change_BGDensity)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(x = "Elevation (m)",
-       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
-       title = "Change in buffelgrass density vs. elevation")
-bgden.change.elev.lm
-
 # BG density change: Linear regression by PlotSlope
 bgden.change.plotslope.lm <- plot.change %>% 
   ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
@@ -720,6 +706,22 @@ bgden.change.herb.prevprecip.lm <- plot.change %>%
        title = "Change in buffelgrass density vs. herb cover change")
 bgden.change.herb.prevprecip.lm
 
+# BG density change: Linear regression by Elevation
+bgden.change.elev.lm <- plot.change %>% 
+  ggplot(aes(x = Elevation_m, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Elevation (m)",
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density vs. elevation")
+bgden.change.elev.lm
+
+
+
 
 # Buffelgrass cover -------------------------------------------------------
 
@@ -739,20 +741,6 @@ bgcov.change.precip.lm <- plot.change %>%
        title = "Change in buffelgrass cover vs. precip")
 bgcov.change.precip.lm
 
-# BG cover change: Linear regression by Elevation
-bgcov.change.elev.lm <- plot.change %>% 
-  ggplot(aes(x = Elevation_m, y = Change_BGCover)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(x = "Elevation (m)",
-       y = expression(Delta ~ "Cover (%)"),
-       title = "Change in buffelgrass cover vs. elevation")
-bgcov.change.elev.lm
-
 # BG cover change: Aspect (boxplot)
 bgcov.change.aspect <- plot.change %>% 
   filter(Aspect != "flat") %>% 
@@ -769,9 +757,6 @@ bgcov.change.aspect <- plot.change %>%
   theme(axis.text.x = element_text(color = "black"))
 bgcov.change.aspect
 
-
-## BG cover change: Not significant ---------------------------------------
-
 # BG cover change: Linear regression by PlotSlope
 bgcov.change.plotslope.lm <- plot.change %>% 
   ggplot(aes(x = PlotSlope, y = Change_BGCover)) +
@@ -785,6 +770,9 @@ bgcov.change.plotslope.lm <- plot.change %>%
        y = expression(Delta ~ "Cover (%)"),
        title = "Change in buffelgrass cover vs. plot slope")
 bgcov.change.plotslope.lm
+
+
+## BG cover change: Not significant ---------------------------------------
 
 # BG density change: linear regression by shrub cover (change)
 bgcov.change.shrub.lm <- plot.change %>% 
@@ -802,6 +790,23 @@ bgcov.change.shrub.lm <- plot.change %>%
        x = expression(Delta ~ "Native shrub cover (%)"),
        title = "Change in buffegrass cover vs. shrub cover change")
 bgcov.change.shrub.lm
+
+# BG density change: linear regression by herb cover (change)
+bgcov.change.herb.lm <- plot.change %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_BGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Buffelgrass cover (%)"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in buffegrass cover vs. herb cover change")
+bgcov.change.herb.lm
 
 # BG cover change: linear regression by shrub cover (change) and Prev_year_precip
 bgcov.change.shrub.prevprecip.lm <- plot.change %>% 
@@ -839,6 +844,22 @@ bgcov.change.plotslope.prevprecip.lm <- plot.change %>%
 bgcov.change.plotslope.prevprecip.lm
 
 
+# BG cover change: Linear regression by Elevation
+bgcov.change.elev.lm <- plot.change %>% 
+  ggplot(aes(x = Elevation_m, y = Change_BGCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Elevation (m)",
+       y = expression(Delta ~ "Cover (%)"),
+       title = "Change in buffelgrass cover vs. elevation")
+bgcov.change.elev.lm
+
+
+
 
 # Survival ----------------------------------------------------------------
 
@@ -871,6 +892,20 @@ survival.plotslope.lm <- dat %>%
        y = "Seedling survival (%)",
        title = "Buffelgrass seedling survival vs. plot slope")
 survival.plotslope.lm
+
+# Survival: linear regression by shrub cover 
+survival.shrub.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = ShrubCover, y = survival_perc)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw() +
+  labs(y = "Buffelgrass seedling survival (%)",
+       x = "Native shrub cover (%)",
+       title = "Buffegrass seedling survival vs. shrub cover")
+survival.shrub.lm
 
 # Survival: linear regression by herb cover 
 survival.herb.lm <- dat %>% 
@@ -920,20 +955,6 @@ survival.plotslope.prevprecip.lm
 
 ## Survival: Not significant -----------------------------------------------
 
-# Survival: linear regression by Elevation
-survival.elev.lm <- dat %>% 
-  filter(!is.na(survival_perc),
-         Aspect != "flat") %>% 
-  ggplot(aes(x = Elevation_m, y = survival_perc)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  scale_y_continuous(labels = scales::percent) +
-  theme_bw() +
-  labs(x = "Elevation (m)",
-       y = "Seedling survival (%)",
-       title = "Buffelgrass seedling survival vs. elevation")
-survival.elev.lm
-
 # Survival: linear regression by BG density
 survival.bgden.lm <- dat %>% 
   filter(!is.na(survival_perc),
@@ -947,35 +968,6 @@ survival.bgden.lm <- dat %>%
        y = "Seedling survival (%)",
        title = "Buffelgrass seedling survival vs. density")
 survival.bgden.lm
-
-# Survival: linear regression by shrub cover 
-survival.shrub.lm <- dat %>% 
-  filter(!is.na(survival_perc),
-         Aspect != "flat") %>% 
-  ggplot(aes(x = ShrubCover, y = survival_perc)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  scale_y_continuous(labels = scales::percent) +
-  theme_bw() +
-  labs(y = "Buffelgrass seedling survival (%)",
-       x = "Native shrub cover (%)",
-       title = "Buffegrass seedling survival vs. shrub cover")
-survival.shrub.lm
-
-# Survival: scatterplot by shrub cover and Prev_year_precip
-survival.shrub.prevprecip <- dat %>% 
-  filter(!is.na(survival_perc),
-         Aspect != "flat") %>% 
-  ggplot(aes(x = ShrubCover, y = survival_perc)) +
-  geom_point(aes(color = Prev_year_precip)) +
-  scale_color_viridis(option = "viridis", direction = -1,
-                      name = "Previous year \nprecip (mm)") +
-  scale_y_continuous(labels = scales::percent) +
-  theme_bw() +
-  labs(y = "Buffelgrass seedling survival (%)",
-       x = "Native shrub cover (%)",
-       title = "Buffegrass seedling survival vs. shrub cover")
-survival.shrub.prevprecip
 
 # Survival: linear regression by herb cover and Prev_year_precip
 survival.herb.prevprecip.lm <- dat %>% 
@@ -993,6 +985,34 @@ survival.herb.prevprecip.lm <- dat %>%
        title = "Buffegrass seedling survival vs. herb cover")
 survival.herb.prevprecip.lm
 
+# Survival: linear regression by Elevation
+survival.elev.lm <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = Elevation_m, y = survival_perc)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw() +
+  labs(x = "Elevation (m)",
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. elevation")
+survival.elev.lm
+
+# Survival: scatterplot by shrub cover and Prev_year_precip
+survival.shrub.prevprecip <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  ggplot(aes(x = ShrubCover, y = survival_perc)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  scale_y_continuous(labels = scales::percent) +
+  theme_bw() +
+  labs(y = "Buffelgrass seedling survival (%)",
+       x = "Native shrub cover (%)",
+       title = "Buffegrass seedling survival vs. shrub cover")
+survival.shrub.prevprecip
 
 
 
@@ -1163,12 +1183,6 @@ tiff("figures/2025-05_draft-figures/Total-change_by-prev-year-precip_regression.
 total.change.precip.lm
 dev.off()
 
-# Total change vs. Elevation
-tiff("figures/2025-05_draft-figures/Total-change_by-elevation_regression.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-total.change.elev.lm
-dev.off()
-
 # Total change vs. BG density change
 tiff("figures/2025-05_draft-figures/Total-change_by-BG-density-change_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
@@ -1237,6 +1251,12 @@ tiff("figures/2025-05_draft-figures/Total-change_by-herb-cover-change-and-prev-y
 total.change.herb.prevprecip.lm
 dev.off()
 
+# Total change vs. Elevation
+tiff("figures/2025-05_draft-figures/Total-change_by-elevation_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+total.change.elev.lm
+dev.off()
+
 
 ## Repro change -----------------------------------------------------------
 
@@ -1291,12 +1311,6 @@ tiff("figures/2025-05_draft-figures/Repro-change_by-prev-year-precip_regression.
 repro.change.precip.lm
 dev.off()
 
-# Repro change vs. Elevation
-tiff("figures/2025-05_draft-figures/Repro-change_by-elevation_regression.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-repro.change.elev.lm
-dev.off()
-
 # Repro change vs. PlotSlope
 tiff("figures/2025-05_draft-figures/Repro-change_by-plot-slope_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
@@ -1313,6 +1327,12 @@ dev.off()
 tiff("figures/2025-05_draft-figures/Repro-change_by-herb-cover-change-and-prev-year-precip_regression.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.change.herb.prevprecip.lm
+dev.off()
+
+# Repro change vs. Elevation
+tiff("figures/2025-05_draft-figures/Repro-change_by-elevation_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.change.elev.lm
 dev.off()
 
 
@@ -1345,12 +1365,6 @@ dev.off()
 
 
 # Not significant
-# BG density change vs. Elevation
-tiff("figures/2025-05_draft-figures/BG-density-change_by-elevation_regression.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-bgden.change.elev.lm
-dev.off()
-
 # BG density change vs. PlotSlope
 tiff("figures/2025-05_draft-figures/BG-density-change_by-plot-slope_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
@@ -1369,6 +1383,12 @@ tiff("figures/2025-05_draft-figures/BG-density-change_by-herb-cover-change-and-p
 bgden.change.herb.prevprecip.lm
 dev.off()
 
+# BG density change vs. Elevation
+tiff("figures/2025-05_draft-figures/BG-density-change_by-elevation_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgden.change.elev.lm
+dev.off()
+
 
 ## Buffelgrass cover change -----------------------------------------------
 
@@ -1379,29 +1399,30 @@ tiff("figures/2025-05_draft-figures/BG-cover-change_by-prev-year-precip_regressi
 bgcov.change.precip.lm
 dev.off()
 
-# BG cover change vs. Elevation
-tiff("figures/2025-05_draft-figures/BG-cover-change_by-elevation_regression.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-bgcov.change.elev.lm
-dev.off()
-
 # BG cover change by Aspect
 tiff("figures/2025-05_draft-figures/BG-cover-change_by-aspect_boxplot.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.change.aspect
 dev.off()
 
-# Not significant
 # BG cover change vs. PlotSlope
 tiff("figures/2025-05_draft-figures/BG-cover-change_by-plot-slope_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.change.plotslope.lm
 dev.off()
 
+
+# Not significant
 # BG cover change vs. shrub cover change
 tiff("figures/2025-05_draft-figures/BG-cover-change_by-shrub-cover-change_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.change.shrub.lm
+dev.off()
+
+# BG cover change vs. herb cover change
+tiff("figures/2025-05_draft-figures/BG-cover-change_by-herb-cover-change_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgcov.change.herb.lm
 dev.off()
 
 # BG cover change vs. shrub cover change by Prev_year_precip (linear regression)
@@ -1414,6 +1435,12 @@ dev.off()
 tiff("figures/2025-05_draft-figures/BG-cover-change_by-plot-slope-and-prev-year-precip_regression.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.change.plotslope.prevprecip.lm
+dev.off()
+
+# BG cover change vs. Elevation
+tiff("figures/2025-05_draft-figures/BG-cover-change_by-elevation_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgcov.change.elev.lm
 dev.off()
 
 
@@ -1447,6 +1474,12 @@ tiff("figures/2025-05_draft-figures/Survival_by-plot-slope_regression.tiff",
 survival.plotslope.lm
 dev.off()
 
+# Survival vs. shrub cover
+tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.shrub.lm
+dev.off()
+
 # Survival vs. herb cover
 tiff("figures/2025-05_draft-figures/Survival_by-herb-cover_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
@@ -1465,29 +1498,12 @@ tiff("figures/2025-05_draft-figures/Survival_by-plot-slope-and-prev-year-precip_
 survival.plotslope.prevprecip.lm
 dev.off()
 
+
 # Not significant
-# Survival vs. Elevation
-tiff("figures/2025-05_draft-figures/Survival_by-elevation_regression.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-survival.elev.lm
-dev.off()
-
-# Survival vs. shrub cover
-tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover_regression.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-survival.shrub.lm
-dev.off()
-
 # Survival vs. BG density
 tiff("figures/2025-05_draft-figures/Survival_by-BG-density_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.bgden.lm
-dev.off()
-
-# Survival vs. shrub cover by Prev_year_precip 
-tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover-and-prev-year-precip.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-survival.shrub.prevprecip
 dev.off()
 
 # Survival vs. herb cover by Prev_year_precip (linear regression)
@@ -1496,7 +1512,17 @@ tiff("figures/2025-05_draft-figures/Survival_by-herb-cover-and-prev-year-precip_
 survival.herb.prevprecip.lm
 dev.off()
 
+# Survival vs. Elevation
+tiff("figures/2025-05_draft-figures/Survival_by-elevation_regression.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.elev.lm
+dev.off()
 
+# Survival vs. shrub cover by Prev_year_precip 
+tiff("figures/2025-05_draft-figures/Survival_by-shrub-cover-and-prev-year-precip.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival.shrub.prevprecip
+dev.off()
 
 
 save.image("RData/05.1_draft-figs-for-lm-3.0.RData")
