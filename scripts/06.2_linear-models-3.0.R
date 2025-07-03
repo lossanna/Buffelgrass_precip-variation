@@ -1946,6 +1946,226 @@ bgden8_importance.all.df %>%
 
 
 
+## BG density 9: Add (1 | Site) -------------------------------------------
+
+# 9: lme4 version
+lme4.bgden9 <- lmer(Change_BGDensity ~ Prev_year_precip_scaled + 
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                      Change_HerbCover_scaled + 
+                      Prev_year_precip_scaled * PlotSlope_scaled +
+                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                      Prev_year_precip_scaled * Change_HerbCover_scaled +
+                      (1 | Site),
+                    data = plot.change)
+summary(lme4.bgden9)
+r2(lme4.bgden9) # marginal: 0.391; conditional: 0.430
+check_model(lme4.bgden9)
+
+# 9: glmmTMB version
+bgden9 <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + 
+                    Prev_year_precip_scaled * PlotSlope_scaled +
+                    Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                    Prev_year_precip_scaled * Change_HerbCover_scaled +
+                    (1 | Site),
+                  data = plot.change,
+                  family = gaussian)
+summary(bgden9)
+r2(bgden9) # marginal: 0.423; conditional: 0.437
+res.bgden9 <- simulateResiduals(bgden9)
+plotQQunif(res.bgden9)
+plotResiduals(res.bgden9)
+check_collinearity(bgden9) 
+check_model(bgden9)
+
+
+### 9: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgden9_set <- dredge(bgden9)
+bgden9.lme4_set <- dredge(lme4.bgden9)
+
+# Examine best model
+bgden9_best.model <- get.models(bgden9_set, 1)[[1]]
+summary(bgden9_best.model)
+r2(bgden9_best.model) # marginal: 0.428; conditional: 0.438
+res.bgden9_best.model <- simulateResiduals(bgden9_best.model)
+plotQQunif(res.bgden9_best.model)
+plotResiduals(res.bgden9_best.model)
+check_collinearity(bgden9_best.model)
+check_model(bgden9_best.model)
+
+# Best model, lme4 version
+bgden9.lme4_best.model <- get.models(bgden9.lme4_set, 1)[[1]]
+summary(bgden9.lme4_best.model)
+r2(bgden9.lme4_best.model) # marginal: 0.402; conditional: 0.431
+check_model(bgden9.lme4_best.model)
+
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+bgden9_top <- subset(bgden9_set, delta <= 2) # 3 models
+for (i in 1:nrow(bgden9_top)) {
+  assign(paste0("bgden9_model", i), get.models(bgden9_top, subset = i)[[1]])
+}
+
+bgden9.lme4_top <- subset(bgden9.lme4_set, delta <= 2) # 6 models
+for (i in 1:nrow(bgden9.lme4_top)) {
+  assign(paste0("bgden9.lme4_model", i), get.models(bgden9.lme4_top, subset = i)[[1]])
+}
+
+
+# R^2 of top models
+r2(bgden9_model1) # marginal: 0.428; conditional: 0.438
+r2(bgden9_model2) # marginal: 0.411; conditional: 0.429
+
+r2(bgden9.lme4_model1) # marginal: 0.402; conditional: 0.431
+r2(bgden9.lme4_model2) # marginal: 0.390; conditional: 0.427
+r2(bgden9.lme4_model3) # marginal: 0.378; conditional: 0.424
+r2(bgden9.lme4_model4) # marginal: 0.380; conditional: 0.429
+r2(bgden9.lme4_model5) # marginal: 0.392; conditional: 0.431
+r2(bgden9.lme4_model6) # marginal: 0.368; conditional: 0.428
+
+# Model averaging of top models
+bgden9_avg <- model.avg(bgden9_set, subset = delta <= 2) 
+summary(bgden9_avg)
+bgden9_importance <- sw(bgden9_avg)
+bgden9_importance.df <- data.frame(variable = names(bgden9_importance),
+                                   importance = bgden9_importance)
+bgden9_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Top model averaging, lme4 version
+bgden.lme4_avg <- model.avg(bgden9.lme4_set, subset = delta <= 2)
+summary(bgden.lme4_avg)
+
+
+# Model averaging of all models
+bgden9_avg.all <- model.avg(bgden9_set)
+summary(bgden9_avg.all)
+bgden9_importance.all <- sw(bgden9_avg.all)
+bgden9_importance.all.df <- data.frame(variable = names(bgden9_importance.all),
+                                       importance = bgden9_importance.all)
+bgden9_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
+
+## BG density 10: Add (1 | Site / Transect) -------------------------------
+
+# 10: lme4 version
+lme4.bgden10 <- lmer(Change_BGDensity ~ Prev_year_precip_scaled + 
+                       Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                       Change_HerbCover_scaled + 
+                       Prev_year_precip_scaled * PlotSlope_scaled +
+                       Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                       Prev_year_precip_scaled * Change_HerbCover_scaled +
+                       (1 | Site / Transect),
+                     data = plot.change)
+summary(lme4.bgden10)
+r2(lme4.bgden10) # marginal: 0.308; conditional: 0.572
+check_model(lme4.bgden10)
+
+# 10: glmmTMB version
+bgden10 <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled +
+                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                     Change_HerbCover_scaled + 
+                     Prev_year_precip_scaled * PlotSlope_scaled +
+                     Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                     Prev_year_precip_scaled * Change_HerbCover_scaled +
+                     (1 | Site / Transect),
+                   data = plot.change,
+                   family = gaussian)
+summary(bgden10)
+r2(bgden10) # marginal: 0.351; conditional: 0.540
+res.bgden10 <- simulateResiduals(bgden10)
+plotQQunif(res.bgden10)
+plotResiduals(res.bgden10)
+check_collinearity(bgden10) 
+check_model(bgden10)
+
+
+### 10: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgden10_set <- dredge(bgden10)
+bgden10.lme4_set <- dredge(lme4.bgden10) # seems to have some model convergence problems? (lme4 version)
+
+# Examine best model
+bgden10_best.model <- get.models(bgden10_set, 1)[[1]]
+summary(bgden10_best.model)
+r2(bgden10_best.model) # marginal: 0.339; conditional: 0.532
+res.bgden10_best.model <- simulateResiduals(bgden10_best.model)
+plotQQunif(res.bgden10_best.model)
+plotResiduals(res.bgden10_best.model)
+check_collinearity(bgden10_best.model)
+check_model(bgden10_best.model)
+
+# Best model, lme4 version
+bgden10.lme4_best.model <- get.models(bgden10.lme4_set, 1)[[1]]
+summary(bgden10.lme4_best.model)
+r2(bgden10.lme4_best.model) # marginal: 0.402; conditional: 0.431
+check_model(bgden10.lme4_best.model)
+
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+bgden10_top <- subset(bgden10_set, delta <= 2) # 2 models
+for (i in 1:nrow(bgden10_top)) {
+  assign(paste0("bgden10_model", i), get.models(bgden10_top, subset = i)[[1]])
+}
+
+bgden10.lme4_top <- subset(bgden10.lme4_set, delta <= 2) # 3 models
+for (i in 1:nrow(bgden10.lme4_top)) {
+  assign(paste0("bgden10.lme4_model", i), get.models(bgden10.lme4_top, subset = i)[[1]])
+}
+
+
+# R^2 of top models
+r2(bgden10_model1) # marginal: 0.339; conditional: 0.532
+r2(bgden10_model2) # marginal: 0.336; conditional: 0.535
+
+r2(bgden10.lme4_model1) # marginal: 0.305; conditional: 0.562
+r2(bgden10.lme4_model2) # marginal: 0.301; conditional: 0.567
+r2(bgden10.lme4_model3) # marginal: 0.311; conditional: 0.572
+
+# Model averaging of top models
+bgden10_avg <- model.avg(bgden10_set, subset = delta <= 2) 
+summary(bgden10_avg)
+bgden10_importance <- sw(bgden10_avg)
+bgden10_importance.df <- data.frame(variable = names(bgden10_importance),
+                                    importance = bgden10_importance)
+bgden10_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Top model averaging, lme4 version
+bgden.lme4_avg <- model.avg(bgden10.lme4_set, subset = delta <= 2)
+summary(bgden.lme4_avg)
+
+
+# Model averaging of all models
+bgden10_avg.all <- model.avg(bgden10_set)
+summary(bgden10_avg.all)
+bgden10_importance.all <- sw(bgden10_avg.all)
+bgden10_importance.all.df <- data.frame(variable = names(bgden10_importance.all),
+                                        importance = bgden10_importance.all)
+bgden10_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
 
 
 # Buffelgrass cover -------------------------------------------------------
@@ -2471,6 +2691,205 @@ bgcov8_importance.all <- sw(bgcov8_avg.all)
 bgcov8_importance.all.df <- data.frame(variable = names(bgcov8_importance.all),
                                        importance = bgcov8_importance.all)
 bgcov8_importance.all.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+
+## BG cover 9: Add (1 | Site) ---------------------------------------------
+
+# 9: lme4 version
+lme4.bgcov9 <- lmer(Change_BGCover ~ Prev_year_precip_scaled + 
+                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                      Change_HerbCover_scaled + 
+                      Prev_year_precip_scaled * PlotSlope_scaled +
+                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                      Prev_year_precip_scaled * Change_HerbCover_scaled +
+                      (1 | Site),
+                    data = plot.change)
+summary(lme4.bgcov9)
+r2(lme4.bgcov9) # marginal: 0.249; conditional: 0.303
+check_model(lme4.bgcov9)
+
+# 9: glmmTMB version
+bgcov9 <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled +
+                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                    Change_HerbCover_scaled + 
+                    Prev_year_precip_scaled * PlotSlope_scaled +
+                    Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                    Prev_year_precip_scaled * Change_HerbCover_scaled +
+                    (1 | Site),
+                  data = plot.change,
+                  family = gaussian)
+summary(bgcov9)
+r2(bgcov9) # marginal: 0.259; conditional: 0.284
+res.bgcov9 <- simulateResiduals(bgcov9)
+plotQQunif(res.bgcov9)
+plotResiduals(res.bgcov9)
+check_collinearity(bgcov9) 
+check_model(bgcov9)
+
+
+### 9: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgcov9_set <- dredge(bgcov9) # some model convergence issues
+bgcov9.lme4_set <- dredge(lme4.bgcov9)
+
+# Examine best model
+bgcov9_best.model <- get.models(bgcov9_set, 1)[[1]]
+summary(bgcov9_best.model)
+r2(bgcov9_best.model) # marginal: 0.259; conditional: 0.289
+res.bgcov9_best.model <- simulateResiduals(bgcov9_best.model)
+plotQQunif(res.bgcov9_best.model)
+plotResiduals(res.bgcov9_best.model)
+check_collinearity(bgcov9_best.model)
+check_model(bgcov9_best.model)
+
+# Best model, lme4 version
+bgcov9.lme4_best.model <- get.models(bgcov9.lme4_set, 1)[[1]]
+summary(bgcov9.lme4_best.model)
+r2(bgcov9.lme4_best.model) # marginal: 0.251; conditional: 0.307
+check_model(bgcov9.lme4_best.model)
+
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+#   Model averaging not possible for glmmTMB version because not all models converged
+
+bgcov9.lme4_top <- subset(bgcov9.lme4_set, delta <= 2) # 6 models
+for (i in 1:nrow(bgcov9.lme4_top)) {
+  assign(paste0("bgcov9.lme4_model", i), get.models(bgcov9.lme4_top, subset = i)[[1]])
+}
+
+
+# R^2 of top models
+r2(bgcov9.lme4_model1) # marginal: 0.251; conditional: 0.307
+r2(bgcov9.lme4_model2) # marginal: 0.252; conditional: 0.310
+r2(bgcov9.lme4_model3) # marginal: 0.249; conditional: 0.303
+r2(bgcov9.lme4_model4) # marginal: 0.251; conditional: 0.309
+r2(bgcov9.lme4_model5) # marginal: 0.249; conditional: 0.302
+r2(bgcov9.lme4_model6) # marginal: 0.251; conditional: 0.306
+
+# Top model averaging, lme4 version
+bgcov.lme4_avg <- model.avg(bgcov9.lme4_set, subset = delta <= 2)
+summary(bgcov.lme4_avg)
+
+
+
+## BG cover 10: Add (1 | Site / Transect) ---------------------------------
+
+# 10: lme4 version
+lme4.bgcov10 <- lmer(Change_BGCover ~ Prev_year_precip_scaled + 
+                       Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                       Change_HerbCover_scaled + 
+                       Prev_year_precip_scaled * PlotSlope_scaled +
+                       Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                       Prev_year_precip_scaled * Change_HerbCover_scaled +
+                       (1 | Site / Transect),
+                     data = plot.change)
+summary(lme4.bgcov10)
+r2(lme4.bgcov10) # marginal: 0.238; conditional: 0.396
+check_model(lme4.bgcov10)
+
+# 10: glmmTMB version
+bgcov10 <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled +
+                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                     Change_HerbCover_scaled + 
+                     Prev_year_precip_scaled * PlotSlope_scaled +
+                     Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                     Prev_year_precip_scaled * Change_HerbCover_scaled +
+                     (1 | Site / Transect),
+                   data = plot.change,
+                   family = gaussian)
+summary(bgcov10)
+r2(bgcov10) # marginal: 0.255; conditional: 0.354
+res.bgcov10 <- simulateResiduals(bgcov10)
+plotQQunif(res.bgcov10)
+plotResiduals(res.bgcov10)
+check_collinearity(bgcov10) 
+check_model(bgcov10)
+
+
+### 10: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+bgcov10_set <- dredge(bgcov10)
+bgcov10.lme4_set <- dredge(lme4.bgcov10) 
+
+# Examine best model
+bgcov10_best.model <- get.models(bgcov10_set, 1)[[1]]
+summary(bgcov10_best.model)
+r2(bgcov10_best.model) # marginal: 0.254; conditional: 0.355
+res.bgcov10_best.model <- simulateResiduals(bgcov10_best.model)
+plotQQunif(res.bgcov10_best.model)
+plotResiduals(res.bgcov10_best.model)
+check_collinearity(bgcov10_best.model)
+check_model(bgcov10_best.model)
+
+# Best model, lme4 version
+bgcov10.lme4_best.model <- get.models(bgcov10.lme4_set, 1)[[1]]
+summary(bgcov10.lme4_best.model)
+r2(bgcov10.lme4_best.model) # marginal: 0.239; conditional: 0.395
+check_model(bgcov10.lme4_best.model)
+
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+bgcov10_top <- subset(bgcov10_set, delta <= 2) # 9 models
+for (i in 1:nrow(bgcov10_top)) {
+  assign(paste0("bgcov10_model", i), get.models(bgcov10_top, subset = i)[[1]])
+}
+
+bgcov10.lme4_top <- subset(bgcov10.lme4_set, delta <= 2) # 6 models
+for (i in 1:nrow(bgcov10.lme4_top)) {
+  assign(paste0("bgcov10.lme4_model", i), get.models(bgcov10.lme4_top, subset = i)[[1]])
+}
+
+
+# R^2 of top models
+r2(bgcov10_model1) # marginal: 0.254; conditional: 0.355
+r2(bgcov10_model2) # marginal: 0.247; conditional: 0.369
+r2(bgcov10_model3) # marginal: 0.196; conditional: 0.394
+r2(bgcov10_model4) # marginal: 0.234; conditional: 0.353
+r2(bgcov10_model5) # marginal: 0.269; conditional: NA
+r2(bgcov10_model6) # marginal: 0.187; conditional: 0.384
+r2(bgcov10_model7) # marginal: 0.194; conditional: 0.378
+r2(bgcov10_model8) # marginal: 0.255; conditional: 0.356
+r2(bgcov10_model9) # marginal: 0.248; conditional: 0.371
+
+r2(bgcov10.lme4_model1) # marginal: 0.239; conditional: 0.395
+r2(bgcov10.lme4_model2) # marginal: 0.240; conditional: 0.393
+r2(bgcov10.lme4_model3) # marginal: 0.238; conditional: 0.396
+r2(bgcov10.lme4_model4) # marginal: 0.239; conditional: 0.393
+r2(bgcov10.lme4_model5) # marginal: 0.240; conditional: 0.393
+r2(bgcov10.lme4_model6) # marginal: 0.240; conditional: 0.391
+
+# Model averaging of top models
+bgcov10_avg <- model.avg(bgcov10_set, subset = delta <= 2) 
+summary(bgcov10_avg)
+bgcov10_importance <- sw(bgcov10_avg)
+bgcov10_importance.df <- data.frame(variable = names(bgcov10_importance),
+                                    importance = bgcov10_importance)
+bgcov10_importance.df %>% 
+  ggplot(aes(x = reorder(variable, importance), y = importance)) +
+  geom_col() +
+  coord_flip() +
+  theme_bw()
+
+# Top model averaging, lme4 version
+bgcov.lme4_avg <- model.avg(bgcov10.lme4_set, subset = delta <= 2)
+summary(bgcov.lme4_avg)
+
+
+# Model averaging of all models
+bgcov10_avg.all <- model.avg(bgcov10_set)
+summary(bgcov10_avg.all)
+bgcov10_importance.all <- sw(bgcov10_avg.all)
+bgcov10_importance.all.df <- data.frame(variable = names(bgcov10_importance.all),
+                                        importance = bgcov10_importance.all)
+bgcov10_importance.all.df %>% 
   ggplot(aes(x = reorder(variable, importance), y = importance)) +
   geom_col() +
   coord_flip() +
