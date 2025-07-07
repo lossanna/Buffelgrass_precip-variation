@@ -1,5 +1,5 @@
 # Created: 2025-07-03
-# Updated: 2025-07-03
+# Updated: 2025-07-07
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -9,6 +9,7 @@
 # Updates from 06.2_linear-models-3.0.R script:
 #   Mostly this is to restart model numbering now that I have explanatory variables confirmed,
 #     and am looking at random effects and glmmTMB (b) vs. lme4 (a).
+#   Also no longer modeling survival as linear model, instead using Tweedie GLM.
 
 library(tidyverse)
 library(glmmTMB)
@@ -660,7 +661,11 @@ for (i in 1:nrow(bgcov2a_top)) {
   assign(paste0("bgcov2a_model", i), get.models(bgcov2a_top, subset = i)[[1]])
 } 
 
-#   Model averaging not possible for glmmTMB version because not all models converged
+bgcov2b_top <- subset(bgcov2b_set, delta <= 2) %>% 
+  filter(!is.na(df)) # 6 models; not all models converged
+for (i in 1:nrow(bgcov2b_top)) {
+  assign(paste0("bgcov2b_model", i), get.models(bgcov2b_top, subset = i)[[1]])
+}
 
 
 # R^2 of top models
@@ -671,12 +676,22 @@ r2(bgcov2a_model4) # marginal: 0.249; conditional: 0.303
 r2(bgcov2a_model5) # marginal: 0.251; conditional: 0.306
 r2(bgcov2a_model6) # marginal: 0.249; conditional: 0.302
 
+r2(bgcov2b_model1) # marginal: 0.263; conditional: 0.310
+r2(bgcov2b_model2) # marginal: 0.247; conditional: 0.281
+r2(bgcov2b_model3) # marginal: 0.240; conditional: 0.259
+r2(bgcov2b_model4) # marginal: 0.265; conditional: 0.314
+r2(bgcov2b_model5) # marginal: 0.248; conditional: 0.284
+r2(bgcov2b_model6) # marginal: 0.243; conditional: 0.264
+
 
 # Model averaging of top models
 bgcov2a_avg <- model.avg(bgcov2a_set, subset = delta <= 2)
 summary(bgcov2a_avg)
 
-#   Model averaging not possible for glmmTMB version because not all models converged
+bgcov2b_set_with.delta <- bgcov2b_set %>% 
+  filter(!is.na(delta))
+bgcov2b_avg <- model.avg(bgcov2b_set_with.delta, subset = delta <= 2)
+summary(bgcov2b_avg)
 
 
 
@@ -770,6 +785,195 @@ summary(bgcov3a_avg)
 
 bgcov3b_avg <- model.avg(bgcov3b_set, subset = delta <= 2) 
 summary(bgcov3b_avg)
+
+
+
+
+# Survival ----------------------------------------------------------------
+
+## Survival 1: Tweedie GLM, add (1 | Site / Transect) ---------------------
+
+# 1: glmmTMB version
+survival1 <- glmmTMB(survival_perc ~ Prev_year_precip_scaled +
+                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                       HerbCover_scaled + BGDensity_scaled +
+                       Prev_year_precip_scaled * PlotSlope_scaled +
+                       Prev_year_precip_scaled * ShrubCover_scaled +
+                       Prev_year_precip_scaled * HerbCover_scaled +
+                       Prev_year_precip_scaled * BGDensity_scaled +
+                       (1 | Site / Transect),
+                     data = dat.survival,
+                     family = tweedie(link = "log"))
+summary(survival1)
+r2(survival1) # can't compute
+res.survival1 <- simulateResiduals(survival1)
+plotQQunif(res.survival1)
+plotResiduals(res.survival1) # looks kind of janky
+check_collinearity(survival1) 
+check_model(survival1) # posterior looks weird
+check_overdispersion(survival1)
+
+
+### 1: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+survival1_set <- dredge(survival1) # not all converged
+
+# Examine best model
+survival1_best.model <- get.models(survival1_set, 1)[[1]]
+summary(survival1_best.model)
+r2(survival1_best.model) # marginal: 0.362; conditional: 0.908
+res.survival1_best.model <- simulateResiduals(survival1_best.model)
+plotQQunif(res.survival1_best.model)
+plotResiduals(res.survival1_best.model)
+check_model(survival1_best.model) # posterior looks weird
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+survival1_top <- subset(survival1_set, delta <= 2) %>% 
+  filter(!is.na(df)) # not all models converged; 17 top models
+for (i in 1:nrow(survival1_top)) {
+  assign(paste0("survival1_model", i), get.models(survival1_top, subset = i)[[1]])
+} 
+
+# R^2 of top models
+r2(survival1_model1) # marginal: 0.362; conditional: 0.908
+r2(survival1_model2) # marginal: 0.349; conditional: 0.915
+r2(survival1_model3) # marginal: 0.358; conditional: 0.905
+r2(survival1_model4) # can't compute
+r2(survival1_model5) # marginal: 0.329; conditional: 0.919
+r2(survival1_model6) # marginal: 0.341; conditional: 0.917
+r2(survival1_model7) # marginal: 0.337; conditional: 0.914
+r2(survival1_model8) # marginal: 0.345; conditional: 0.912
+r2(survival1_model9) # marginal: 0.355; conditional: 0.908
+r2(survival1_model10) # marginal: 0.350; conditional: 0.906
+r2(survival1_model11) # marginal: 0.341; conditional: 0.913
+r2(survival1_model12) # can't compute
+r2(survival1_model13) # marginal: 0.353; conditional: 0.911
+r2(survival1_model14) # can't compute
+r2(survival1_model15) # marginal: 0.342; conditional: 0.917
+r2(survival1_model16) # marginal: 0.353; conditional: 0.911
+r2(survival1_model17) # marginal: 0.330; conditional: 0.920
+
+
+# Model averaging of top models
+survival1_set_with.delta <- survival1_set %>% 
+  filter(!is.na(delta))
+survival1_avg <- model.avg(survival1_set_with.delta, subset = delta <= 2)
+summary(survival1_avg)
+
+
+
+## Survival 2: Tweedie GLM, add (1 | Site) --------------------------------
+
+# 2: glmmTMB version
+survival2 <- glmmTMB(survival_perc ~ Prev_year_precip_scaled +
+                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                       HerbCover_scaled + BGDensity_scaled +
+                       Prev_year_precip_scaled * PlotSlope_scaled +
+                       Prev_year_precip_scaled * ShrubCover_scaled +
+                       Prev_year_precip_scaled * HerbCover_scaled +
+                       Prev_year_precip_scaled * BGDensity_scaled +
+                       (1 | Site),
+                     data = dat.survival,
+                     family = tweedie(link = "log"))
+summary(survival2)
+r2(survival2) # marginal: 0.333; conditional: 0.919
+res.survival2 <- simulateResiduals(survival2)
+plotQQunif(res.survival2)
+plotResiduals(res.survival2) # starts to look more funky, I think due to uneven sample size
+check_collinearity(survival2) 
+check_model(survival2)
+check_overdispersion(survival2)
+
+
+### 2: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+survival2_set <- dredge(survival2)
+
+# Examine best model
+survival2_best.model <- get.models(survival2_set, 1)[[1]]
+summary(survival2_best.model)
+r2(survival2_best.model) # marginal: 0.340; conditional: 0.913
+res.survival2_best.model <- simulateResiduals(survival2_best.model)
+plotQQunif(res.survival2_best.model)
+plotResiduals(res.survival2_best.model)
+check_model(survival2_best.model) # posterior looks weird
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+survival2_top <- subset(survival2_set, delta <= 2) # 11 models
+for (i in 1:nrow(survival2_top)) {
+  assign(paste0("survival2_model", i), get.models(survival2_top, subset = i)[[1]])
+} 
+
+# R^2 of top models
+r2(survival2_model1) # marginal: 0.340; conditional: 0.913
+r2(survival2_model2) # marginal: 0.329; conditional: 0.918
+r2(survival2_model3) # marginal: 0.341; conditional: 0.913
+r2(survival2_model4) # marginal: 0.353; conditional: 0.910
+r2(survival2_model5) # marginal: 0.358; conditional: 0.909
+r2(survival2_model6) # marginal: 0.342; conditional: 0.916
+r2(survival2_model7) # marginal: 0.331; conditional: 0.918
+r2(survival2_model8) # marginal: 0.334; conditional: 0.917
+r2(survival2_model9) # marginal: 0.348; conditional: 0.914
+r2(survival2_model10) # marginal: 0.357; conditional: 0.902
+r2(survival2_model11) # marginal: 0.326; conditional: 0.921
+
+
+# Model averaging of top models
+survival2_avg <- model.avg(survival2_set, subset = delta <= 2)
+summary(survival2_avg)
+
+
+
+
+## Survival 3: Tweedie GLM, no random effects -----------------------------
+
+# 3: glmmTMB version
+survival3 <- glmmTMB(survival_perc ~ Prev_year_precip_scaled +
+                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                       HerbCover_scaled + BGDensity_scaled +
+                       Prev_year_precip_scaled * PlotSlope_scaled +
+                       Prev_year_precip_scaled * ShrubCover_scaled +
+                       Prev_year_precip_scaled * HerbCover_scaled +
+                       Prev_year_precip_scaled * BGDensity_scaled,
+                     data = dat.survival,
+                     family = tweedie(link = "log"))
+summary(survival3)
+res.survival3 <- simulateResiduals(survival3)
+plotQQunif(res.survival3)
+plotResiduals(res.survival3) 
+check_collinearity(survival3) 
+check_model(survival3)
+check_overdispersion(survival3)
+
+
+### 3: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+survival3_set <- dredge(survival3)
+
+# Examine best model
+survival3_best.model <- get.models(survival3_set, 1)[[1]]
+summary(survival3_best.model)
+res.survival3_best.model <- simulateResiduals(survival3_best.model)
+plotQQunif(res.survival3_best.model)
+plotResiduals(res.survival3_best.model)
+check_model(survival3_best.model)
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+survival3_top <- subset(survival3_set, delta <= 2) # 5 models
+for (i in 1:nrow(survival3_top)) {
+  assign(paste0("survival3_model", i), get.models(survival3_top, subset = i)[[1]])
+} 
+
+# Model averaging of top models
+survival3_avg <- model.avg(survival3_set, subset = delta <= 2)
+summary(survival3_avg)
+
 
 
 save.image("RData/06.3_linear-models-4.0.RData")
