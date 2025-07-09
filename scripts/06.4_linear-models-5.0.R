@@ -1,4 +1,4 @@
-# Created: 2025-07-03
+# Created: 2025-07-09
 # Updated: 2025-07-09
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
@@ -12,7 +12,10 @@
 #   Considered (1 | Site) versus nested (1 | Site / Transect) for culm count models.
 #   Also no longer modeling survival as linear model, instead using Tweedie GLM.
 
-# Removing interactions for survival model (v4) doesn't really change things from v1.
+# Updates from 06.3_linear-models-4.0.R script:
+#   No longer including Aspect * PlotSlope and Precip*Slope interactions in culm count models,
+#     and no longer including Precip * PlotSlope interactions in any model to simplify things.
+
 
 library(tidyverse)
 library(glmmTMB)
@@ -66,35 +69,33 @@ dat.survival <- dat.survival %>%
 
 # Total culms -------------------------------------------------------------
 
-## Total change 1: model 8 from 3.0 ---------------------------------------
+# Total change 1: (1 | Site / Transect) -----------------------------------
 
 # 1: lme4 version
 total1a <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
                   Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                   Change_BGDensity_scaled +
                   Prev_year_precip_scaled * Change_BGDensity_scaled +
-                  Prev_year_precip_scaled * PlotSlope_scaled + 
                   Prev_year_precip_scaled * Change_ShrubCover_scaled +
                   Prev_year_precip_scaled * Change_HerbCover_scaled +
-                  Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                  (1 | Site / Transect),
                 data = culm.change.flat.rm)
 summary(total1a)
-r2(total1a) # marginal: 0.132; conditional: 0.411
+r2(total1a) # marginal: 0.119; conditional: 0.410
 check_model(total1a)
 
 # 1: glmmTMB version
 total1b <- glmmTMB(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
-                    Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                    Change_BGDensity_scaled +
-                    Prev_year_precip_scaled * Change_BGDensity_scaled +
-                    Prev_year_precip_scaled * PlotSlope_scaled + 
-                    Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                    Prev_year_precip_scaled * Change_HerbCover_scaled +
-                    Aspect * PlotSlope_scaled + (1 | Site / Transect),
-                  data = culm.change.flat.rm,
-                  family = gaussian) 
+                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                     Change_BGDensity_scaled +
+                     Prev_year_precip_scaled * Change_BGDensity_scaled +
+                     Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                     Prev_year_precip_scaled * Change_HerbCover_scaled +
+                     (1 | Site / Transect),
+                   data = culm.change.flat.rm,
+                   family = gaussian) 
 summary(total1b)
-r2(total1b) # marginal: 0.149; conditional: 0.359
+r2(total1b) # marginal: 0.132; conditional: 0.359
 res.total1b <- simulateResiduals(total1b)
 plotQQunif(res.total1b)
 plotResiduals(res.total1b)
@@ -105,40 +106,44 @@ check_model(total1b)
 
 # Model selection
 options(na.action = "na.fail")
-total1a_set <- dredge(total1a) # got warning about convergence, but table looks complete 
+total1a_set <- dredge(total1a) 
 total1b_set <- dredge(total1b)
 
 # Examine best model
 total1a_best.model <- get.models(total1a_set, 1)[[1]]
 summary(total1a_best.model)
-r2(total1a_best.model) # marginal: 0.132; conditional: 0.411
-check_model(total1a_best.model)
+r2(total1a_best.model) # marginal: 0.119; conditional: 0.410
+check_model(total1a_best.model) # posterior prediction is poor around 0
 
 total1b_best.model <- get.models(total1b_set, 1)[[1]]
 summary(total1b_best.model)
-r2(total1b_best.model) # marginal: 0.147; conditional: 0.356
+r2(total1b_best.model) # marginal: 0.119; conditional: 0.361
 res.total1b_best.model <- simulateResiduals(total1b_best.model)
 plotQQunif(res.total1b_best.model)
 plotResiduals(res.total1b_best.model)
-check_model(total1b_best.model)
+check_model(total1b_best.model) # posterior prediction is poor around 0
 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
 total1a_top <- subset(total1a_set, delta <= 2) # 1 model
 
-total1b_top <- subset(total1b_set, delta <= 2) # 4 models
+total1b_top <- subset(total1b_set, delta <= 2) # 8 models
 for (i in 1:nrow(total1b_top)) {
   assign(paste0("total1b_model", i), get.models(total1b_top, subset = i)[[1]])
 } 
 
 
 # R^2 of top models
-r2(total1a_model1) # marginal: 0.132; conditional: 0.411
+r2(total1a_best.model) # marginal: 0.119; conditional: 0.410
 
-r2(total1b_model1) # marginal: 0.147; conditional: 0.356
-r2(total1b_model2) # marginal: 0.131; conditional: 0.367
-r2(total1b_model3) # marginal: 0.143; conditional: 0.359
-r2(total1b_model4) # marginal: 0.127; conditional: 0.369
+r2(total1b_model1) # marginal: 0.119; conditional: 0.361
+r2(total1b_model2) # marginal: 0.132; conditional: 0.359
+r2(total1b_model3) # marginal: 0.122; conditional: 0.352
+r2(total1b_model4) # marginal: 0.136; conditional: 0.353
+r2(total1b_model5) # marginal: 0.115; conditional: 0.365
+r2(total1b_model6) # marginal: 0.135; conditional: 0.351
+r2(total1b_model7) # marginal: 0.118; conditional: 0.356
+r2(total1b_model8) # marginal: 0.140; conditional: 0.345
 
 
 # Model averaging of top models
@@ -158,13 +163,12 @@ total2a <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +
                   Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                   Change_BGDensity_scaled +
                   Prev_year_precip_scaled * Change_BGDensity_scaled +
-                  Prev_year_precip_scaled * PlotSlope_scaled + 
                   Prev_year_precip_scaled * Change_ShrubCover_scaled +
                   Prev_year_precip_scaled * Change_HerbCover_scaled +
-                  Aspect * PlotSlope_scaled + (1 | Site),
+                  (1 | Site),
                 data = culm.change.flat.rm)
 summary(total2a)
-r2(total2a) # marginal: 0.158; conditional: 0.368
+r2(total2a) # marginal: 0.137; conditional: 0.363
 check_model(total2a)
 
 # 2: glmmTMB version
@@ -172,14 +176,13 @@ total2b <- glmmTMB(Change_Total_Live_Culms ~ Prev_year_precip_scaled +
                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                      Change_BGDensity_scaled +
                      Prev_year_precip_scaled * Change_BGDensity_scaled +
-                     Prev_year_precip_scaled * PlotSlope_scaled + 
                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
                      Prev_year_precip_scaled * Change_HerbCover_scaled +
-                     Aspect * PlotSlope_scaled + (1 | Site),
+                     (1 | Site),
                    data = culm.change.flat.rm,
                    family = gaussian) 
 summary(total2b)
-r2(total2b) # marginal: 0.169; conditional: 0.334
+r2(total2b) # marginal: 0.147; conditional: 0.325
 res.total2b <- simulateResiduals(total2b)
 plotQQunif(res.total2b)
 plotResiduals(res.total2b)
@@ -196,12 +199,12 @@ total2b_set <- dredge(total2b)
 # Examine best model
 total2a_best.model <- get.models(total2a_set, 1)[[1]]
 summary(total2a_best.model)
-r2(total2a_best.model) # marginal: 0.158; conditional: 0.368
+r2(total2a_best.model) # marginal: 0.137; conditional: 0.363
 check_model(total2a_best.model) # posterior prediction poor at 0
 
 total2b_best.model <- get.models(total2b_set, 1)[[1]]
 summary(total2b_best.model)
-r2(total2b_best.model) # marginal: 0.160; conditional: 0.332
+r2(total2b_best.model) # marginal: 0.152; conditional: 0.320
 res.total2b_best.model <- simulateResiduals(total2b_best.model)
 plotQQunif(res.total2b_best.model)
 plotResiduals(res.total2b_best.model)
@@ -209,23 +212,25 @@ check_model(total2b_best.model) # posterior prediction poor at 0
 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-total2a_top <- subset(total2a_set, delta <= 2) # 2 models
+total2a_top <- subset(total2a_set, delta <= 2) # 3 models
 for (i in 1:nrow(total2a_top)) {
   assign(paste0("total2a_model", i), get.models(total2a_top, subset = i)[[1]])
 } 
 
-total2b_top <- subset(total2b_set, delta <= 2) # 2 models
+total2b_top <- subset(total2b_set, delta <= 2) # 3 models
 for (i in 1:nrow(total2b_top)) {
   assign(paste0("total2b_model", i), get.models(total2b_top, subset = i)[[1]])
 } 
 
 
 # R^2 of top models
-r2(total2a_model1) # marginal: 0.158; conditional: 0.368
-r2(total2a_model2) # marginal: 0.156; conditional: 0.368
+r2(total2a_model1) # marginal: 0.137; conditional: 0.363
+r2(total2a_model2) # marginal: 0.138; conditional: 0.363
+r2(total2a_model3) # marginal: 0.142; conditional: 0.355
 
-r2(total2b_model1) # marginal: 0.160; conditional: 0.332
-r2(total2b_model2) # marginal: 0.167; conditional: 0.334
+r2(total2b_model1) # marginal: 0.152; conditional: 0.320
+r2(total2b_model2) # marginal: 0.147; conditional: 0.325
+r2(total2b_model3) # marginal: 0.156; conditional: 0.306
 
 
 # Model averaging of top models
@@ -247,13 +252,12 @@ repro1a <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +
                   Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                   Change_BGDensity_scaled +
                   Prev_year_precip_scaled * Change_BGDensity_scaled +
-                  Prev_year_precip_scaled * PlotSlope_scaled + 
                   Prev_year_precip_scaled * Change_ShrubCover_scaled +
                   Prev_year_precip_scaled * Change_HerbCover_scaled +
-                  Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                  (1 | Site / Transect),
                 data = culm.change.flat.rm)
 summary(repro1a)
-r2(repro1a) # marginal: 0.117; conditional: 0.286
+r2(repro1a) # marginal: 0.098; conditional: 0.295
 check_model(repro1a)
 
 # 1: glmmTMB version
@@ -261,14 +265,13 @@ repro1b <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled +
                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                      Change_BGDensity_scaled +
                      Prev_year_precip_scaled * Change_BGDensity_scaled +
-                     Prev_year_precip_scaled * PlotSlope_scaled + 
                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
                      Prev_year_precip_scaled * Change_HerbCover_scaled +
-                     Aspect * PlotSlope_scaled + (1 | Site / Transect),
+                     (1 | Site / Transect),
                    data = culm.change.flat.rm,
                    family = gaussian) 
 summary(repro1b)
-r2(repro1b) # marginal: 0.130; conditional: 0.243
+r2(repro1b) # marginal: 0.107; conditional: 0.252
 res.repro1b <- simulateResiduals(repro1b)
 plotQQunif(res.repro1b)
 plotResiduals(res.repro1b)
@@ -285,40 +288,46 @@ repro1b_set <- dredge(repro1b)
 # Examine best model
 repro1a_best.model <- get.models(repro1a_set, 1)[[1]]
 summary(repro1a_best.model)
-r2(repro1a_best.model) # marginal: 0.115; conditional: 0.287
-check_model(repro1a_best.model)
+r2(repro1a_best.model) # marginal: 0.094; conditional: 0.299
+check_model(repro1a_best.model) # posterior prediction is poor at 0
 
 repro1b_best.model <- get.models(repro1b_set, 1)[[1]]
 summary(repro1b_best.model)
-r2(repro1b_best.model) # marginal: 0.123; conditional: 0.239
+r2(repro1b_best.model) # marginal: 0.100; conditional: 0.258
 res.repro1b_best.model <- simulateResiduals(repro1b_best.model)
 plotQQunif(res.repro1b_best.model)
 plotResiduals(res.repro1b_best.model)
-check_model(repro1b_best.model)
+check_model(repro1b_best.model) # posterior prediction is poor at 0
 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-repro1a_top <- subset(repro1a_set, delta <= 2) # 4 models
+repro1a_top <- subset(repro1a_set, delta <= 2) # 8 models
 for (i in 1:nrow(repro1a_top)) {
   assign(paste0("repro1a_model", i), get.models(repro1a_top, subset = i)[[1]])
 } 
 
-repro1b_top <- subset(repro1b_set, delta <= 2) # 4 models
+repro1b_top <- subset(repro1b_set, delta <= 2) # 6 models
 for (i in 1:nrow(repro1b_top)) {
   assign(paste0("repro1b_model", i), get.models(repro1b_top, subset = i)[[1]])
 } 
 
 
 # R^2 of top models
-r2(repro1a_model1) # marginal: 0.115; conditional: 0.287
-r2(repro1a_model2) # marginal: 0.113; conditional: 0.290
-r2(repro1a_model3) # marginal: 0.117; conditional: 0.286
-r2(repro1a_model4) # marginal: 0.115; conditional: 0.289
+r2(repro1a_model1) # marginal: 0.094; conditional: 0.299
+r2(repro1a_model2) # marginal: 0.095; conditional: 0.301
+r2(repro1a_model3) # marginal: 0.096; conditional: 0.298
+r2(repro1a_model4) # marginal: 0.092; conditional: 0.302
+r2(repro1a_model5) # marginal: 0.095; conditional: 0.296
+r2(repro1a_model6) # marginal: 0.098; conditional: 0.295
+r2(repro1a_model7) # marginal: 0.097; conditional: 0.298
+r2(repro1a_model8) # marginal: 0.094; conditional: 0.300
 
-r2(repro1b_model1) # marginal: 0.123; conditional: 0.239
-r2(repro1b_model2) # marginal: 0.125; conditional: 0.238
-r2(repro1b_model3) # marginal: 0.126; conditional: 0.237
-r2(repro1b_model4) # marginal: 0.128; conditional: 0.236
+r2(repro1b_model1) # marginal: 0.100; conditional: 0.258
+r2(repro1b_model2) # marginal: 0.102; conditional: 0.256
+r2(repro1b_model3) # marginal: 0.089; conditional: 0.279
+r2(repro1b_model4) # marginal: 0.102; conditional: 0.256
+r2(repro1b_model5) # marginal: 0.103; conditional: 0.256
+r2(repro1b_model6) # marginal: 0.104; conditional: 0.253
 
 
 # Model averaging of top models
@@ -338,14 +347,12 @@ repro2a <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +
                   Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                   Change_BGDensity_scaled +
                   Prev_year_precip_scaled * Change_BGDensity_scaled +
-                  Prev_year_precip_scaled * PlotSlope_scaled + 
                   Prev_year_precip_scaled * Change_ShrubCover_scaled +
                   Prev_year_precip_scaled * Change_HerbCover_scaled +
-                  Aspect * PlotSlope_scaled + (1 | Site),
+                  (1 | Site),
                 data = culm.change.flat.rm)
 summary(repro2a)
-r2(repro2a) # marginal: 0.135; conditional: 0.241
-check_collinearity(repro2a)
+r2(repro2a) # marginal: 0.109; conditional: 0.248
 check_model(repro2a)
 
 # 2: glmmTMB version
@@ -353,18 +360,16 @@ repro2b <- glmmTMB(Change_Reproductive_culms ~ Prev_year_precip_scaled +
                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                      Change_BGDensity_scaled +
                      Prev_year_precip_scaled * Change_BGDensity_scaled +
-                     Prev_year_precip_scaled * PlotSlope_scaled + 
                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
                      Prev_year_precip_scaled * Change_HerbCover_scaled +
-                     Aspect * PlotSlope_scaled + (1 | Site),
+                     (1 | Site),
                    data = culm.change.flat.rm,
                    family = gaussian) 
 summary(repro2b)
-r2(repro2b) # marginal: 0.143; conditional: 0.220
+r2(repro2b) # marginal: 0.115; conditional: 0.221
 res.repro2b <- simulateResiduals(repro2b)
 plotQQunif(res.repro2b)
 plotResiduals(res.repro2b)
-check_collinearity(repro2b) # Aspect*PlotSlope have high collinearity
 check_model(repro2b)
 
 
@@ -378,22 +383,20 @@ repro2b_set <- dredge(repro2b)
 # Examine best model
 repro2a_best.model <- get.models(repro2a_set, 1)[[1]]
 summary(repro2a_best.model)
-r2(repro2a_best.model) # marginal: 0.133; conditional: 0.242
-check_collinearity(repro2a_best.model) # Aspect*PlotSlope VIF < 10
-check_model(repro2a_best.model)
+r2(repro2a_best.model) # marginal: 0.109; conditional: 0.249
+check_model(repro2a_best.model) # posterior prediction is poor at 0
 
 repro2b_best.model <- get.models(repro2b_set, 1)[[1]]
 summary(repro2b_best.model)
-r2(repro2b_best.model) # marginal: 0.136; conditional: 0.220
+r2(repro2b_best.model) # marginal: 0.111; conditional: 0.222
 res.repro2b_best.model <- simulateResiduals(repro2b_best.model)
 plotQQunif(res.repro2b_best.model)
 plotResiduals(res.repro2b_best.model)
-check_collinearity(repro2a_best.model) # Aspect*PlotSlope VIF < 10
-check_model(repro2b_best.model)
+check_model(repro2b_best.model) # posterior prediction is poor at 0
 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-repro2a_top <- subset(repro2a_set, delta <= 2) # 2 models
+repro2a_top <- subset(repro2a_set, delta <= 2) # 4 models
 for (i in 1:nrow(repro2a_top)) {
   assign(paste0("repro2a_model", i), get.models(repro2a_top, subset = i)[[1]])
 } 
@@ -405,13 +408,15 @@ for (i in 1:nrow(repro2b_top)) {
 
 
 # R^2 of top models
-r2(repro2a_model1) # marginal: 0.133; conditional: 0.242
-r2(repro2a_model2) # marginal: 0.135; conditional: 0.241
+r2(repro2a_model1) # marginal: 0.109; conditional: 0.249
+r2(repro2a_model2) # marginal: 0.105; conditional: 0.250
+r2(repro2a_model3) # marginal: 0.109; conditional: 0.248
+r2(repro2a_model4) # marginal: 0.105; conditional: 0.251
 
-r2(repro2b_model1) # marginal: 0.136; conditional: 0.220
-r2(repro2b_model2) # marginal: 0.140; conditional: 0.220
-r2(repro2b_model3) # marginal: 0.134; conditional: 0.218
-r2(repro2b_model4) # marginal: 0.138; conditional: 0.217
+r2(repro2b_model1) # marginal: 0.111; conditional: 0.222
+r2(repro2b_model2) # marginal: 0.114; conditional: 0.221
+r2(repro2b_model3) # marginal: 0.109; conditional: 0.222
+r2(repro2b_model4) # marginal: 0.112; conditional: 0.221
 
 
 # Model averaging of top models
@@ -432,7 +437,6 @@ summary(repro2b_avg)
 bgden1a <- lmer(Change_BGDensity ~ Prev_year_precip_scaled + 
                   Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
                   Change_HerbCover_scaled + 
-                  Prev_year_precip_scaled * PlotSlope_scaled +
                   Prev_year_precip_scaled * Change_ShrubCover_scaled +
                   Prev_year_precip_scaled * Change_HerbCover_scaled +
                   (1 | Site / Transect),
@@ -445,7 +449,6 @@ check_model(bgden1a)
 bgden1b <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled +
                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
                      Change_HerbCover_scaled + 
-                     Prev_year_precip_scaled * PlotSlope_scaled +
                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
                      Prev_year_precip_scaled * Change_HerbCover_scaled +
                      (1 | Site / Transect),
@@ -520,7 +523,6 @@ confint(bgden1b_avg)
 bgden2a <- lmer(Change_BGDensity ~ Prev_year_precip_scaled + 
                   Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
                   Change_HerbCover_scaled + 
-                  Prev_year_precip_scaled * PlotSlope_scaled +
                   Prev_year_precip_scaled * Change_ShrubCover_scaled +
                   Prev_year_precip_scaled * Change_HerbCover_scaled +
                   (1 | Site),
@@ -533,7 +535,6 @@ check_model(bgden2a)
 bgden2b <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled +
                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
                      Change_HerbCover_scaled + 
-                     Prev_year_precip_scaled * PlotSlope_scaled +
                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
                      Prev_year_precip_scaled * Change_HerbCover_scaled +
                      (1 | Site),
@@ -603,89 +604,6 @@ summary(bgden2b_avg)
 
 
 
-## BG density 3: no random effects ----------------------------------------
-
-# 3: lm version
-bgden3a <- lm(Change_BGDensity ~ Prev_year_precip_scaled + 
-                Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                Change_HerbCover_scaled + 
-                Prev_year_precip_scaled * PlotSlope_scaled +
-                Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                Prev_year_precip_scaled * Change_HerbCover_scaled,
-              data = plot.change)
-summary(bgden3a)
-r2(bgden3a) # adjusted: 0.420
-check_model(bgden3a)
-
-# 3: glmmTMB version
-bgden3b <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled +
-                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                     Change_HerbCover_scaled + 
-                     Prev_year_precip_scaled * PlotSlope_scaled +
-                     Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                     Prev_year_precip_scaled * Change_HerbCover_scaled,
-                   data = plot.change,
-                   family = gaussian)
-summary(bgden3b)
-r2(bgden3b) # adjusted: 0.417
-res.bgden3b <- simulateResiduals(bgden3b)
-plotQQunif(res.bgden3b)
-plotResiduals(res.bgden3b)
-check_model(bgden3b)
-
-
-### 3: Model selection ----------------------------------------------------
-
-# Model selection
-options(na.action = "na.fail")
-bgden3a_set <- dredge(bgden3a) 
-bgden3b_set <- dredge(bgden3b)
-
-
-# Examine best model
-bgden3a_best.model <- get.models(bgden3a_set, 1)[[1]]
-summary(bgden3a_best.model)
-r2(bgden3a_best.model) # 0.424
-check_model(bgden3a_best.model)
-
-bgden3b_best.model <- get.models(bgden3b_set, 1)[[1]]
-summary(bgden3b_best.model)
-r2(bgden3b_best.model) # adjusted: 0.422
-res.bgden3b_best.model <- simulateResiduals(bgden3b_best.model)
-plotQQunif(res.bgden3b_best.model)
-plotResiduals(res.bgden3b_best.model)
-check_model(bgden3b_best.model)
-
-
-# Examine models within 2 AICc units of best and assign each top model to separate object
-bgden3a_top <- subset(bgden3a_set, delta <= 2) # 2 models
-for (i in 1:nrow(bgden3a_top)) {
-  assign(paste0("bgden3a_model", i), get.models(bgden3a_top, subset = i)[[1]])
-} 
-
-bgden3b_top <- subset(bgden3b_set, delta <= 2) # 2 models
-for (i in 1:nrow(bgden3b_top)) {
-  assign(paste0("bgden3b_model", i), get.models(bgden3b_top, subset = i)[[1]])
-} 
-
-
-# R^2 of top models
-r2(bgden3a_model1) # adjusted: 0.424
-r2(bgden3a_model2) # adjusted: 0.418
-
-r2(bgden3b_model1) # adjusted: 0.422
-r2(bgden3b_model2) # adjusted: 0.415
-
-
-# Model averaging of top models
-bgden3a_avg <- model.avg(bgden3a_set, subset = delta <= 2)
-summary(bgden3a_avg)
-
-bgden3b_avg <- model.avg(bgden3b_set, subset = delta <= 2) 
-summary(bgden3b_avg)
-
-
-
 
 # Buffelgrass cover -------------------------------------------------------
 
@@ -695,7 +613,6 @@ summary(bgden3b_avg)
 bgcov1a <- lmer(Change_BGCover ~ Prev_year_precip_scaled + 
                   Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
                   Change_HerbCover_scaled + 
-                  Prev_year_precip_scaled * PlotSlope_scaled +
                   Prev_year_precip_scaled * Change_ShrubCover_scaled +
                   Prev_year_precip_scaled * Change_HerbCover_scaled +
                   (1 | Site / Transect),
@@ -708,7 +625,6 @@ check_model(bgcov1a)
 bgcov1b <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled +
                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
                      Change_HerbCover_scaled + 
-                     Prev_year_precip_scaled * PlotSlope_scaled +
                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
                      Prev_year_precip_scaled * Change_HerbCover_scaled +
                      (1 | Site / Transect),
@@ -791,7 +707,6 @@ summary(bgcov1b_avg)
 bgcov2a <- lmer(Change_BGCover ~ Prev_year_precip_scaled + 
                   Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
                   Change_HerbCover_scaled + 
-                  Prev_year_precip_scaled * PlotSlope_scaled +
                   Prev_year_precip_scaled * Change_ShrubCover_scaled +
                   Prev_year_precip_scaled * Change_HerbCover_scaled +
                   (1 | Site),
@@ -804,7 +719,6 @@ check_model(bgcov2a)
 bgcov2b <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled +
                      Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
                      Change_HerbCover_scaled + 
-                     Prev_year_precip_scaled * PlotSlope_scaled +
                      Prev_year_precip_scaled * Change_ShrubCover_scaled +
                      Prev_year_precip_scaled * Change_HerbCover_scaled +
                      (1 | Site),
@@ -881,98 +795,6 @@ summary(bgcov2b_avg)
 
 
 
-## BG cover 3: no random effects ------------------------------------------
-
-# 3: lm version
-bgcov3a <- lm(Change_BGCover ~ Prev_year_precip_scaled + 
-                Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                Change_HerbCover_scaled + 
-                Prev_year_precip_scaled * PlotSlope_scaled +
-                Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                Prev_year_precip_scaled * Change_HerbCover_scaled,
-              data = plot.change)
-summary(bgcov3a)
-r2(bgcov3a) # adjusted: 0.210
-check_model(bgcov3a)
-
-# 3: glmmTMB version
-bgcov3b <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled +
-                     Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                     Change_HerbCover_scaled + 
-                     Prev_year_precip_scaled * PlotSlope_scaled +
-                     Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                     Prev_year_precip_scaled * Change_HerbCover_scaled,
-                   data = plot.change,
-                   family = gaussian)
-summary(bgcov3b)
-r2(bgcov3b) # adjusted: 0.206
-res.bgcov3b <- simulateResiduals(bgcov3b)
-plotQQunif(res.bgcov3b)
-plotResiduals(res.bgcov3b)
-check_model(bgcov3b)
-
-
-### 3: Model selection ----------------------------------------------------
-
-# Model selection
-options(na.action = "na.fail")
-bgcov3a_set <- dredge(bgcov3a) 
-bgcov3b_set <- dredge(bgcov3b)
-
-
-# Examine best model
-bgcov3a_best.model <- get.models(bgcov3a_set, 1)[[1]]
-summary(bgcov3a_best.model)
-r2(bgcov3a_best.model) # 0.206
-check_model(bgcov3a_best.model)
-
-bgcov3b_best.model <- get.models(bgcov3b_set, 1)[[1]]
-summary(bgcov3b_best.model)
-r2(bgcov3b_best.model) # adjusted: 0.203
-res.bgcov3b_best.model <- simulateResiduals(bgcov3b_best.model)
-plotQQunif(res.bgcov3b_best.model)
-plotResiduals(res.bgcov3b_best.model)
-check_model(bgcov3b_best.model)
-
-
-# Examine models within 2 AICc units of best and assign each top model to separate object
-bgcov3a_top <- subset(bgcov3a_set, delta <= 2) # 7 models
-for (i in 1:nrow(bgcov3a_top)) {
-  assign(paste0("bgcov3a_model", i), get.models(bgcov3a_top, subset = i)[[1]])
-} 
-
-bgcov3b_top <- subset(bgcov3b_set, delta <= 2) # 7 models
-for (i in 1:nrow(bgcov3b_top)) {
-  assign(paste0("bgcov3b_model", i), get.models(bgcov3b_top, subset = i)[[1]])
-} 
-
-
-# R^2 of top models
-r2(bgcov3a_model1) # adjusted: 0.206
-r2(bgcov3a_model2) # adjusted: 0.213
-r2(bgcov3a_model3) # adjusted: 0.206
-r2(bgcov3a_model4) # adjusted: 0.204
-r2(bgcov3a_model5) # adjusted: 0.212
-r2(bgcov3a_model6) # adjusted: 0.204
-r2(bgcov3a_model7) # adjusted: 0.212
-
-r2(bgcov3b_model1) # adjusted: 0.203
-r2(bgcov3b_model2) # adjusted: 0.209
-r2(bgcov3b_model3) # adjusted: 0.202
-r2(bgcov3b_model4) # adjusted: 0.201
-r2(bgcov3b_model5) # adjusted: 0.208
-r2(bgcov3b_model6) # adjusted: 0.201
-r2(bgcov3b_model7) # adjusted: 0.208
-
-
-# Model averaging of top models
-bgcov3a_avg <- model.avg(bgcov3a_set, subset = delta <= 2)
-summary(bgcov3a_avg)
-
-bgcov3b_avg <- model.avg(bgcov3b_set, subset = delta <= 2) 
-summary(bgcov3b_avg)
-
-
 
 
 # Survival ----------------------------------------------------------------
@@ -983,7 +805,6 @@ summary(bgcov3b_avg)
 survival1 <- glmmTMB(survival_perc ~ Prev_year_precip_scaled +
                        Aspect + PlotSlope_scaled + ShrubCover_scaled +
                        HerbCover_scaled + BGDensity_scaled +
-                       Prev_year_precip_scaled * PlotSlope_scaled +
                        Prev_year_precip_scaled * ShrubCover_scaled +
                        Prev_year_precip_scaled * HerbCover_scaled +
                        Prev_year_precip_scaled * BGDensity_scaled +
@@ -1056,7 +877,6 @@ summary(survival1_avg)
 survival2 <- glmmTMB(survival_perc ~ Prev_year_precip_scaled +
                        Aspect + PlotSlope_scaled + ShrubCover_scaled +
                        HerbCover_scaled + BGDensity_scaled +
-                       Prev_year_precip_scaled * PlotSlope_scaled +
                        Prev_year_precip_scaled * ShrubCover_scaled +
                        Prev_year_precip_scaled * HerbCover_scaled +
                        Prev_year_precip_scaled * BGDensity_scaled +
@@ -1115,112 +935,7 @@ summary(survival2_avg)
 
 
 
-## Survival 3: Tweedie GLM, no random effects -----------------------------
-
-# 3: glmmTMB version
-survival3 <- glmmTMB(survival_perc ~ Prev_year_precip_scaled +
-                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
-                       HerbCover_scaled + BGDensity_scaled +
-                       Prev_year_precip_scaled * PlotSlope_scaled +
-                       Prev_year_precip_scaled * ShrubCover_scaled +
-                       Prev_year_precip_scaled * HerbCover_scaled +
-                       Prev_year_precip_scaled * BGDensity_scaled,
-                     data = dat.survival,
-                     family = tweedie(link = "log"))
-summary(survival3)
-res.survival3 <- simulateResiduals(survival3)
-plotQQunif(res.survival3)
-plotResiduals(res.survival3) 
-check_collinearity(survival3) 
-check_model(survival3)
-check_overdispersion(survival3)
-
-
-### 3: Model selection ----------------------------------------------------
-
-# Model selection
-options(na.action = "na.fail")
-survival3_set <- dredge(survival3)
-
-# Examine best model
-survival3_best.model <- get.models(survival3_set, 1)[[1]]
-summary(survival3_best.model)
-res.survival3_best.model <- simulateResiduals(survival3_best.model)
-plotQQunif(res.survival3_best.model)
-plotResiduals(res.survival3_best.model)
-check_model(survival3_best.model)
-
-# Examine models within 2 AICc units of best and assign each top model to separate object
-survival3_top <- subset(survival3_set, delta <= 2) # 5 models
-for (i in 1:nrow(survival3_top)) {
-  assign(paste0("survival3_model", i), get.models(survival3_top, subset = i)[[1]])
-} 
-
-# Model averaging of top models
-survival3_avg <- model.avg(survival3_set, subset = delta <= 2)
-summary(survival3_avg)
 
 
 
-
-## Survival 4: Tweedie GLM, (1 | Site / Transect), no interactions --------
-
-# 4: glmmTMB version
-survival4 <- glmmTMB(survival_perc ~ Prev_year_precip_scaled +
-                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
-                       HerbCover_scaled + BGDensity_scaled +
-                       (1 | Site / Transect),
-                     data = dat.survival,
-                     family = tweedie(link = "log"))
-summary(survival4)
-r2(survival4) # can't compute
-res.survival4 <- simulateResiduals(survival4)
-plotQQunif(res.survival4)
-plotResiduals(res.survival4) # looks maybe a little better than version 1?
-check_collinearity(survival4) 
-check_model(survival4) # posterior still looks weird
-check_overdispersion(survival4)
-
-
-### 4: Model selection ----------------------------------------------------
-
-# Model selection
-options(na.action = "na.fail")
-survival4_set <- dredge(survival4) # not all converged
-
-# Examine best model
-survival4_best.model <- get.models(survival4_set, 1)[[1]]
-summary(survival4_best.model)
-r2(survival4_best.model) # marginal: 0.362; conditional: 0.908
-res.survival4_best.model <- simulateResiduals(survival4_best.model)
-plotQQunif(res.survival4_best.model)
-plotResiduals(res.survival4_best.model) # literally looks no different from version 1
-check_model(survival4_best.model)
-
-# Examine models within 2 AICc units of best and assign each top model to separate object
-survival4_top <- subset(survival4_set, delta <= 2) %>% 
-  filter(!is.na(df)) # not all models converged; 9 top models
-for (i in 1:nrow(survival4_top)) {
-  assign(paste0("survival4_model", i), get.models(survival4_top, subset = i)[[1]])
-} 
-
-# R^2 of top models
-r2(survival4_model1) # marginal: 0.362; conditional: 0.908
-r2(survival4_model2) # marginal: 0.358; conditional: 0.905
-r2(survival4_model3) # can't compute
-r2(survival4_model4) # marginal: 0.355; conditional: 0.908
-r2(survival4_model5) # marginal: 0.350; conditional: 0.906
-r2(survival4_model6) # marginal: 0.341; conditional: 0.913
-r2(survival4_model7) # can't compute
-r2(survival4_model8) # marginal: 0.353; conditional: 0.911
-r2(survival4_model9) # can't compute
-
-
-# Model averaging of top models
-survival4_set_with.delta <- survival4_set %>% 
-  filter(!is.na(delta))
-survival4_avg <- model.avg(survival4_set_with.delta, subset = delta <= 2)
-summary(survival4_avg)
-
-
-save.image("RData/06.3_linear-models-4.0.RData")
+save.image("RData/06.4_linear-models-5.0.RData")
