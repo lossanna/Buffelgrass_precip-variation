@@ -1,5 +1,5 @@
 # Created: 2025-07-09
-# Updated: 2025-07-09
+# Updated: 2025-07-10
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -13,8 +13,16 @@
 #   Also no longer modeling survival as linear model, instead using Tweedie GLM.
 
 # Updates from 06.3_linear-models-4.0.R script:
-#   No longer including Aspect * PlotSlope and Precip*Slope interactions in culm count models,
+#   No longer including Aspect*PlotSlope and Precip*Slope interactions in culm count models,
 #     and no longer including Precip * PlotSlope interactions in any model to simplify things.
+
+# Density, cover, and survival models did not change that much because they never included Aspect*PlotSlope
+#   and did not include Precip*PlotSlope after model selection.
+# Total & repro culm count models had Precip*PlotSlope as significant previously, but I think this adds too much
+#   complication to the model and isn't really what we are interested in, so that is why it is dropped here.
+
+# Am going with random effect of (1 | Site) to simplify things, given the limited number of sites and
+#   plot-level observations.
 
 
 library(tidyverse)
@@ -156,7 +164,7 @@ summary(total1b_avg)
 
 
 
-## Total change 2: (1 | Site) as random effect ----------------------------
+## Total change 2: (1 | Site) ---------------------------------------------
 
 # 2: lme4 version
 total2a <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
@@ -245,7 +253,7 @@ summary(total2b_avg)
 
 # Reproductive culms ------------------------------------------------------
 
-## Repro change 1: model 8 from 3.0 ---------------------------------------
+## Repro change 1: (1 | Site / Transect) ----------------------------------
 
 # 1: lme4 version
 repro1a <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +  
@@ -340,7 +348,7 @@ summary(repro1b_avg)
 
 
 
-## Repro change 2: (1 | Site) as random effect ----------------------------
+## Repro change 2: (1 | Site) ---------------------------------------------
 
 # 2: lme4 version
 repro2a <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +  
@@ -442,7 +450,7 @@ bgden1a <- lmer(Change_BGDensity ~ Prev_year_precip_scaled +
                   (1 | Site / Transect),
                 data = plot.change)
 summary(bgden1a)
-r2(bgden1a) # marginal: 0.308; conditional: 0.572
+r2(bgden1a) # marginal: 0.299; conditional: 0.566
 check_model(bgden1a)
 
 # 1: glmmTMB version
@@ -455,7 +463,7 @@ bgden1b <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled +
                    data = plot.change,
                    family = gaussian)
 summary(bgden1b)
-r2(bgden1b) # marginal: 0.351; conditional: 0.540
+r2(bgden1b) # marginal: 0.340; conditional: 0.531
 res.bgden1b <- simulateResiduals(bgden1b)
 plotQQunif(res.bgden1b)
 plotResiduals(res.bgden1b)
@@ -466,7 +474,7 @@ check_model(bgden1b)
 
 # Model selection
 options(na.action = "na.fail")
-bgden1a_set <- dredge(bgden1a) # got warning about convergence, but table looks complete
+bgden1a_set <- dredge(bgden1a) # got warning about convergence, but table looks complete (Model failed to converge with 1 negative eigenvalue: -8.2e-01)
 bgden1b_set <- dredge(bgden1b)
 
 
@@ -474,7 +482,7 @@ bgden1b_set <- dredge(bgden1b)
 bgden1a_best.model <- get.models(bgden1a_set, 1)[[1]]
 summary(bgden1a_best.model)
 r2(bgden1a_best.model) # marginal: 0.305; conditional: 0.562
-check_model(bgden1a_best.model)
+check_model(bgden1a_best.model) # posterior prediction is poor around 0-1
 
 bgden1b_best.model <- get.models(bgden1b_set, 1)[[1]]
 summary(bgden1b_best.model)
@@ -482,11 +490,11 @@ r2(bgden1b_best.model) # marginal: 0.339; conditional: 0.532
 res.bgden1b_best.model <- simulateResiduals(bgden1b_best.model)
 plotQQunif(res.bgden1b_best.model)
 plotResiduals(res.bgden1b_best.model)
-check_model(bgden1b_best.model) # posterior prediction poor around 0-1
+check_model(bgden1b_best.model) # posterior prediction is poor around 0-1
 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-bgden1a_top <- subset(bgden1a_set, delta <= 2) # 3 models
+bgden1a_top <- subset(bgden1a_set, delta <= 2) # 2 models
 for (i in 1:nrow(bgden1a_top)) {
   assign(paste0("bgden1a_model", i), get.models(bgden1a_top, subset = i)[[1]])
 } 
@@ -500,7 +508,6 @@ for (i in 1:nrow(bgden1b_top)) {
 # R^2 of top models
 r2(bgden1a_model1) # marginal: 0.305; conditional: 0.562
 r2(bgden1a_model2) # marginal: 0.301; conditional: 0.567
-r2(bgden1a_model3) # marginal: 0.311; conditional: 0.572
 
 r2(bgden1b_model1) # marginal: 0.339; conditional: 0.532
 r2(bgden1b_model2) # marginal: 0.336; conditional: 0.535
@@ -528,7 +535,7 @@ bgden2a <- lmer(Change_BGDensity ~ Prev_year_precip_scaled +
                   (1 | Site),
                 data = plot.change)
 summary(bgden2a)
-r2(bgden2a) # marginal: 0.391; conditional: 0.430
+r2(bgden2a) # marginal: 0.392; conditional: 0.431
 check_model(bgden2a)
 
 # 2: glmmTMB version
@@ -541,7 +548,7 @@ bgden2b <- glmmTMB(Change_BGDensity ~ Prev_year_precip_scaled +
                    data = plot.change,
                    family = gaussian)
 summary(bgden2b)
-r2(bgden2b) # marginal: 0.423; conditional: 0.437
+r2(bgden2b) # marginal: 0.421; conditional: 0.436
 res.bgden2b <- simulateResiduals(bgden2b)
 plotQQunif(res.bgden2b)
 plotResiduals(res.bgden2b)
@@ -560,7 +567,7 @@ bgden2b_set <- dredge(bgden2b)
 bgden2a_best.model <- get.models(bgden2a_set, 1)[[1]]
 summary(bgden2a_best.model)
 r2(bgden2a_best.model) # marginal: 0.390; conditional: 0.427
-check_model(bgden2a_best.model)
+check_model(bgden2a_best.model) # posterior prediction is poor around 0-1
 
 bgden2b_best.model <- get.models(bgden2b_set, 1)[[1]]
 summary(bgden2b_best.model)
@@ -568,7 +575,7 @@ r2(bgden2b_best.model) # marginal: 0.428; conditional: 0.438
 res.bgden2b_best.model <- simulateResiduals(bgden2b_best.model)
 plotQQunif(res.bgden2b_best.model)
 plotResiduals(res.bgden2b_best.model)
-check_model(bgden2b_best.model)
+check_model(bgden2b_best.model) # posterior prediction is poor around 0-1
 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
@@ -618,7 +625,7 @@ bgcov1a <- lmer(Change_BGCover ~ Prev_year_precip_scaled +
                   (1 | Site / Transect),
                 data = plot.change)
 summary(bgcov1a)
-r2(bgcov1a) # marginal: 0.238; conditional: 0.396
+r2(bgcov1a) # marginal: 0.239; conditional: 0.393
 check_model(bgcov1a)
 
 # 1: glmmTMB version
@@ -631,7 +638,7 @@ bgcov1b <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled +
                    data = plot.change,
                    family = gaussian)
 summary(bgcov1b)
-r2(bgcov1b) # marginal: 0.255; conditional: 0.354
+r2(bgcov1b) # marginal: 0.283; conditional: NA
 res.bgcov1b <- simulateResiduals(bgcov1b)
 plotQQunif(res.bgcov1b)
 plotResiduals(res.bgcov1b)
@@ -662,7 +669,7 @@ check_model(bgcov1b_best.model)
 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-bgcov1a_top <- subset(bgcov1a_set, delta <= 2) # 6 models
+bgcov1a_top <- subset(bgcov1a_set, delta <= 2) # 3 models
 for (i in 1:nrow(bgcov1a_top)) {
   assign(paste0("bgcov1a_model", i), get.models(bgcov1a_top, subset = i)[[1]])
 } 
@@ -675,11 +682,8 @@ for (i in 1:nrow(bgcov1b_top)) {
 
 # R^2 of top models
 r2(bgcov1a_model1) # marginal: 0.240; conditional: 0.393
-r2(bgcov1a_model2) # marginal: 0.239; conditional: 0.395
-r2(bgcov1a_model3) # marginal: 0.239; conditional: 0.393
-r2(bgcov1a_model4) # marginal: 0.238; conditional: 0.396
-r2(bgcov1a_model5) # marginal: 0.240; conditional: 0.391
-r2(bgcov1a_model6) # marginal: 0.240; conditional: 0.393
+r2(bgcov1a_model2) # marginal: 0.239; conditional: 0.393
+r2(bgcov1a_model3) # marginal: 0.240; conditional: 0.391
 
 r2(bgcov1b_model1) # marginal: 0.254; conditional: 0.355
 r2(bgcov1b_model2) # marginal: 0.247; conditional: 0.369
@@ -701,6 +705,7 @@ summary(bgcov1b_avg)
 
 
 
+
 # BG cover 2: Add (1 | Site) ----------------------------------------------
 
 # 2: lme4 version
@@ -712,7 +717,7 @@ bgcov2a <- lmer(Change_BGCover ~ Prev_year_precip_scaled +
                   (1 | Site),
                 data = plot.change)
 summary(bgcov2a)
-r2(bgcov2a) # marginal: 0.249; conditional: 0.303
+r2(bgcov2a) # marginal: 0.251; conditional: 0.306
 check_model(bgcov2a)
 
 # 2: glmmTMB version
@@ -723,9 +728,9 @@ bgcov2b <- glmmTMB(Change_BGCover ~ Prev_year_precip_scaled +
                      Prev_year_precip_scaled * Change_HerbCover_scaled +
                      (1 | Site),
                    data = plot.change,
-                   family = gaussian) # model convergence problem? didn't have problem in 06.2.R script
+                   family = gaussian) 
 summary(bgcov2b)
-r2(bgcov2b) # 
+r2(bgcov2b) # marginal: 0.260; conditional: 0.289
 res.bgcov2b <- simulateResiduals(bgcov2b)
 plotQQunif(res.bgcov2b)
 plotResiduals(res.bgcov2b)
@@ -737,7 +742,7 @@ check_model(bgcov2b)
 # Model selection
 options(na.action = "na.fail")
 bgcov2a_set <- dredge(bgcov2a) 
-bgcov2b_set <- dredge(bgcov2b)
+bgcov2b_set <- dredge(bgcov2b) # convergence problems
 
 
 # Examine best model
@@ -756,7 +761,7 @@ check_model(bgcov2b_best.model)
 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-bgcov2a_top <- subset(bgcov2a_set, delta <= 2) # 6 models
+bgcov2a_top <- subset(bgcov2a_set, delta <= 2) # 3 models
 for (i in 1:nrow(bgcov2a_top)) {
   assign(paste0("bgcov2a_model", i), get.models(bgcov2a_top, subset = i)[[1]])
 } 
@@ -770,11 +775,8 @@ for (i in 1:nrow(bgcov2b_top)) {
 
 # R^2 of top models
 r2(bgcov2a_model1) # marginal: 0.252; conditional: 0.310
-r2(bgcov2a_model2) # marginal: 0.251; conditional: 0.307
+r2(bgcov2a_model2) # marginal: 0.251; conditional: 0.306
 r2(bgcov2a_model3) # marginal: 0.251; conditional: 0.306
-r2(bgcov2a_model4) # marginal: 0.249; conditional: 0.303
-r2(bgcov2a_model5) # marginal: 0.251; conditional: 0.306
-r2(bgcov2a_model6) # marginal: 0.249; conditional: 0.302
 
 r2(bgcov2b_model1) # marginal: 0.263; conditional: 0.310
 r2(bgcov2b_model2) # marginal: 0.247; conditional: 0.281
@@ -817,7 +819,7 @@ res.survival1 <- simulateResiduals(survival1)
 plotQQunif(res.survival1)
 plotResiduals(res.survival1) # looks kind of janky
 check_collinearity(survival1) 
-check_model(survival1) # posterior looks weird
+check_model(survival1) # posterior prediction looks weird; homogeneity of variance not shown
 check_overdispersion(survival1)
 
 
@@ -834,7 +836,7 @@ r2(survival1_best.model) # marginal: 0.362; conditional: 0.908
 res.survival1_best.model <- simulateResiduals(survival1_best.model)
 plotQQunif(res.survival1_best.model)
 plotResiduals(res.survival1_best.model) # really does not look great
-check_model(survival1_best.model) # posterior looks weird
+check_model(survival1_best.model) # posterior prediction looks weird
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
 survival1_top <- subset(survival1_set, delta <= 2) %>% 
@@ -887,7 +889,7 @@ summary(survival2)
 r2(survival2) # marginal: 0.333; conditional: 0.919
 res.survival2 <- simulateResiduals(survival2)
 plotQQunif(res.survival2)
-plotResiduals(res.survival2) # starts to look more funky, I think due to uneven sample size
+plotResiduals(res.survival2) # looks a bit funky, I think due to uneven sample size
 check_collinearity(survival2) 
 check_model(survival2)
 check_overdispersion(survival2)
@@ -905,8 +907,8 @@ summary(survival2_best.model)
 r2(survival2_best.model) # marginal: 0.340; conditional: 0.913
 res.survival2_best.model <- simulateResiduals(survival2_best.model)
 plotQQunif(res.survival2_best.model)
-plotResiduals(res.survival2_best.model)
-check_model(survival2_best.model) # posterior looks weird
+plotResiduals(res.survival2_best.model) # kind of janky
+check_model(survival2_best.model) # posterior prediction looks weird
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
 survival2_top <- subset(survival2_set, delta <= 2) # 11 models
@@ -931,9 +933,6 @@ r2(survival2_model11) # marginal: 0.326; conditional: 0.921
 # Model averaging of top models
 survival2_avg <- model.avg(survival2_set, subset = delta <= 2)
 summary(survival2_avg)
-
-
-
 
 
 
