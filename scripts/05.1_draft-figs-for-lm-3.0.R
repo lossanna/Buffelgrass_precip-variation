@@ -765,7 +765,7 @@ bgcov.change.plotslope.lm
 
 ## BG cover change: Not significant ---------------------------------------
 
-# BG density change: linear regression by shrub cover (change)
+# BG cover change: linear regression by shrub cover (change)
 bgcov.change.shrub.lm <- plot.change %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGCover)) +
   geom_point() +
@@ -782,7 +782,7 @@ bgcov.change.shrub.lm <- plot.change %>%
        title = "Change in buffegrass cover vs. shrub cover change")
 bgcov.change.shrub.lm
 
-# BG density change: linear regression by herb cover (change)
+# BG cover change: linear regression by herb cover (change)
 bgcov.change.herb.lm <- plot.change %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGCover)) +
   geom_point() +
