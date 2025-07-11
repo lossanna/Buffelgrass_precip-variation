@@ -4,6 +4,8 @@
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
 
+# Continuous explanatory variables are centered and scaled. 
+
 # Updates from 06.2_linear-models-3.0.R script:
 #   Mostly this is to restart model numbering now that I have explanatory variables confirmed,
 #     and am looking at random effects and glmmTMB (b) vs. lme4 (a).
@@ -38,7 +40,6 @@ library(tidyverse)
 library(glmmTMB)
 library(performance)
 library(DHARMa)
-library(performance)
 library(lme4)
 library(lmerTest)
 library(MuMIn)
