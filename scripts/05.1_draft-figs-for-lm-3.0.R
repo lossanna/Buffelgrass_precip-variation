@@ -34,8 +34,13 @@ plot.change <- culm.change %>%
   distinct(.keep_all = TRUE) %>% 
   filter(Aspect != "flat")
 
-# Create df of average for precip
-#   By site
+# Prepare survival data
+survival <- dat %>% 
+  filter(!is.na(survival_perc)) %>% 
+  select(Date, Year, StudyYear, Site, Transect, Plot, survival_perc) %>% 
+  distinct(.keep_all = TRUE)
+
+# Create df of average for precip by site
 plot.avg.site <- dat.plot %>% 
   group_by(Year, StudyYear, Site) %>% 
   summarise(Perc_dev_avg = mean(Perc_dev),
@@ -45,8 +50,7 @@ plot.avg.site <- dat.plot %>%
 
 # Site characteristics ----------------------------------------------------
 
-## Aspects at each site ---------------------------------------------------
-
+# Aspects
 dat %>% 
   filter(Site == "ApachePeak") %>% 
   count(Aspect) # E, S, W, flat
@@ -60,23 +64,17 @@ dat %>%
   filter(Site == "TumamocHill") %>% 
   count(Aspect) # E, N, S, W
 
-
-## Plot slopes ------------------------------------------------------------
-
-# By site
+# Plot slope
 dat.plot %>% 
   group_by(Site) %>% 
   summarise(PlotSlope_min = min(PlotSlope),
             PlotSlope_max = max(PlotSlope),
             PlotSlope_avg = mean(PlotSlope),
             PlotSlope_median = median(PlotSlope))
-
-# Overall
 summary(dat.plot$PlotSlope)
 
 
-## Number of plots --------------------------------------------------------
-
+# Number of plots
 length(unique(dat.plot$Plot)) # 79
 
 # Transects with two plots
@@ -89,18 +87,11 @@ dat.plot %>%
   filter(PlotCount == 2)
 
 
-## Survival ---------------------------------------------------------------
+# Survival
+nrow(survival) # 141 observations
+length(unique(survival$Plot)) # 65 unique plots
+count(survival, Site)
 
-survival <- dat %>% 
-  filter(!is.na(survival_perc)) %>% 
-  select(Date, Year, StudyYear, Site, Transect, Plot, survival_perc) %>% 
-  distinct(.keep_all = TRUE)
-nrow(survival)
-nrow(dat.plot)
-
-length(unique(survival$Plot))
-
-setdiff(unique(dat.plot$Plot), unique(survival$Plot))
 
 
 # Precip ------------------------------------------------------------------
