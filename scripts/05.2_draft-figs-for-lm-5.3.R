@@ -1,11 +1,11 @@
 # Created: 2025-07-11
-# Updated: 2025-07-11
+# Updated: 2025-07-15
 
-# Purpose: Visualize relationships relevant to finalized linear models for all response 
+# Purpose: Visualize relationships relevant to v5.3 linear models for all response 
 #   variables (total culm change, reproductive culm change, buffelgrass density & cover change,
-#   survival); linear models from 06.5_linear-models_finalized.R
-# Figures have not actually changed from 05.1.R, as data are the same, but significance
-#   has sometimes changed, and Site now added as a boxplot.
+#   survival); linear models from 06.5_linear-models-5.3.R.
+# Figures have not actually changed from 05.1.R (in 2025-05_draft-figures/), as data are the same, 
+#   but significance has sometimes changed, and Site now added as a boxplot.
 
 # I have excluded some iterations of density/shrub/herb plots (alone & with precip interaction)
 #   to consolidate script, but these are still available from 2025-07_draft-figures.
@@ -401,11 +401,10 @@ repro.change.plotslope.lm <- culm.change %>%
              color = "red")  
 repro.change.plotslope.lm
 
-# Repro change: linear regression buffelgrass density (change) and Prev_year_precip
-repro.change.bgden.prevprecip.lm <- culm.change %>% 
+# Repro change: scatterplot by buffelgrass density (change) and Prev_year_precip
+repro.change.bgden.prevprecip <- culm.change %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
   geom_point(aes( color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -418,13 +417,12 @@ repro.change.bgden.prevprecip.lm <- culm.change %>%
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ paste("Density (individuals /  ", m^2, ")")),
        title = "Change in reproductive culm count vs. plot density change") 
-repro.change.bgden.prevprecip.lm
+repro.change.bgden.prevprecip
 
-# Repro change: linear regression by shrub cover (change) and Prev_year_precip
-repro.change.shrub.prevprecip.lm <- culm.change %>% 
+# Repro change: scatterplot by shrub cover (change) and Prev_year_precip
+repro.change.shrub.prevprecip <- culm.change %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
   geom_point(aes(color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -437,13 +435,12 @@ repro.change.shrub.prevprecip.lm <- culm.change %>%
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ "Native shrub cover (%)"),
        title = "Change in reproductive culm count vs. shrub cover change")
-repro.change.shrub.prevprecip.lm
+repro.change.shrub.prevprecip
 
-# Repro change: linear regression by herb cover (change) and Prev_year_precip
-repro.change.herb.prevprecip.lm <- culm.change %>% 
+# Repro change: scatterplot by herb cover (change) and Prev_year_precip
+repro.change.herb.prevprecip <- culm.change %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
   geom_point(aes(color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -456,7 +453,7 @@ repro.change.herb.prevprecip.lm <- culm.change %>%
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ "Native grass and forb cover (%)"),
        title = "Change in reproductive culm count vs. herb cover change")
-repro.change.herb.prevprecip.lm
+repro.change.herb.prevprecip
 
 
 
@@ -888,23 +885,24 @@ tiff("figures/2025-07_draft-figures/Repro-change_by-plot-slope_regression.tiff",
 repro.change.plotslope.lm
 dev.off()
 
-# Repro change vs. BG density change by Prev_year_precip (linear regression)
-tiff("figures/2025-07_draft-figures/Repro-change_by-BG-density-change-and-prev-year-precip_regression.tiff",
+# Repro change vs. BG density change by Prev_year_precip
+tiff("figures/2025-07_draft-figures/Repro-change_by-BG-density-change-and-prev-year-precip.tiff",
      units = "in", height = 4, width = 6, res = 150)
-repro.change.bgden.prevprecip.lm
+repro.change.bgden.prevprecip
 dev.off()
 
-# Repro change vs. shrub cover change by Prev_year_precip (linear regression)
-tiff("figures/2025-07_draft-figures/Repro-change_by-shrub-cover-change-and-prev-year-precip_regression.tiff",
+# Repro change vs. shrub cover change by Prev_year_precip
+tiff("figures/2025-07_draft-figures/Repro-change_by-shrub-cover-change-and-prev-year-precip.tiff",
      units = "in", height = 4, width = 6, res = 150)
-repro.change.shrub.prevprecip.lm
+repro.change.shrub.prevprecip
 dev.off()
 
-# Repro change vs. herb cover change by Prev_year_precip (linear regression)
-tiff("figures/2025-07_draft-figures/Repro-change_by-herb-cover-change-and-prev-year-precip_regression.tiff",
+# Repro change vs. herb cover change by Prev_year_precip 
+tiff("figures/2025-07_draft-figures/Repro-change_by-herb-cover-change-and-prev-year-precip.tiff",
      units = "in", height = 4, width = 6, res = 150)
-repro.change.herb.prevprecip.lm
+repro.change.herb.prevprecip
 dev.off()
+
 
 
 
@@ -1034,4 +1032,4 @@ survival.herb.prevprecip.lm
 dev.off()
 
 
-save.image("RData/05.2_draft-figs-for-finalized-linear-models.RData")
+save.image("RData/05.2_draft-figs-for-lm-5.3.RData")
