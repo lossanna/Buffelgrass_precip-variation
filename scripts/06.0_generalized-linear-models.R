@@ -367,4 +367,4 @@ check_collinearity(lm.bgcov2.lme4) # Perc_dev * Aspect has high correlation
 
 
 
-save.image("RData/06_generalized-linear-models.RData")
+save.image("RData/06.0_generalized-linear-models.RData")
