@@ -1,7 +1,7 @@
 # Created: 2025-07-11
 # Updated: 2025-07-11
 
-# Purpose: Compile finalized linear models with Change_Reproductive_culms,  
+# Purpose: Compile version 3 linear models with Change_Reproductive_culms,  
 #   Change_Total_Live_Culms, Change_BGDensity, Change_BGCover, and survival_perc 
 #   as response variable.
 
@@ -281,4 +281,4 @@ survival_avg <- model.avg(survival_set, subset = delta <= 2)
 summary(survival_avg)
 
 
-save.image("RData/06.5_linear-models-finalized.RData")
+save.image("RData/06.5_linear-models-5.3.RData")

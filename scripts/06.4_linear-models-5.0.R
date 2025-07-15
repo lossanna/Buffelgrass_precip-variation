@@ -1,5 +1,5 @@
 # Created: 2025-07-09
-# Updated: 2025-07-11
+# Updated: 2025-07-15
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -30,10 +30,8 @@
 
 # Conclusions:
 #   Should go with lme4 versions where possible because REML better accounts for unequal group sizes.
-#   Essentially, should use model 3 (Site as fixed, Transect as random) because this accounts for differences between
-#     sites by including it, spatial & temporal autocorrelation by including a random effect, and Transect has many  
-#     more levels than Site, so it is better as a random effect.
-#   Survival model cannot include Site as fixed effect because of high VIF; Site is altogether excluded.
+#   Essentially, should use model 1 because most of the models do run and this fits the experimental
+#     design best (I changed my mind from 7/11)
 
 
 library(tidyverse)
