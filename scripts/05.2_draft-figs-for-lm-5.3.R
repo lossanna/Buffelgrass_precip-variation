@@ -263,11 +263,10 @@ total.change.herb.lm <- culm.change %>%
        title = "Change in total culm count vs. herb cover change")
 total.change.herb.lm
 
-# Total change: linear regression buffelgrass density (change) and Prev_year_precip
-total.change.bgden.prevprecip.lm <- culm.change %>% 
+# Total change: scatterplot by buffelgrass density (change) and Prev_year_precip
+total.change.bgden.prevprecip <- culm.change %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms)) +
   geom_point(aes(color = Prev_year_precip)) +
-  geom_smooth(method = "lm") +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -280,7 +279,7 @@ total.change.bgden.prevprecip.lm <- culm.change %>%
   labs(y = expression(Delta ~ "Total culm count"),
        x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
        title = "Change in total culm count vs. plot density change") 
-total.change.bgden.prevprecip.lm
+total.change.bgden.prevprecip
 
 
 
@@ -830,10 +829,10 @@ tiff("figures/2025-07_draft-figures/Total-change_by-herb-cover-change_regression
 total.change.herb.lm
 dev.off()
 
-# Total change vs. BG density change by Prev_year_precip (linear regression)
-tiff("figures/2025-07_draft-figures/Total-change_by-BG-density-change-and-prev-year-precip_regression.tiff",
+# Total change vs. BG density change by Prev_year_precip 
+tiff("figures/2025-07_draft-figures/Total-change_by-BG-density-change-and-prev-year-precip.tiff",
      units = "in", height = 4, width = 6, res = 150)
-total.change.bgden.prevprecip.lm
+total.change.bgden.prevprecip
 dev.off()
 
 
