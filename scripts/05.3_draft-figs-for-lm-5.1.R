@@ -1,5 +1,5 @@
 # Created: 2025-07-15
-# Updated: 2025-07-15
+# Updated: 2025-07-18
 
 # Purpose: Visualize relationships relevant to v5.1 linear models for all response 
 #   variables (total culm change, reproductive culm change, buffelgrass density & cover change,
@@ -17,12 +17,13 @@
 library(tidyverse)
 library(scales)
 library(viridis)
+library(ggeffects)
 
 # Load data ---------------------------------------------------------------
 
 dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 culm.change.raw <- read_csv("data/cleaned/04_change-in-culm-density-cover_clean.csv")
-
+load("RData/06.6-lm-5.1_top-models.RData")
 
 # Data wrangling ----------------------------------------------------------
 
@@ -42,6 +43,15 @@ plot.change <- culm.change %>%
          -Change_Reproductive_culms, -Change_Total_Live_Culms) %>% 
   distinct(.keep_all = TRUE) %>% 
   filter(Aspect != "flat")
+
+# Add quantile bins for precip levels (low, med, high)
+culm.change <- culm.change %>% 
+  mutate(precip_group = ntile(Prev_year_precip, 3)) %>%
+  mutate(precip_group = factor(precip_group, labels = c("Low precip", "Medium precip", "High precip")))
+
+plot.change <- plot.change %>%
+  mutate(precip_group = ntile(Prev_year_precip, 3)) %>%
+  mutate(precip_group = factor(precip_group, labels = c("Low precip", "Medium precip", "High precip")))
 
 # Prepare survival data
 survival <- dat %>% 
@@ -199,6 +209,45 @@ total.change.shrub.prevprecip.lm <- culm.change %>%
        title = "Change in total culm count vs. shrub cover change")
 total.change.shrub.prevprecip.lm
 
+# Total change: scatterplot by shrub cover (change) and Prev_year_precip
+total.change.shrub.prevprecip <- culm.change %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in total culm count vs. shrub cover change")
+total.change.shrub.prevprecip
+
+# Total change: linear regression by shrub cover (change) and Prev_year_precip, wrapped by precip_group
+total.change.shrub.prevprecip.wrap <- culm.change %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~precip_group) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year precip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in total culm count vs. shrub cover change") +
+  theme(legend.position = "bottom")
+total.change.shrub.prevprecip.wrap
+
 # Total change: scatterplot by herb cover (change) and Prev_year_precip
 total.change.herb.prevprecip <- culm.change %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
@@ -216,6 +265,31 @@ total.change.herb.prevprecip <- culm.change %>%
        x = expression(Delta ~ "Native grass & forb cover (%)"),
        title = "Change in total culm count vs. herb cover change")
 total.change.herb.prevprecip
+
+# Total change: linear regression by herb cover (change) and Prev_year_precip, wrapped by precip_group
+total.change.herb.prevprecip.wrap <- culm.change %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  facet_wrap(~precip_group) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year precip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in total culm count vs. herb cover change") +
+  theme(legend.position = "bottom")
+total.change.herb.prevprecip.wrap
+
+# Total change: model predictions for herb cover (change) by Prev_year_precip
+total.pred <- ggpredict(total_best.model, terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
+plot(total.pred) 
 
 
 ## Total change: Not significant ------------------------------------------
@@ -268,7 +342,6 @@ total.change.bgden.prevprecip <- culm.change %>%
        x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
        title = "Change in total culm count vs. plot density change") 
 total.change.bgden.prevprecip
-
 
 
 
@@ -463,7 +536,29 @@ bgden.change.aspect <- plot.change %>%
   theme(axis.text.x = element_text(color = "black"))
 bgden.change.aspect
 
+# BG density change: linear regression by shrub cover (change) and Prev_year_precip
+bgden.change.shrub.prevprecip.lm <- plot.change %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  geom_smooth(method = "lm") +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in buffelgrass density vs. shrub cover change")
+bgden.change.shrub.prevprecip.lm
+
 # BG density change: scatterplot by shrub cover (change) and Prev_year_precip
+#   even though shrub cover change is significant on its own, the simple linear regression
+#     is kind of misleading, as it shows a negative slope and the model-averaged coefficient
+#     is positive because it accounts for the precipitation effects.
 bgden.change.shrub.prevprecip <- plot.change %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity)) +
   geom_point(aes(color = Prev_year_precip)) +
@@ -497,24 +592,6 @@ bgden.change.plotslope.lm <- plot.change %>%
        y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
        title = "Change in buffelgrass density vs. plot slope")
 bgden.change.plotslope.lm
-
-# BG density change: linear regression by shrub cover (change)
-bgden.change.shrub.lm <- plot.change %>% 
-  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity)) +
-  geom_point() +
-  geom_smooth(method = "lm") +
-  theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  geom_vline(xintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals /  ", m^2, ")")),
-       x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in buffelgrass density vs. shrub cover change")
-bgden.change.shrub.lm
-
 
 
 
@@ -740,6 +817,27 @@ survival.herb.lm
 
 
 
+# Other -------------------------------------------------------------------
+
+# Change in total culms vs. change in cover
+total.change.bgcov <- culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  xlab(expression(Delta ~ "Change in cover (%)")) +
+  ggtitle("Change in total culm count vs. change in cover") +
+  labs(y = expression(Delta ~ "Total culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red")
+total.change.bgcov
+
+
+
 # Write out draft figures -------------------------------------------------
 
 ## Precipitation ----------------------------------------------------------
@@ -776,10 +874,28 @@ tiff("figures/2025-07_draft-figures/Total-change_by-shrub-cover-change-and-prev-
 total.change.shrub.prevprecip.lm
 dev.off()
 
+# Total change vs. shrub cover change by Prev_year_precip
+tiff("figures/2025-07_draft-figures/Total-change_by-shrub-cover-change-and-prev-year-precip.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total.change.shrub.prevprecip
+dev.off()
+
+# Total change vs. shrub cover change by Prev_year_precip, wrapped by precip_group
+tiff("figures/2025-07_draft-figures/Total-change_by-shrub-cover-change-and-prev-year-precip_precip-group-wrap_regression.tiff",
+     units = "in", height = 4, width = 7, res = 150)
+total.change.shrub.prevprecip.wrap
+dev.off()
+
 # Total change vs. herb cover change by Prev_year_precip
 tiff("figures/2025-07_draft-figures/Total-change_by-herb-cover-change-and-prev-year-precip.tiff",
      units = "in", height = 4, width = 6, res = 150)
 total.change.herb.prevprecip
+dev.off()
+
+# Total change vs. herb cover change by Prev_year_precip, wrapped by precip_group
+tiff("figures/2025-07_draft-figures/Total-change_by-herb-cover-change-and-prev-year-precip_precip-group-wrap_regression.tiff",
+     units = "in", height = 4, width = 7, res = 150)
+total.change.herb.prevprecip.wrap
 dev.off()
 
 
@@ -880,11 +996,18 @@ tiff("figures/2025-07_draft-figures/BG-density-change_by-aspect_boxplot.tiff",
 bgden.change.aspect
 dev.off()
 
-# BG density change vs. shrub cover change by Prev_year_precip (scatterplot)
+# BG density change vs. shrub cover change by Prev_year_precip (linear regression)
+tiff("figures/2025-07_draft-figures/BG-density-change_by-shrub-cover-change-and-prev-year-precip_regression.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgden.change.shrub.prevprecip.lm
+dev.off()
+
+# BG density change vs. shrub cover change by Prev_year_precip 
 tiff("figures/2025-07_draft-figures/BG-density-change_by-shrub-cover-change-and-prev-year-precip.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.change.shrub.prevprecip
 dev.off()
+
 
 
 # Not significant
@@ -892,12 +1015,6 @@ dev.off()
 tiff("figures/2025-07_draft-figures/BG-density-change_by-plot-slope_regression.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.change.plotslope.lm
-dev.off()
-
-# BG density change vs. shrub cover change
-tiff("figures/2025-07_draft-figures/BG-density-change_by-shrub-cover-change_regression.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-bgden.change.shrub.lm
 dev.off()
 
 
