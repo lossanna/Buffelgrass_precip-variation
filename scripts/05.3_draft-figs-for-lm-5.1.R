@@ -18,12 +18,13 @@ library(tidyverse)
 library(scales)
 library(viridis)
 library(ggeffects)
+library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
 dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 culm.change.raw <- read_csv("data/cleaned/04_change-in-culm-density-cover_clean.csv")
-load("RData/06.6-lm-5.1_top-models.RData")
+load("RData/06.6-lm-5.1_total-best-model.RData")
 
 # Data wrangling ----------------------------------------------------------
 
@@ -267,6 +268,7 @@ total.change.herb.prevprecip <- culm.change %>%
 total.change.herb.prevprecip
 
 # Total change: linear regression by herb cover (change) and Prev_year_precip, wrapped by precip_group
+#   doesn't really match model results, though, which shows precip*herb is positive
 total.change.herb.prevprecip.wrap <- culm.change %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
   geom_point(aes(color = Prev_year_precip)) +
@@ -288,7 +290,12 @@ total.change.herb.prevprecip.wrap <- culm.change %>%
 total.change.herb.prevprecip.wrap
 
 # Total change: model predictions for herb cover (change) by Prev_year_precip
-total.pred <- ggpredict(total_best.model, terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
+total.pred.herb.precip <- predict_response(total_best.model, 
+                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
+plot(total.pred.herb.precip)
+
+# Total change: all fixed effects
+total.pred <- predict_response(total_best.model)
 plot(total.pred) 
 
 
@@ -896,6 +903,12 @@ dev.off()
 tiff("figures/2025-07_draft-figures/Total-change_by-herb-cover-change-and-prev-year-precip_precip-group-wrap_regression.tiff",
      units = "in", height = 4, width = 7, res = 150)
 total.change.herb.prevprecip.wrap
+dev.off()
+
+# Total change interaction of herb * precip
+tiff("figures/2025-07_draft-figures/Total-change_prediction_herb-change-and-precip-interaction.tiff",
+     units = "in", height = 4, width = 7, res = 150)
+plot(total.pred.herb.precip)
 dev.off()
 
 
