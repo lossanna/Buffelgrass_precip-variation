@@ -6,6 +6,9 @@
 
 # https://easystats.github.io/modelbased/articles/visualisation_matrix.html
 
+# Note: get_predicted() does not work with model averaged coefficients; needs actual model object
+#   (it actually worked out well that the total culm change model had only 1 top model).
+
 library(tidyverse)
 library(modelbased)
 library(insight)
@@ -38,6 +41,7 @@ viz.total<- get_datagrid(dat.total, by = c("Prev_year_precip_scaled",
                                            "Change_BGDensity_scaled"),
                          preserve_range = TRUE)
 viz.total$Predicted <- get_predicted(total_best.model, viz.total)
+
 
 # Precip * herb interaction
 viz.total.herb.precip <- dat.total %>% 
@@ -93,8 +97,27 @@ total.shrub.precip <- dat.total %>%
 total.shrub.precip
 
 
+# Precip
+viz.total.precip <- get_datagrid(dat.total, by = c("Prev_year_precip_scaled"))
+viz.total.precip$Predicted <- get_predicted(total_best.model, viz.total.precip)
 
-# Write draft figures -----------------------------------------------------
+dat.total %>% 
+  ggplot(aes(x = Prev_year_precip_scaled, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_line(data = viz.total,
+            aes(y = Predicted), linewidth = 1.5,
+            color = "green") +
+  theme_bw() +
+  xlab("Previous year precip (scaled)") +
+  ggtitle("Change in total culm count vs. precip") +
+  labs(y = expression(Delta ~ "Total culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") # unsure what is happening here
+
+
+
+# Write out draft figures -------------------------------------------------
 
 ## Total change -----------------------------------------------------------
 

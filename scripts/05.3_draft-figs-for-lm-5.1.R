@@ -943,13 +943,13 @@ total.change.herb.prevprecip.wrap.lm
 dev.off()
 
 # Total change interaction of precip*shrub
-tiff("figures/2025-07_draft-figures/Total-change_prediction_shrub-change-and-precip-interaction.tiff",
+tiff("figures/2025-07_draft-figures/Total-change_prediction_shrub-change-and-precip-interaction_baseR.tiff",
      units = "in", height = 4, width = 7, res = 150)
 plot(total.pred.shrub.precip)
 dev.off()
 
 # Total change interaction of precip*herb
-tiff("figures/2025-07_draft-figures/Total-change_prediction_herb-change-and-precip-interaction.tiff",
+tiff("figures/2025-07_draft-figures/Total-change_prediction_herb-change-and-precip-interaction_baseR.tiff",
      units = "in", height = 4, width = 7, res = 150)
 plot(total.pred.herb.precip)
 dev.off()
