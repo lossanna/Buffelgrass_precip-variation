@@ -267,9 +267,28 @@ total.change.herb.prevprecip <- culm.change %>%
        title = "Change in total culm count vs. herb cover change")
 total.change.herb.prevprecip
 
-# Total change: linear regression by herb cover (change) and Prev_year_precip, wrapped by precip_group
-#   doesn't really match model results, though, which shows precip*herb is positive
+# Total change: scatterplot by herb cover (change) and Prev_year_precip, wrapped by precip_group
 total.change.herb.prevprecip.wrap <- culm.change %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
+  geom_point(aes(color = Prev_year_precip)) +
+  theme_bw() +
+  facet_wrap(~precip_group) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year precip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in total culm count vs. herb cover change") +
+  theme(legend.position = "bottom")
+total.change.herb.prevprecip.wrap
+
+# Total change: linear regression by herb cover (change) and Prev_year_precip, wrapped by precip_group
+total.change.herb.prevprecip.wrap.lm <- culm.change %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
   geom_point(aes(color = Prev_year_precip)) +
   geom_smooth(method = "lm") +
@@ -287,7 +306,15 @@ total.change.herb.prevprecip.wrap <- culm.change %>%
        x = expression(Delta ~ "Native grass & forb cover (%)"),
        title = "Change in total culm count vs. herb cover change") +
   theme(legend.position = "bottom")
-total.change.herb.prevprecip.wrap
+total.change.herb.prevprecip.wrap.lm
+
+
+### Model predictions -----------------------------------------------------
+
+# Total change: model predictions for shrub cover (change) by Prev_year_precip
+total.pred.shrub.precip <- predict_response(total_best.model, 
+                                           terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
+plot(total.pred.shrub.precip)
 
 # Total change: model predictions for herb cover (change) by Prev_year_precip
 total.pred.herb.precip <- predict_response(total_best.model, 
@@ -296,7 +323,11 @@ plot(total.pred.herb.precip)
 
 # Total change: all fixed effects
 total.pred <- predict_response(total_best.model)
-plot(total.pred) 
+plot(total.pred)
+
+
+# Convert 
+
 
 
 ## Total change: Not significant ------------------------------------------
@@ -900,12 +931,24 @@ total.change.herb.prevprecip
 dev.off()
 
 # Total change vs. herb cover change by Prev_year_precip, wrapped by precip_group
-tiff("figures/2025-07_draft-figures/Total-change_by-herb-cover-change-and-prev-year-precip_precip-group-wrap_regression.tiff",
+tiff("figures/2025-07_draft-figures/Total-change_by-herb-cover-change-and-prev-year-precip_precip-group-wrap.tiff",
      units = "in", height = 4, width = 7, res = 150)
 total.change.herb.prevprecip.wrap
 dev.off()
 
-# Total change interaction of herb * precip
+# Total change vs. herb cover change by Prev_year_precip, wrapped by precip_group (linear regression)
+tiff("figures/2025-07_draft-figures/Total-change_by-herb-cover-change-and-prev-year-precip_precip-group-wrap_regression.tiff",
+     units = "in", height = 4, width = 7, res = 150)
+total.change.herb.prevprecip.wrap.lm
+dev.off()
+
+# Total change interaction of precip*shrub
+tiff("figures/2025-07_draft-figures/Total-change_prediction_shrub-change-and-precip-interaction.tiff",
+     units = "in", height = 4, width = 7, res = 150)
+plot(total.pred.shrub.precip)
+dev.off()
+
+# Total change interaction of precip*herb
 tiff("figures/2025-07_draft-figures/Total-change_prediction_herb-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 7, res = 150)
 plot(total.pred.herb.precip)
