@@ -23,6 +23,7 @@ library(DHARMa)
 library(lme4)
 library(lmerTest)
 library(MuMIn)
+library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
@@ -97,6 +98,15 @@ r2(total_best.model) # marginal: 0.119; conditional: 0.410
 #   model averaging not needed for lme4 version; only 1 top model
 summary(total_best.model)
 
+# Predicted vs. observed
+total_pred <- estimate_expectation(total_best.model)
+total_pred$Change_Total_Live_Culms <- culm.change.flat.rm$Change_Total_Live_Culms
+
+total_pred %>% 
+  ggplot(aes(x = Change_Total_Live_Culms, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+
 
 
 # Reproductive culm change ------------------------------------------------
@@ -141,6 +151,16 @@ r2(repro_model8) # marginal: 0.094; conditional: 0.300
 repro_avg <- model.avg(repro_set, subset = delta <= 2)
 summary(repro_avg)
 
+# Predicted vs. observed (best model)
+repro_pred <- estimate_expectation(repro_best.model)
+repro_pred$Change_Reproductive_culms <- culm.change.flat.rm$Change_Reproductive_culms
+
+repro_pred %>% 
+  ggplot(aes(x = Change_Reproductive_culms, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+
+
 
 # Buffelgrass density change ----------------------------------------------
 
@@ -180,6 +200,15 @@ r2(bgden_model2) # marginal: 0.301; conditional: 0.567
 bgden_avg <- model.avg(bgden_set, subset = delta <= 2)
 summary(bgden_avg)
 
+# Predicted vs. observed (best model)
+bgden_pred <- estimate_expectation(bgden_best.model)
+bgden_pred$Change_BGDensity <- plot.change$Change_BGDensity
+
+bgden_pred %>% 
+  ggplot(aes(x = Change_BGDensity, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+
 
 
 # Buffelgrass cover -------------------------------------------------------
@@ -217,6 +246,15 @@ r2(bgcov_model3) # marginal: 0.240; conditional: 0.391
 # Model averaging of top models
 bgcov_avg <- model.avg(bgcov_set, subset = delta <= 2)
 summary(bgcov_avg)
+
+# Predicted vs. observed (best model)
+bgcov_pred <- estimate_expectation(bgcov_best.model)
+bgcov_pred$Change_BGCover <- plot.change$Change_BGCover
+
+bgcov_pred %>% 
+  ggplot(aes(x = Change_BGCover, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
 
 
 
@@ -279,8 +317,18 @@ survival_set_with.delta <- survival_set %>%
 survival_avg <- model.avg(survival_set_with.delta, subset = delta <= 2)
 summary(survival_avg)
 
+# Predicted vs. observed (best model)
+survival_pred <- estimate_expectation(survival_best.model)
+survival_pred$survival_perc <- dat.survival$survival_perc
+
+survival_pred %>% 
+  ggplot(aes(x = survival_perc, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+
+
 
 
 save.image("RData/06.6_linear-models-5.1.RData")
-save(total_best.model, repro_avg, bgden_avg, bgcov_avg, survival_avg,
-     file = "RData/06.6-lm-5.1_top-models.RData")
+save(total_best.model,
+     file = "RData/06.6-lm-5.1_total-best-model.RData")
