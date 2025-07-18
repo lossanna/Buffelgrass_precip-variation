@@ -1,5 +1,5 @@
 # Created: 2025-07-15
-# Updated: 2025-07-15
+# Updated: 2025-07-18
 
 # Purpose: Compile version 1 linear models with Change_Reproductive_culms,  
 #   Change_Total_Live_Culms, Change_BGDensity, Change_BGCover, and survival_perc 
@@ -282,3 +282,5 @@ summary(survival_avg)
 
 
 save.image("RData/06.6_linear-models-5.1.RData")
+save(total_best.model, repro_avg, bgden_avg, bgcov_avg, survival_avg,
+     file = "RData/06.6-lm-5.1_top-models.RData")
