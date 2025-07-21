@@ -46,7 +46,7 @@ dat.plot <- plot.change %>%
 
 #   Survival dataset (all)
 dat.survival <- dat.survival.raw %>% 
-  select(Prev_year_precip_scaled,
+  select(survival_perc, Prev_year_precip_scaled,
          Aspect, PlotSlope_scaled, ShrubCover_scaled, HerbCover_scaled,
          BGDensity_scaled, Prev_year_precip, PlotSlope, ShrubCover, HerbCover,
          BGDensity)
@@ -766,6 +766,67 @@ bgcov.shrub
 
 
 
+# Survival ----------------------------------------------------------------
+
+## Survival: Significant --------------------------------------------------
+
+# Precip
+#   Scaled datagrid with prediction
+viz.survival.precip <- get_datagrid(dat.survival.ex, by = c("Prev_year_precip_scaled"),
+                                    length = 50)
+viz.survival.precip$Predicted <- get_predicted(survival_best.model, viz.survival.precip) # Predicting new random effect levels for terms: 1 | Transect:Site
+#   Unscaled datagrid
+unscaled.precip50 <- get_datagrid(dat.survival.unscaled, by = "Prev_year_precip",
+                                   length = 50) %>% 
+  arrange(Prev_year_precip)
+#   Data grid with prediction, unscaled variable added
+viz.survival.precip$Prev_year_precip <- unscaled.precip50$Prev_year_precip
+
+#   Graph
+survival.precip <- dat.survival %>% 
+  ggplot(aes(x = Prev_year_precip, y = survival_perc)) +
+  geom_point() +
+  geom_line(data = viz.survival.precip,
+            aes(y = Predicted), linewidth = 1.5,
+            color = "purple3") +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent,
+                     limits = c(0, 1)) +
+  labs(x = "Previous year precip (mm)",
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. precip") 
+survival.precip # ommited points from model prediction line, which goes beyond 100%
+
+
+# BG density
+#   Scaled datagrid with prediction
+viz.survival.bgden <- get_datagrid(dat.survival.ex, by = c("BGDensity_scaled"),
+                                    length = 50)
+viz.survival.bgden$Predicted <- get_predicted(survival_best.model, viz.survival.bgden) # Predicting new random effect levels for terms: 1 | Transect:Site
+#   Unscaled datagrid
+unscaled.bgden50 <- get_datagrid(dat.survival.unscaled, by = "BGDensity",
+                                  length = 50) %>% 
+  arrange(BGDensity)
+#   Data grid with prediction, unscaled variable added
+viz.survival.bgden$BGDensity <- unscaled.bgden50$BGDensity
+
+#   Graph
+survival.bgden <- dat.survival %>% 
+  ggplot(aes(x = BGDensity, y = survival_perc)) +
+  geom_point() +
+  geom_line(data = viz.survival.bgden,
+            aes(y = Predicted), linewidth = 1.5,
+            color = "purple3") +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent,
+                     limits = c(0, 1)) +
+  labs(x = expression(paste("Density (individuals / ", m^2, ")")),
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. plot density") 
+survival.bgden
+
+
+
 # Write out draft figures -------------------------------------------------
 
 ## Total change -----------------------------------------------------------
@@ -889,6 +950,23 @@ dev.off()
 tiff("figures/2025-07_draft-figures/BG-cover-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.shrub
+dev.off()
+
+
+
+## Survival ---------------------------------------------------------------
+
+# Significant
+# Survival vs. Prev_year_precip
+tiff("figures/2025-07_draft-figures/Survival_prediction_prev-year-precip.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.precip
+dev.off()
+
+# Survival vs. BGDensity
+tiff("figures/2025-07_draft-figures/Survival_prediction_BG-density.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.bgden
 dev.off()
 
 
