@@ -1,5 +1,5 @@
 # Created: 2025-07-15
-# Updated: 2025-07-18
+# Updated: 2025-07-22
 
 # Purpose: Visualize relationships relevant to v5.1 linear models for all response 
 #   variables (total culm change, reproductive culm change, buffelgrass density & cover change,
@@ -13,12 +13,16 @@
 # I have excluded some iterations of density/shrub/herb plots (alone & with precip interaction)
 #   to consolidate script, but these are still available from 2025-07_draft-figures.
 
+# This includes only figures that are simple linear regressions, not predictions based on the
+#   entire model. This script has been superseded by 05.4_draft-figs-2.0-for-lm-5.1.R.
+
 
 library(tidyverse)
 library(scales)
 library(viridis)
 library(ggeffects)
 library(modelbased)
+library(see)
 
 # Load data ---------------------------------------------------------------
 
@@ -308,25 +312,6 @@ total.change.herb.prevprecip.wrap.lm <- culm.change %>%
   theme(legend.position = "bottom")
 total.change.herb.prevprecip.wrap.lm
 
-
-### Model predictions -----------------------------------------------------
-
-# Total change: model predictions for shrub cover (change) by Prev_year_precip
-total.pred.shrub.precip <- predict_response(total_best.model, 
-                                           terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
-plot(total.pred.shrub.precip)
-
-# Total change: model predictions for herb cover (change) by Prev_year_precip
-total.pred.herb.precip <- predict_response(total_best.model, 
-                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
-plot(total.pred.herb.precip)
-
-# Total change: all fixed effects
-total.pred <- predict_response(total_best.model)
-plot(total.pred)
-
-
-# Convert 
 
 
 
@@ -940,18 +925,6 @@ dev.off()
 tiff("figures/2025-07_draft-figures/Total-change_by-herb-cover-change-and-prev-year-precip_precip-group-wrap_regression.tiff",
      units = "in", height = 4, width = 7, res = 150)
 total.change.herb.prevprecip.wrap.lm
-dev.off()
-
-# Total change interaction of precip*shrub
-tiff("figures/2025-07_draft-figures/Total-change_prediction_shrub-change-and-precip-interaction_baseR.tiff",
-     units = "in", height = 4, width = 7, res = 150)
-plot(total.pred.shrub.precip)
-dev.off()
-
-# Total change interaction of precip*herb
-tiff("figures/2025-07_draft-figures/Total-change_prediction_herb-change-and-precip-interaction_baseR.tiff",
-     units = "in", height = 4, width = 7, res = 150)
-plot(total.pred.herb.precip)
 dev.off()
 
 

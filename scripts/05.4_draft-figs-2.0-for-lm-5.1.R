@@ -1,10 +1,10 @@
 # Created: 2025-07-18
-# Updated: 2025-07-21
+# Updated: 2025-07-22
 
-# Purpose: Explore plots made with modelbased - graph predictions instead of simple
+# Purpose: Explore plots made with insight & ggeffects - graph predictions instead of simple
 #   linear regressions.
 
-# https://easystats.github.io/modelbased/articles/visualisation_matrix.html
+# https://easystats.github.io/modelbased/articles/visualisation_matrix.html#visualising-an-interaction-between-two-numeric-variables-three-way-interaction
 
 # Note: get_predicted() does not work with model averaged coefficients; needs actual model object
 #   (it actually worked out well that the total culm change model had only 1 top model).
@@ -18,8 +18,8 @@
 #   For simplicity, then, I will only use the best model in generating model-predicted lines.
 
 library(tidyverse)
-library(modelbased)
 library(insight)
+library(ggeffects)
 library(viridis)
 
 # Load data ---------------------------------------------------------------
@@ -103,7 +103,6 @@ unscaled.precip100 <- get_datagrid(dat.culm.unscaled, by = "Prev_year_precip",
   arrange(Prev_year_precip)
 #   Data grid with prediction, unscaled variable added
 viz.total.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
-
 #   Graph
 total.precip <- dat.culm %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_Total_Live_Culms)) +
@@ -369,6 +368,26 @@ total.bgden.precip
 
 
 
+
+## Total change: with CI, scaled ------------------------------------------
+
+# All fixed effects alone
+total.pred <- predict_response(total_best.model)
+plot(total.pred)
+
+# Precip * shrub change
+total.pred.shrub.precip <- predict_response(total_best.model, 
+                                            terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
+plot(total.pred.shrub.precip)
+
+# Precip * herb change
+total.pred.herb.precip <- predict_response(total_best.model, 
+                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
+plot(total.pred.herb.precip)
+
+
+
+
 # Reproductive culm change ------------------------------------------------
 
 ## Repro culm change: Significant -----------------------------------------
@@ -597,7 +616,7 @@ repro.precip
 
 # Buffelgrass density change ----------------------------------------------
 
-# BG density change: Significant ------------------------------------------
+## BG density change: Significant -----------------------------------------
 
 # Precip
 #   Scaled datagrid with prediction
@@ -833,31 +852,31 @@ survival.bgden
 
 # Significant
 # Total change vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures/Total-change_prediction_prev-year-precip.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.precip
 dev.off()
 
 # Total change vs. Change_BGDensity
-tiff("figures/2025-07_draft-figures/Total-change_prediction_BG-density-change.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_BG-density-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.bgden
 dev.off()
 
 # Total change vs. Change_ShrubCover
-tiff("figures/2025-07_draft-figures/Total-change_prediction_shrub-cover-change.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.shrub
 dev.off()
 
 # Total change interaction of precip*shrub
-tiff("figures/2025-07_draft-figures/Total-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.shrub.precip
 dev.off()
 
 # Total change interaction of precip*herb
-tiff("figures/2025-07_draft-figures/Total-change_prediction_herb-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_herb-cover-change-and-precip-interaction.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.herb.precip
 dev.off()
@@ -865,21 +884,35 @@ dev.off()
 
 # Not significant
 # Total change vs. PlotSlope
-tiff("figures/2025-07_draft-figures/Total-change_prediction_plot-slope.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.slope
 dev.off()
 
 # Total change vs. Change_HerbCover
-tiff("figures/2025-07_draft-figures/Total-change_prediction_herb-cover-change.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.herb
 dev.off()
 
 # Total change interaction of precip*BG density
-tiff("figures/2025-07_draft-figures/Total-change_prediction_BG-density-change-and-precip-interaction.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_BG-density-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 total.bgden.precip
+dev.off()
+
+
+# With CI, scaled
+# Total change interaction of precip*shrub
+tiff("figures/2025-07_draft-figures-2.0/Total-change_ci-scaled_shrub-change-and-precip-interaction.tiff",
+     units = "in", height = 4, width = 7, res = 150)
+plot(total.pred.shrub.precip)
+dev.off()
+
+# Total change interaction of precip*herb
+tiff("figures/2025-07_draft-figures-2.0/Total-change_ci-scaled_herb-change-and-precip-interaction.tiff",
+     units = "in", height = 4, width = 7, res = 150)
+plot(total.pred.herb.precip)
 dev.off()
 
 
@@ -887,19 +920,19 @@ dev.off()
 
 # Significant
 # Repro change vs. Change_BGDensity
-tiff("figures/2025-07_draft-figures/Repro-change_prediction_BG-density-change.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.bgden
 dev.off()
 
 # Repro change vs. Change_ShrubCover
-tiff("figures/2025-07_draft-figures/Repro-change_prediction_shrub-cover-change.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.shrub
 dev.off()
 
 # Repro change vs. Change_HerbCover
-tiff("figures/2025-07_draft-figures/Repro-change_prediction_herb-cover-change.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.herb
 dev.off()
@@ -907,7 +940,7 @@ dev.off()
 
 # Not significant
 # Repro change vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures/Repro-change_prediction_prev-year-precip.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.precip
 dev.off()
@@ -918,19 +951,19 @@ dev.off()
 
 # Significant
 # BG density change vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures/BG-density-change_prediction_prev-year-precip.tiff",
+tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.precip
 dev.off()
 
 # BG density change vs. Change_ShrubCover
-tiff("figures/2025-07_draft-figures/BG-density-change_prediction_shrub-cover-change.tiff",
+tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.shrub
 dev.off()
 
 # BG density change interaction of precip*shrub
-tiff("figures/2025-07_draft-figures/BG-density-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.shrub.precip
 dev.off()
@@ -941,13 +974,13 @@ dev.off()
 
 # Significant
 # BG density change vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures/BG-cover-change_prediction_prev-year-precip.tiff",
+tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.precip
 dev.off()
 
 # BG cover change vs. Change_ShrubCover
-tiff("figures/2025-07_draft-figures/BG-cover-change_prediction_shrub-cover-change.tiff",
+tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.shrub
 dev.off()
@@ -958,16 +991,16 @@ dev.off()
 
 # Significant
 # Survival vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures/Survival_prediction_prev-year-precip.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.precip
 dev.off()
 
 # Survival vs. BGDensity
-tiff("figures/2025-07_draft-figures/Survival_prediction_BG-density.tiff",
+tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_BG-density.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.bgden
 dev.off()
 
 
-save.image("RData/05.4_exploratory-prediction-figs-for-lm-5.1.RData")
+save.image("RData/05.4_draft-figs-2.0-for-lm-5.1.RData")
