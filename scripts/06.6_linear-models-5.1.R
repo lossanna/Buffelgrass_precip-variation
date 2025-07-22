@@ -1,5 +1,5 @@
 # Created: 2025-07-15
-# Updated: 2025-07-18
+# Updated: 2025-07-22
 
 # Purpose: Compile version 1 linear models with Change_Reproductive_culms,  
 #   Change_Total_Live_Culms, Change_BGDensity, Change_BGCover, and survival_perc 
@@ -15,6 +15,7 @@
 # lme4 package used for all models except survival to use REML; survival modeled as 
 #   Tweedie GLM with glmmTMB package.
 
+# Wrote out predicted vs. actual graphs (made with modelbased) for all five models.
 
 library(tidyverse)
 library(glmmTMB)
@@ -24,7 +25,6 @@ library(lme4)
 library(lmerTest)
 library(MuMIn)
 library(modelbased)
-library(report)
 
 # Load data ---------------------------------------------------------------
 
@@ -104,10 +104,12 @@ report(total_best.model)
 total_pred <- estimate_expectation(total_best.model)
 total_pred$Change_Total_Live_Culms <- culm.change.flat.rm$Change_Total_Live_Culms
 
-total_pred %>% 
+total_pred.plot <- total_pred %>% 
   ggplot(aes(x = Change_Total_Live_Culms, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  ggtitle("Change in total culms, predicted vs. actual")
+total_pred.plot
 
 
 
@@ -157,10 +159,12 @@ summary(repro_avg)
 repro_pred <- estimate_expectation(repro_best.model)
 repro_pred$Change_Reproductive_culms <- culm.change.flat.rm$Change_Reproductive_culms
 
-repro_pred %>% 
+repro_pred.plot <- repro_pred %>% 
   ggplot(aes(x = Change_Reproductive_culms, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  ggtitle("Change in reproductive culms, predicted vs. actual (best model)")
+repro_pred.plot
 
 
 
@@ -206,10 +210,12 @@ summary(bgden_avg)
 bgden_pred <- estimate_expectation(bgden_best.model)
 bgden_pred$Change_BGDensity <- plot.change$Change_BGDensity
 
-bgden_pred %>% 
+bgden_pred.plot <- bgden_pred %>% 
   ggplot(aes(x = Change_BGDensity, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  ggtitle("Change in density, predicted vs. actual (best model)")
+bgden_pred.plot
 
 
 
@@ -253,10 +259,12 @@ summary(bgcov_avg)
 bgcov_pred <- estimate_expectation(bgcov_best.model)
 bgcov_pred$Change_BGCover <- plot.change$Change_BGCover
 
-bgcov_pred %>% 
+bgcov_pred.plot <- bgcov_pred %>% 
   ggplot(aes(x = Change_BGCover, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  ggtitle("Change in cover, predicted vs. actual (best model)")
+bgcov_pred.plot
 
 
 
@@ -323,14 +331,46 @@ summary(survival_avg)
 survival_pred <- estimate_expectation(survival_best.model)
 survival_pred$survival_perc <- dat.survival$survival_perc
 
-survival_pred %>% 
+survival_pred.plot <- survival_pred %>% 
   ggplot(aes(x = survival_perc, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1)
+  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  ggtitle("Survival, predicted vs. actual (best model)")
+survival_pred.plot
 
 
+
+# Write out predicted vs. actual graphs -----------------------------------
+
+# Total change
+tiff("figures/2025-07_draft-figures-2.0/Total-change_predicted-vs-actual.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total_pred.plot
+dev.off()
+
+# Repro change
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_predicted-vs-actual.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro_pred.plot
+dev.off()
+
+# BG density change
+tiff("figures/2025-07_draft-figures-2.0/BG-density-change_predicted-vs-actual.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgden_pred.plot
+dev.off()
+
+# BG cover change
+tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_predicted-vs-actual.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgcov_pred.plot
+dev.off()
+
+# Survival
+tiff("figures/2025-07_draft-figures-2.0/Survival_predicted-vs-actual.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival_pred.plot
+dev.off()
 
 
 save.image("RData/06.6_linear-models-5.1.RData")
-save(total_best.model,
-     file = "RData/06.6-lm-5.1_total-best-model.RData")
