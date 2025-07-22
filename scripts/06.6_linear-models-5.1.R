@@ -107,7 +107,13 @@ total_pred$Change_Total_Live_Culms <- culm.change.flat.rm$Change_Total_Live_Culm
 total_pred.plot <- total_pred %>% 
   ggplot(aes(x = Change_Total_Live_Culms, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
   ggtitle("Change in total culms, predicted vs. actual")
 total_pred.plot
 
@@ -162,7 +168,13 @@ repro_pred$Change_Reproductive_culms <- culm.change.flat.rm$Change_Reproductive_
 repro_pred.plot <- repro_pred %>% 
   ggplot(aes(x = Change_Reproductive_culms, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
   ggtitle("Change in reproductive culms, predicted vs. actual (best model)")
 repro_pred.plot
 
@@ -213,7 +225,13 @@ bgden_pred$Change_BGDensity <- plot.change$Change_BGDensity
 bgden_pred.plot <- bgden_pred %>% 
   ggplot(aes(x = Change_BGDensity, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
   ggtitle("Change in density, predicted vs. actual (best model)")
 bgden_pred.plot
 
@@ -262,7 +280,13 @@ bgcov_pred$Change_BGCover <- plot.change$Change_BGCover
 bgcov_pred.plot <- bgcov_pred %>% 
   ggplot(aes(x = Change_BGCover, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
   ggtitle("Change in cover, predicted vs. actual (best model)")
 bgcov_pred.plot
 
@@ -334,7 +358,7 @@ survival_pred$survival_perc <- dat.survival$survival_perc
 survival_pred.plot <- survival_pred %>% 
   ggplot(aes(x = survival_perc, y = Predicted)) +
   geom_point(alpha = 0.4) +
-  geom_abline(slope = 1, intercept = 0, color = "red", linewidth = 1) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   ggtitle("Survival, predicted vs. actual (best model)")
 survival_pred.plot
 
