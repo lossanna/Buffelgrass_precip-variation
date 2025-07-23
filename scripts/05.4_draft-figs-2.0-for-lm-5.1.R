@@ -24,7 +24,9 @@
 #   but it can't seem to handle the random effect. 
 # For the culm models, the difference is not that great, and I think it's more important to have the SE.
 # But for the density & cover models, the ggeffects version seems to have a consistently higher intercept that doesn't
-#   fit the original data as well, so I will go with the insight version.
+#   fit the original data as well, so I will go with the insight version. (I don't know why this difference is happening,
+#   and tried to test another top model, but it was basically the same, so that's not it. Perhaps it is how both of the
+#   packages are handling the random effects? Maybe that is why they are different?)
 # For survival and single variable, ggeffects and insight versions look similar (although the precip one is kind
 #   of weird because the CI doesn't extend very far). For interactions, the versions look very different and
 #   both seem kind of funky.
@@ -1657,7 +1659,8 @@ plot(bgden.pred.shrub.precip)
 
 ## BG density: Precip -----------------------------------------------------
 
-# Generate prediction and add unscaled variable
+# Best model
+# Generate prediction and add unscaled variable - best model
 viz.bgden.precip <- get_datagrid(dat.plot.ex, by = c("Prev_year_precip_scaled"),
                                  length = 100)
 viz.bgden.precip$Predicted <- get_predicted(bgden_best.model, viz.bgden.precip)
@@ -1666,7 +1669,7 @@ unscaled.precip100 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
   arrange(Prev_year_precip)
 viz.bgden.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
 
-# Graph (insight version)
+# Graph (insight version) - best model
 bgden.precip <- dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
@@ -1683,7 +1686,7 @@ bgden.precip <- dat.plot %>%
 bgden.precip
 
 
-# Generate CI and add unscaled variable
+# Generate CI and add unscaled variable - best model
 ci.bgden.precip <- predict_response(bgden_best.model, terms = "Prev_year_precip_scaled")
 unscaled.precip15 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
                                   length = 15) %>% 
@@ -1691,7 +1694,7 @@ unscaled.precip15 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
 ci.bgden.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
 ci.bgden.precip$Change_BGDensity <- ci.bgden.precip$predicted 
 
-# Graph with CI (ggeffects version)
+# Graph with CI (ggeffects version) - best model
 bgden.precip.ci <- dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
@@ -1710,7 +1713,7 @@ bgden.precip.ci <- dat.plot %>%
 bgden.precip.ci
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed is using insight, solid is from ggeffects) - best model
 dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
@@ -1729,6 +1732,81 @@ dat.plot %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") # insight is much lower (outside of ggeffects SE); insight seems to fit data better
+
+
+# Model 2
+# Generate prediction and add unscaled variable - model 2
+viz.bgden.precip2 <- get_datagrid(dat.plot.ex, by = c("Prev_year_precip_scaled"),
+                                 length = 100)
+viz.bgden.precip2$Predicted <- get_predicted(bgden_model2, viz.bgden.precip)
+unscaled.precip100 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
+                                   length = 100) %>% 
+  arrange(Prev_year_precip)
+viz.bgden.precip2$Prev_year_precip <- unscaled.precip100$Prev_year_precip
+
+# Graph (insight version) - model 2
+bgden.precip2 <- dat.plot %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
+  geom_point() +
+  geom_line(data = viz.bgden.precip2,
+            aes(y = Predicted), linewidth = 1.5,
+            color = "purple3") +
+  theme_bw() +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(x = "Previous year precip (mm)",
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density vs. precip (model 2)")
+bgden.precip2 # (lol it is basically the same)
+
+
+# Generate CI and add unscaled variable - model 2
+ci.bgden.precip2 <- predict_response(bgden_model2, terms = "Prev_year_precip_scaled")
+unscaled.precip15 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
+                                  length = 15) %>% 
+  arrange(Prev_year_precip)
+ci.bgden.precip2$Prev_year_precip <- unscaled.precip15$Prev_year_precip
+ci.bgden.precip2$Change_BGDensity <- ci.bgden.precip2$predicted 
+
+# Graph with CI (ggeffects version) - model 2
+bgden.precip.ci2 <- dat.plot %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
+  geom_point() +
+  geom_ribbon(data = ci.bgden.precip2,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.bgden.precip,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(x = "Previous year precip (mm)",
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density vs. precip (model 2)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+bgden.precip.ci2
+
+
+# Graph differences in prediction line (dashed is using insight, solid is from ggeffects) - model 2
+dat.plot %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
+  geom_point() +
+  geom_ribbon(data = ci.bgden.precip2,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.bgden.precip2,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.bgden.precip2,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  labs(x = "Previous year precip (mm)",
+       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density vs. precip (model 2)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") # differences are still the same as model 1
 
 
 
