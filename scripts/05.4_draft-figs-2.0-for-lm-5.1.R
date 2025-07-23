@@ -2402,6 +2402,11 @@ tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover
      units = "in", height = 4, width = 6, res = 150)
 bgden.shrub.precip
 dev.off()
+# BG density change interaction of precip*shrub (with CI, scaled)
+tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgden.shrub.precip.ci
+dev.off()
 
 
 # Not significant
