@@ -242,7 +242,8 @@ total.pred.aspect <- total.pred.aspect %>%
   scale_y_continuous(limits = c(-120, 220)) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red")
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black")) 
 total.pred.aspect
 
 
@@ -301,7 +302,10 @@ total.bgden.ci <- dat.culm %>%
        x = expression(Delta ~ paste("Density (individuals / ", m^2, ")"))) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red")
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
 total.bgden.ci
 
 
@@ -323,6 +327,9 @@ dat.culm %>%
   ggtitle("Change in total culm count vs. plot density") +
   labs(y = expression(Delta ~ "Total culm count")) +
   geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") # basically the same, just slightly different slope
 
@@ -1014,7 +1021,8 @@ repro.pred.aspect <- repro.pred.aspect %>%
   scale_y_continuous(limits = c(-120, 220)) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red")
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black")) 
 repro.pred.aspect
 
 
@@ -1757,7 +1765,8 @@ bgden.pred.aspect <- bgden.pred.aspect %>%
                      breaks = c(-20, 0, 20)) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red")
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black")) 
 bgden.pred.aspect
 
 
@@ -2127,7 +2136,8 @@ bgcov.pred.aspect <- bgcov.pred.aspect %>%
                      breaks = c(-50, -25, 0, 25)) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red")
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black")) 
 bgcov.pred.aspect
 
 
@@ -2568,6 +2578,52 @@ survival.precip <- dat.survival %>%
 survival.precip # ommited points from model prediction line, which goes beyond 100%
 
 
+# Generate CI and add unscaled variable
+ci.survival.precip <- predict_response(survival_best.model, terms = "Prev_year_precip_scaled")
+unscaled.precip11 <- get_datagrid(dat.survival.unscaled, by = "Prev_year_precip",
+                                  length = 11) %>% 
+  arrange(Prev_year_precip)
+ci.survival.precip$Prev_year_precip <- unscaled.precip11$Prev_year_precip
+ci.survival.precip$survival_perc <- ci.survival.precip$predicted 
+
+# Graph with CI (ggeffects version)
+survival.precip.ci <- dat.survival %>% 
+  ggplot(aes(x = Prev_year_precip, y = survival_perc)) +
+  geom_point() +
+  geom_ribbon(data = ci.survival.precip,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.survival.precip,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent,
+                     limits = c(0, 1)) +
+  labs(x = "Previous year precip (mm)",
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. precip") 
+survival.precip.ci
+
+
+# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+dat.survival %>% 
+  ggplot(aes(x = Prev_year_precip, y = survival_perc)) +
+  geom_point() +
+  geom_ribbon(data = ci.survival.precip,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.survival.precip,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.survival.precip,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent,
+                     limits = c(0, 1)) +
+  labs(x = "Previous year precip (mm)",
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. precip") # insight above ggeffects; SE is limited
+
+
 
 ## Survival: BG density ---------------------------------------------------
 
@@ -2594,6 +2650,113 @@ survival.bgden <- dat.survival %>%
        y = "Seedling survival (%)",
        title = "Buffelgrass seedling survival vs. plot density") 
 survival.bgden
+
+
+# Generate CI and add unscaled variable
+ci.survival.bgden <- predict_response(survival_best.model, terms = "BGDensity_scaled")
+unscaled.bgden9 <- get_datagrid(dat.survival.unscaled, by = "BGDensity",
+                                 length = 9) %>% 
+  arrange(BGDensity)
+ci.survival.bgden$BGDensity <- unscaled.bgden9$BGDensity
+ci.survival.bgden$survival_perc <- ci.survival.bgden$predicted 
+
+# Graph with CI (ggeffects version)
+survival.bgden.ci <- dat.survival %>% 
+  ggplot(aes(x = BGDensity, y = survival_perc)) +
+  geom_point() +
+  geom_ribbon(data = ci.survival.bgden,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.survival.bgden,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent,
+                     limits = c(0, 1)) +
+  labs(x = expression(paste("Density (individuals / ", m^2, ")")),
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. plot density") 
+survival.bgden.ci
+
+
+# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+dat.survival %>% 
+  ggplot(aes(x = BGDensity, y = survival_perc)) +
+  geom_point() +
+  geom_ribbon(data = ci.survival.bgden,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.survival.bgden,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.survival.bgden,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent,
+                     limits = c(0, 1)) +
+  labs(x = expression(paste("Density (individuals / ", m^2, ")")),
+       y = "Seedling survival (%)",
+       title = "Buffelgrass seedling survival vs. plot density") # basically the same
+
+
+
+
+## Survival: Aspect (NS) -------------------------------------------------
+
+# Original data (boxplot)
+survival.change.aspect <- dat.survival %>% 
+  ggplot(aes(x = Aspect, y = survival_perc)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  theme_bw() +
+  labs(title = "Buffelgrass seedling survival by aspect",
+       y = "Seedling survival (%)",
+       x = NULL) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black")) +
+  scale_y_continuous(labels = scales::percent)
+survival.change.aspect
+
+
+# Generate CI (use model 4, as 1-3 do not include Aspect)
+survival.pred.aspect <- predict_response(survival_model4, terms = "Aspect")
+survival.pred.aspect <- as.data.frame(survival.pred.aspect)
+
+# Graph with CI, prediction only (ggeffects version)
+survival.pred.aspect <- survival.pred.aspect %>% 
+  ggplot(aes(x, predicted)) +
+  geom_point() +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
+  theme_bw() +
+  labs(title = "Prediction for buffelgrass seedling survival by aspect",
+       y = expression(Delta ~ "Survival (%)"),
+       x = NULL) +
+  scale_y_continuous(limits = c(0, 1),
+                     breaks = c(0, 0.25, 0.5, 0.75, 1),
+                     labels = scales::percent) +
+  theme(axis.text.x = element_text(color = "black")) 
+survival.pred.aspect
+
+
+
+
+## Survival: Slope (NS) ---------------------------------------------------
+
+
+## Survival: Shrub (NS) ---------------------------------------------------
+
+
+## Survival: Herb (NS) ----------------------------------------------------
+
+
+
+## Survival: Precip * density (NS) ----------------------------------------
+
+
+
+
+## Survival: Precip * shrub (NS) ------------------------------------------
 
 
 
