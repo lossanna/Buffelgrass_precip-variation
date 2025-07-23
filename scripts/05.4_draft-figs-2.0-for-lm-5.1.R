@@ -2599,8 +2599,6 @@ survival.bgden
 
 
 
-
-
 # Write out draft figures -------------------------------------------------
 
 ## Total change -----------------------------------------------------------
@@ -2619,12 +2617,12 @@ dev.off()
 
 # Total change by Aspect (original data only)
 tiff("figures/2025-07_draft-figures-2.0/Total-change-by-aspect.tiff",
-     units = "in", height = 4, width = 5, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 total.change.aspect
 dev.off()
 # Total change by Aspect (prediction only)
 tiff("figures/2025-07_draft-figures-2.0/Total-change-aspect-predictions_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 total.pred.aspect
 dev.off()
 
@@ -2714,12 +2712,12 @@ dev.off()
 # Significant
 # Repro change by Aspect (original data only)
 tiff("figures/2025-07_draft-figures-2.0/Repro-change-by-aspect.tiff",
-     units = "in", height = 4, width = 5, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 repro.change.aspect
 dev.off()
 # Repro change by Aspect (prediction only)
 tiff("figures/2025-07_draft-figures-2.0/Repro-change-aspect-predictions_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 repro.pred.aspect
 dev.off()
 
@@ -2826,12 +2824,12 @@ dev.off()
 
 # BG density change by Aspect (original data only)
 tiff("figures/2025-07_draft-figures-2.0/BG-density-change-by-aspect.tiff",
-     units = "in", height = 4, width = 5, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 bgden.change.aspect
 dev.off()
 # BG density change by Aspect (prediction only)
 tiff("figures/2025-07_draft-figures-2.0/BG-density-change-aspect-predictions_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 bgden.pred.aspect
 dev.off()
 
@@ -2873,12 +2871,12 @@ dev.off()
 
 # BG cover change by Aspect (original data only)
 tiff("figures/2025-07_draft-figures-2.0/BG-cover-change-by-aspect.tiff",
-     units = "in", height = 4, width = 5, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 bgcov.change.aspect
 dev.off()
 # BG cover change by Aspect (prediction only)
 tiff("figures/2025-07_draft-figures-2.0/BG-cover-change-aspect-predictions_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 bgcov.pred.aspect
 dev.off()
 
