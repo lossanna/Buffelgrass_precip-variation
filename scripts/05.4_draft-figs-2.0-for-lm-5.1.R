@@ -2099,23 +2099,23 @@ dev.off()
 
 # Repro change interaction of precip*shrub
 tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
-     units = "in", height = 7, width = 6, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 repro.shrub.precip
 dev.off()
 # Repro change interaction of precip*shrub (with CI, scaled)
 tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
-     units = "in", height = 7, width = 6, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 repro.shrub.precip.ci
 dev.off()
 
 # Repro change interaction of precip*herb
 tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change-and-precip-interaction.tiff",
-     units = "in", height = 7, width = 6, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 repro.herb.precip
 dev.off()
 # Repro change interaction of precip*herb (with CI, scaled)
 tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
-     units = "in", height = 7, width = 6, res = 150)
+     units = "in", height = 4, width = 6, res = 150)
 repro.herb.precip.ci
 dev.off()
 
