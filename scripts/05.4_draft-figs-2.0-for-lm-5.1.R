@@ -200,19 +200,17 @@ dat.culm %>%
   labs(y = expression(Delta ~ "Total culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red")
-
+             color = "red") # insight slightly higher
 
 
 
 ## Total: Aspect ----------------------------------------------------------
 
-
 # With a boxplot, I can't really graph the prediction on top of the original data, 
 #   so they will just have to stay separate graphs.
 
 # Original data (boxplot)
-total.change.aspect <- culm.change %>% 
+total.change.aspect <- dat.culm %>% 
   ggplot(aes(x = Aspect, y = Change_Total_Live_Culms)) +
   geom_boxplot() +
   geom_jitter(alpha = 0.3) +
@@ -237,14 +235,13 @@ total.pred.aspect <- total.pred.aspect %>%
   geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
   theme_bw() +
   labs(title = "Prediction for total change by aspect",
-       y = "Change_Total_Live_culms",
+       y = expression(Delta ~ "Total culm count"),
        x = NULL) +
   scale_y_continuous(limits = c(-120, 220)) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
 total.pred.aspect
-
 
 
 
@@ -325,11 +322,11 @@ dat.culm %>%
   labs(y = expression(Delta ~ "Total culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red")
+             color = "red") # basically the same, just slightly different slope
 
 
 
-## Total: Shrub cover -----------------------------------------------------
+## Total: Shrub -----------------------------------------------------------
 
 # Generate prediction with unscaled variable added
 viz.total.shrub <- get_datagrid(dat.culm.ex, by = c("Change_ShrubCover_scaled"),
@@ -390,7 +387,7 @@ total.shrub.ci <- dat.culm %>%
 total.shrub.ci
 
 
-# Graph differences in prediction line (dashed is using modelbased, solid is using ggeffects)
+# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms)) +
   geom_point() +
@@ -411,7 +408,7 @@ dat.culm %>%
              color = "red") +
   geom_vline(xintercept = 0,
              linetype = "dashed",
-             color = "red") 
+             color = "red") # insight just slightly higher
 
 
 
@@ -489,7 +486,6 @@ total.shrub.precip.ci
 
 
 
-
 ## Total: Precip * herb ---------------------------------------------------
 
 # Generate prediction and add unscaled variable
@@ -558,7 +554,7 @@ total.herb.precip.ci
 
 
 
-## Total: Plot slope (NS) -------------------------------------------------
+## Total: Slope (NS) ------------------------------------------------------
 
 # Generate prediction and add unscaled variable
 viz.total.slope <- get_datagrid(dat.culm.ex, by = c("PlotSlope_scaled"),
@@ -613,7 +609,7 @@ total.slope.ci <- dat.culm %>%
 total.slope.ci
 
 
-# Graph differences in prediction line (dashed is using modelbased, solid is using ggeffects)
+# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
 dat.culm %>% 
   ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms)) +
   geom_point() +
@@ -631,11 +627,11 @@ dat.culm %>%
   labs(y = expression(Delta ~ "Total culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red") 
+             color = "red") # insight just slightly higher
 
 
 
-## Total: Herb cover (NS) -------------------------------------------------
+## Total: Herb (NS) -------------------------------------------------------
 
 # Generate prediction and add unscaled variable
 viz.total.herb <- get_datagrid(dat.culm.ex, by = c("Change_HerbCover_scaled"),
@@ -696,7 +692,7 @@ total.herb.ci <- dat.culm %>%
 total.herb.ci
 
 
-# Graph differences in prediction line (dashed is using modelbased, solid is using ggeffects)
+# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
   geom_point() +
@@ -717,7 +713,7 @@ dat.culm %>%
              color = "red") +
   geom_vline(xintercept = 0,
              linetype = "dashed",
-             color = "red") 
+             color = "red") # insight just slightly higher
 
 
 
@@ -789,31 +785,8 @@ total.bgden.precip.ci
 
 
 
-# Reproductive culm change ------------------------------------------------
 
-# With CI, scaled (automatic graphs)
-# All fixed effects alone
-repro.pred <- predict_response(repro_best.model)
-plot(repro.pred)
-
-# Precip * BG density change
-repro.pred.bgden.precip <- predict_response(repro_best.model, 
-                                            terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
-plot(repro.pred.bgden.precip)
-
-# Precip * shrub change
-repro.pred.shrub.precip <- predict_response(repro_best.model, 
-                                            terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
-plot(repro.pred.shrub.precip)
-
-# Precip * herb change
-repro.pred.herb.precip <- predict_response(repro_best.model, 
-                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
-plot(repro.pred.herb.precip)
-
-
-
-## Repro: Test multiple versions of model ----------------------------------
+# Test multiple versions of model ------------------------------------------
 
 # Buffelgrass density
 #   Scaled datagrid with prediction
@@ -981,6 +954,69 @@ repro.shrub.alltop8
 
 
 
+
+# Reproductive culm change ------------------------------------------------
+
+# With CI, scaled (automatic graphs)
+# All fixed effects alone
+repro.pred <- predict_response(repro_best.model)
+plot(repro.pred)
+
+# Precip * BG density change
+repro.pred.bgden.precip <- predict_response(repro_best.model, 
+                                            terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
+plot(repro.pred.bgden.precip)
+
+# Precip * shrub change
+repro.pred.shrub.precip <- predict_response(repro_best.model, 
+                                            terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
+plot(repro.pred.shrub.precip)
+
+# Precip * herb change
+repro.pred.herb.precip <- predict_response(repro_best.model, 
+                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
+plot(repro.pred.herb.precip)
+
+
+
+## Repro: Aspect ----------------------------------------------------------
+
+# Original data (boxplot)
+repro.change.aspect <- dat.culm %>% 
+  ggplot(aes(x = Aspect, y = Change_Reproductive_culms)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  theme_bw() +
+  labs(title = "Change in repro culm count by aspect",
+       y = expression(Delta ~ "Reproductive culm count"),
+       x = NULL) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black"))
+repro.change.aspect
+
+
+# Generate CI
+repro.pred.aspect <- predict_response(repro_best.model, terms = "Aspect")
+
+# Graph with CI, prediction only (ggeffects version)
+repro.pred.aspect <- repro.pred.aspect %>% 
+  ggplot(aes(x, predicted)) +
+  geom_point() +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
+  theme_bw() +
+  labs(title = "Prediction for repro change by aspect",
+       y = expression(Delta ~ "Reproductive culm count"),
+       x = NULL) +
+  scale_y_continuous(limits = c(-120, 220)) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+repro.pred.aspect
+
+
+
 ## Repro: BG density -------------------------------------------------------
 
 # Generate prediction and add unscaled variable
@@ -1010,6 +1046,141 @@ repro.bgden <- dat.culm %>%
              linetype = "dashed",
              color = "red") 
 repro.bgden
+
+
+# Generate CI and add unscaled variable
+ci.repro.bgden <- predict_response(repro_best.model, terms = "Change_BGDensity_scaled")
+unscaled.bgden9 <- get_datagrid(dat.culm.unscaled, by = "Change_BGDensity",
+                                length = 9) %>% 
+  arrange(Change_BGDensity)
+ci.repro.bgden$Change_BGDensity <- unscaled.bgden9$Change_BGDensity
+ci.repro.bgden$Change_Reproductive_culms <- ci.repro.bgden$predicted
+
+# Graph with CI (ggeffects version)
+repro.bgden.ci <- dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.bgden,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.bgden,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  ggtitle("Change in repro culm count vs. plot density change") +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")"))) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+repro.bgden.ci
+
+
+# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.bgden,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.bgden,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.repro.bgden,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")"))) +
+  ggtitle("Change in repro culm count vs. plot density") +
+  labs(y = expression(Delta ~ "Repro culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") # basically the same
+
+
+
+## Repro: Shrub -----------------------------------------------------------
+
+# Generate prediction with unscaled variable added
+viz.repro.shrub <- get_datagrid(dat.culm.ex, by = c("Change_ShrubCover_scaled"),
+                                length = 100)
+viz.repro.shrub$Predicted <- get_predicted(repro_best.model, viz.repro.shrub)
+unscaled.shrub100 <- get_datagrid(dat.culm.unscaled, by = "Change_ShrubCover",
+                                  length = 100) %>% 
+  arrange(Change_ShrubCover)
+viz.repro.shrub$Change_ShrubCover <- unscaled.shrub100$Change_ShrubCover
+
+# Graph (insight version)
+repro.shrub <- dat.culm %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_line(data = viz.repro.shrub,
+            aes(y = Predicted), linewidth = 1.5,
+            color = "purple3") +
+  theme_bw() +
+  ggtitle("Change in repro culm count vs. shrub cover change") +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+repro.shrub
+
+
+# Generate CI and add unscaled variable
+ci.repro.shrub <- predict_response(repro_best.model, terms = "Change_ShrubCover_scaled")
+unscaled.shrub16 <- get_datagrid(dat.culm.unscaled, by = "Change_ShrubCover",
+                                 length = 16) %>% 
+  arrange(Change_ShrubCover)
+ci.repro.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
+ci.repro.shrub$Change_Reproductive_culms <- ci.repro.shrub$predicted
+
+# Graph with CI (ggeffects version)
+repro.shrub.ci <- dat.culm %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.shrub,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.shrub,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  ggtitle("Change in repro culm count vs. shrub cover change") +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+repro.shrub.ci
+
+
+# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+dat.culm %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.shrub,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.shrub,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.repro.shrub,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  ggtitle("Change in repro culm count vs. shrub cover change") +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") # basically the same
 
 
 
@@ -1044,10 +1215,64 @@ repro.herb <- dat.culm %>%
 repro.herb
 
 
-## Repro change: Not significant ------------------------------------------
+# Generate CI and add unscaled variable
+ci.repro.herb <- predict_response(repro_best.model, terms = "Change_HerbCover_scaled")
+unscaled.herb8 <- get_datagrid(dat.culm.unscaled, by = "Change_HerbCover",
+                               length = 8) %>% 
+  arrange(Change_HerbCover)
+ci.repro.herb$Change_HerbCover <- unscaled.herb8$Change_HerbCover
+ci.repro.herb$Change_Reproductive_culms <- ci.repro.herb$predicted
 
-# Precip
-#   Generate prediction and add unscaled variable
+# Graph with CI (ggeffects version)
+repro.herb.ci <- dat.culm %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.herb,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.herb,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  ggtitle("Change in repro culm count vs. herb cover change") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+repro.herb.ci
+
+
+# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+dat.culm %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.herb,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.herb,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.repro.herb,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  ggtitle("Change in repro culm count vs. herb cover change") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ "Native herb cover (%)")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") # insight just slightly higher
+
+
+
+## Repro: Precip (NS) -----------------------------------------------------
+
+# Generate prediction and add unscaled variable
 viz.repro.precip <- get_datagrid(dat.culm.ex, by = c("Prev_year_precip_scaled"),
                                  length = 100)
 viz.repro.precip$Predicted <- get_predicted(repro_best.model, viz.repro.precip)
@@ -1056,7 +1281,7 @@ unscaled.precip100 <- get_datagrid(dat.culm.unscaled, by = "Prev_year_precip",
   arrange(Prev_year_precip)
 viz.repro.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
 
-#   Graph (insight version)
+# Graph (insight version)
 repro.precip <- dat.culm %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_Reproductive_culms)) +
   geom_point() +
@@ -1073,6 +1298,333 @@ repro.precip <- dat.culm %>%
 repro.precip
 
 
+# Generate CI and add unscaled variable
+ci.repro.precip <- predict_response(repro_best.model, terms = "Prev_year_precip_scaled")
+unscaled.precip15 <- get_datagrid(dat.culm.unscaled, by = "Prev_year_precip",
+                                  length = 15) %>% 
+  arrange(Prev_year_precip)
+ci.repro.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
+ci.repro.precip$Change_Reproductive_culms <- ci.repro.precip$predicted 
+
+# Graph with CI (ggeffects version)
+repro.precip.ci <- dat.culm %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.precip,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.precip,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  xlab("Previous year precip (mm)") +
+  ggtitle("Change in repro culm count vs. precip") +
+  labs(y = expression(Delta ~ "Reproductive culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+repro.precip.ci
+
+
+# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+dat.culm %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.precip,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.precip,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.repro.precip,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  xlab("Previous year precip (mm)") +
+  ggtitle("Change in repro culm count vs. precip") +
+  labs(y = expression(Delta ~ "Reproductive culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") # basically the same
+
+
+
+## Repro: Slope (NS) -----------------------------------------------------
+
+# Generate prediction and add unscaled variable (use model2, as best model does not include slope)
+viz.repro.slope <- get_datagrid(dat.culm.ex, by = c("PlotSlope_scaled"),
+                                length = 100)
+viz.repro.slope$Predicted <- get_predicted(repro_model2, viz.repro.slope)
+unscaled.slope100 <- get_datagrid(dat.culm.unscaled, by = "PlotSlope",
+                                  length = 100) %>% 
+  arrange(PlotSlope)
+viz.repro.slope$PlotSlope <- unscaled.slope100$PlotSlope
+
+# Graph (insight version)
+repro.slope <- dat.culm %>% 
+  ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_line(data = viz.repro.slope,
+            aes(y = Predicted), linewidth = 1.5,
+            color = "purple3") +
+  theme_bw() +
+  xlab("Plot slope (\u00B0)") +
+  ggtitle("Change in repro culm count vs. slope") +
+  labs(y = expression(Delta ~ "Reproductive culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+repro.slope
+
+
+# Generate CI and add unscaled variable
+ci.repro.slope <- predict_response(repro_model2, terms = "PlotSlope_scaled")
+unscaled.slope12 <- get_datagrid(dat.culm.unscaled, by = "PlotSlope",
+                                 length = 12) %>% 
+  arrange(PlotSlope)
+ci.repro.slope$PlotSlope <- unscaled.slope12$PlotSlope
+ci.repro.slope$Change_Reproductive_culms <- ci.repro.slope$predicted
+
+# Graph with CI (ggeffects version)
+repro.slope.ci <- dat.culm %>% 
+  ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.slope,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.slope,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  xlab("Plot slope (\u00B0)") +
+  ggtitle("Change in repro culm count vs. slope") +
+  labs(y = expression(Delta ~ "Reproductive culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+repro.slope.ci
+
+
+# Graph differences in prediction line (dashed is using modelbased, solid is using ggeffects)
+dat.culm %>% 
+  ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms)) +
+  geom_point() +
+  geom_ribbon(data = ci.repro.slope,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.repro.slope,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.repro.slope,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  xlab("Plot slope (\u00B0)") +
+  ggtitle("Change in repro culm count vs. slope") +
+  labs(y = expression(Delta ~ "Reproductive culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") # basically the same
+
+
+
+## Repro: Precip * density (NS) -------------------------------------------
+
+# Generate prediction and add unscaled variable
+viz.repro.bgden.precip <- dat.culm.ex %>% 
+  get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  arrange(Change_BGDensity_scaled)
+viz.repro.bgden.precip$Predicted <- get_predicted(repro_best.model, viz.repro.bgden.precip)
+unscaled.bgden.precip243 <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  arrange(Change_BGDensity)
+viz.repro.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
+viz.repro.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
+
+# Graph (insight version)
+repro.bgden.precip <- dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = viz.repro.bgden.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
+       title = "Change in repro culm count vs. plot density change")
+repro.bgden.precip
+
+
+# Generate CI with scaled x variable 
+repro.pred.bgden.precip <- predict_response(repro_best.model, 
+                                            terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
+repro.pred.bgden.precip$group <- factor(repro.pred.bgden.precip$group,
+                                        levels = c("1.01", "0.01", "-0.99"))
+
+# Graph with CI, scaled (ggeffects version)
+repro.bgden.precip.ci <- repro.pred.bgden.precip %>% 
+  ggplot(aes(x, predicted, group = group)) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.3) +
+  geom_line(aes(color = group),
+            linewidth = 1.3) +
+  theme_bw() +
+  scale_color_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  scale_fill_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
+       title = "Change in repro culm count vs. plot density change",
+       color = "Previous year \nprecip (scaled)",
+       fill = "Previous year \nprecip (scaled)") +
+  scale_y_continuous(limits = c(-120, 220))
+repro.bgden.precip.ci
+
+
+
+## Repro: Precip * shrub (NS) ---------------------------------------------
+
+# Generate prediction and add unscaled variable
+viz.repro.shrub.precip <- dat.culm.ex %>% 
+  get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  arrange(Change_ShrubCover_scaled)
+viz.repro.shrub.precip$Predicted <- get_predicted(repro_best.model, viz.repro.shrub.precip)
+unscaled.shrub.precip243 <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  arrange(Change_ShrubCover)
+viz.repro.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
+viz.repro.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+
+# Graph (insight version)
+repro.shrub.precip <- dat.culm %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = viz.repro.shrub.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in repro culm count vs. shrub cover change")
+repro.shrub.precip
+
+
+# Generate CI with scaled x variable
+repro.pred.shrub.precip <- predict_response(repro_best.model, 
+                                            terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
+repro.pred.shrub.precip$group <- factor(repro.pred.shrub.precip$group,
+                                        levels = c("1.01", "0.01", "-0.99"))
+
+# Graph with CI, scaled prediction only (ggeffects version)  
+repro.shrub.precip.ci <- repro.pred.shrub.precip %>% 
+  ggplot(aes(x, predicted, group = group)) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.3) +
+  geom_line(aes(color = group),
+            linewidth = 1.3) +
+  theme_bw() +
+  scale_color_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  scale_fill_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ "Native shrub cover (scaled)"),
+       title = "Change in repro culm count vs. shrub cover change (scaled)",
+       color = "Previous year \nprecip (scaled)",
+       fill = "Previous year \nprecip (scaled)") +
+  scale_y_continuous(limits = c(-120, 220))
+repro.shrub.precip.ci
+
+
+
+## Repro: Precip * herb (NS) ----------------------------------------------
+
+# Generate prediction and add unscaled variable
+viz.repro.herb.precip <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 3) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+viz.repro.herb.precip$Predicted <- get_predicted(repro_best.model, viz.repro.herb.precip)
+unscaled.herb.precip243 <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  arrange(Change_HerbCover)
+viz.repro.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
+viz.repro.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
+
+# Graph (insight version)
+repro.herb.precip <- dat.culm %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = viz.repro.herb.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in repro culm count vs. herb cover change")
+repro.herb.precip
+
+
+# Generate CI with scaled x variable 
+repro.pred.herb.precip <- predict_response(repro_best.model, 
+                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
+repro.pred.herb.precip$group <- factor(repro.pred.herb.precip$group,
+                                       levels = c("1.01", "0.01", "-0.99"))
+
+# Graph with CI, scaled prediction only (ggeffects version)
+repro.herb.precip.ci <- repro.pred.herb.precip %>% 
+  ggplot(aes(x, predicted, group = group)) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.3) +
+  geom_line(aes(color = group),
+            linewidth = 1.3) +
+  theme_bw() +
+  scale_color_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  scale_fill_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Repro culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (scaled)"),
+       title = "Change in repro culm count vs. herb cover change (scaled)",
+       color = "Previous year \nprecip (scaled)",
+       fill = "Previous year \nprecip (scaled)") +
+  scale_y_continuous(limits = c(-120, 220))
+repro.herb.precip.ci
 
 
 
@@ -1379,7 +1931,7 @@ dev.off()
 # Total change by Aspect (prediction only)
 tiff("figures/2025-07_draft-figures-2.0/Total-change-aspect-predictions_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-total.precip.ci
+total.pred.aspect
 dev.off()
 
 # Total change vs. Change_BGDensity
@@ -1444,7 +1996,7 @@ tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_herb-cover-chang
      units = "in", height = 4, width = 5, res = 150)
 total.herb
 dev.off()
-# Total change vs. Change_HerbCover (with )
+# Total change vs. Change_HerbCover (with CI)
 tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_herb-cover-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.herb.ci
@@ -1463,15 +2015,29 @@ dev.off()
 
 
 
-
-
 ## Repro change -----------------------------------------------------------
 
 # Significant
+# Repro change by Aspect (original data only)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change-by-aspect.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.change.aspect
+dev.off()
+# Repro change by Aspect (prediction only)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change-aspect-predictions_CI.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.pred.aspect
+dev.off()
+
 # Repro change vs. Change_BGDensity
 tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.bgden
+dev.off()
+# Repro change vs. Change_BGDensity (with CI)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change_CI.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.bgden.ci
 dev.off()
 
 # Repro change vs. Change_ShrubCover
@@ -1479,11 +2045,21 @@ tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-chan
      units = "in", height = 4, width = 5, res = 150)
 repro.shrub
 dev.off()
+# Repro change vs. Change_ShrubCover (with CI)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change_CI.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.shrub.ci
+dev.off()
 
 # Repro change vs. Change_HerbCover
 tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.herb
+dev.off()
+# Repro change vs. Change_HerbCover (with CI)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change_CI.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.herb.ci
 dev.off()
 
 
@@ -1492,6 +2068,55 @@ dev.off()
 tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.precip
+dev.off()
+# Repro change vs. Prev_year_precip (with CI)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_prev-year-precip_CI.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.precip.ci
+dev.off()
+
+# Repro change vs. PlotSlope
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_plot-slope.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.slope
+dev.off()
+# Repro change vs. PlotSlope (with CI)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_plot-slope_CI.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+repro.slope.ci
+dev.off()
+
+# Repro change interaction of precip*BG density
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change-and-precip-interaction.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.bgden.precip
+dev.off()
+# Repro change interaction of precip*BG density (with CI, scaled)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change-and-precip-interaction_CI-scaled.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.bgden.precip.ci
+dev.off()
+
+# Repro change interaction of precip*shrub
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
+     units = "in", height = 7, width = 6, res = 150)
+repro.shrub.precip
+dev.off()
+# Repro change interaction of precip*shrub (with CI, scaled)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
+     units = "in", height = 7, width = 6, res = 150)
+repro.shrub.precip.ci
+dev.off()
+
+# Repro change interaction of precip*herb
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change-and-precip-interaction.tiff",
+     units = "in", height = 7, width = 6, res = 150)
+repro.herb.precip
+dev.off()
+# Repro change interaction of precip*herb (with CI, scaled)
+tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
+     units = "in", height = 7, width = 6, res = 150)
+repro.herb.precip.ci
 dev.off()
 
 
