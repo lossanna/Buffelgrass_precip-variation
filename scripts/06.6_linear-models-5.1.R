@@ -1,5 +1,5 @@
 # Created: 2025-07-15
-# Updated: 2025-07-22
+# Updated: 2025-07-24
 
 # Purpose: Compile version 1 linear models with Change_Reproductive_culms,  
 #   Change_Total_Live_Culms, Change_BGDensity, Change_BGCover, and survival_perc 
@@ -13,7 +13,7 @@
 # Continuous explanatory variables are centered and scaled. 
 
 # lme4 package used for all models except survival to use REML; survival modeled as 
-#   Tweedie GLM with glmmTMB package.
+#   beta-inflated with glmmTMB package.
 
 # Wrote out predicted vs. actual graphs (made with modelbased) for all five models.
 
@@ -65,6 +65,9 @@ dat.survival <- dat.survival %>%
   select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>% 
   distinct(.keep_all = TRUE)
 
+#   Transform 0s and 1s
+dat.survival <- dat.survival %>% 
+  mutate(survival_transf = pmin(pmax(survival_perc, 1e-6), 1 - 1e-6))
 
 
 # Total culm change -------------------------------------------------------
@@ -295,68 +298,64 @@ bgcov_pred.plot
 # Survival ----------------------------------------------------------------
 
 # Global model
-survival <- glmmTMB(survival_perc ~ Prev_year_precip_scaled +
-                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
-                       HerbCover_scaled + BGDensity_scaled +
-                       Prev_year_precip_scaled * ShrubCover_scaled +
-                       Prev_year_precip_scaled * HerbCover_scaled +
-                       Prev_year_precip_scaled * BGDensity_scaled +
-                       (1 | Site / Transect),
-                     data = dat.survival,
-                     family = tweedie(link = "log"))
+survival <- glmmTMB(survival_transf ~ Prev_year_precip_scaled +
+                      Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                      HerbCover_scaled + BGDensity_scaled +
+                      Prev_year_precip_scaled * ShrubCover_scaled +
+                      Prev_year_precip_scaled * HerbCover_scaled +
+                      Prev_year_precip_scaled * BGDensity_scaled +
+                      (1 | Site / Transect),
+                    data = dat.survival,
+                    family = beta_family(link = "logit"),
+                    ziformula = ~1,
+                    dispformula = ~1)
 
 # Model selection
 options(na.action = "na.fail")
-survival_set <- dredge(survival) # not all converged
+survival_set <- dredge(survival) 
 
 # Examine best model
 survival_best.model <- get.models(survival_set, 1)[[1]]
 summary(survival_best.model)
-r2(survival_best.model) # marginal: 0.362; conditional: 0.908
+r2(survival_best.model) # marginal: 0.306; conditional: 0.591
 res.survival_best.model <- simulateResiduals(survival_best.model)
 plotQQunif(res.survival_best.model)
 plotResiduals(res.survival_best.model) # really does not look great
-check_model(survival_best.model) # posterior prediction looks weird
+check_model(survival_best.model) 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
-survival_top <- subset(survival_set, delta <= 2) %>% 
-  filter(!is.na(df)) # not all models converged; 17 top models
+survival_top <- subset(survival_set, delta <= 2) 
 for (i in 1:nrow(survival_top)) {
   assign(paste0("survival_model", i), get.models(survival_top, subset = i)[[1]])
 } 
 
 # R^2 of top models
-r2(survival_model1) # marginal: 0.362; conditional: 0.908
-r2(survival_model2) # marginal: 0.349; conditional: 0.915
-r2(survival_model3) # marginal: 0.358; conditional: 0.905
-r2(survival_model4) # can't compute
-r2(survival_model5) # marginal: 0.329; conditional: 0.919
-r2(survival_model6) # marginal: 0.341; conditional: 0.917
-r2(survival_model7) # marginal: 0.337; conditional: 0.914
-r2(survival_model8) # marginal: 0.345; conditional: 0.912
-r2(survival_model9) # marginal: 0.355; conditional: 0.908
-r2(survival_model10) # marginal: 0.350; conditional: 0.906
-r2(survival_model11) # marginal: 0.341; conditional: 0.913
-r2(survival_model12) # can't compute
-r2(survival_model13) # marginal: 0.353; conditional: 0.911
-r2(survival_model14) # can't compute
-r2(survival_model15) # marginal: 0.342; conditional: 0.917
-r2(survival_model16) # marginal: 0.353; conditional: 0.911
-r2(survival_model17) # marginal: 0.330; conditional: 0.920
+r2(survival_model1) # marginal: 0.306; conditional: 0.591
+r2(survival_model2) # marginal: 0.302; conditional: 0.590
+r2(survival_model3) # marginal: 0.311; conditional: 0.565
+r2(survival_model4) # marginal: 0.310; conditional: 0.597
+r2(survival_model5) # marginal: 0.307; conditional: 0.565
+r2(survival_model6) # marginal: 0.322; conditional: 0.563
+r2(survival_model7) # marginal: 0.324; conditional: 0.540
+r2(survival_model8) # marginal: 0.329; conditional: 0.533
+r2(survival_model9) # marginal: 0.3131; conditional: 0.569
+r2(survival_model10) # marginal: 0.314; conditional: 0.578
+r2(survival_model11) # marginal: 0.324; conditional: 0.574
+r2(survival_model12) # marginal: 0.334; conditional: 0.540
+r2(survival_model13) # marginal: 0.310; conditional: 0.583
+r2(survival_model14) # marginal: 0.33``; conditional: 0.545
 
 
 # Model averaging of top models
-survival_set_with.delta <- survival_set %>% 
-  filter(!is.na(delta))
-survival_avg <- model.avg(survival_set_with.delta, subset = delta <= 2)
+survival_avg <- model.avg(survival_set, subset = delta <= 2)
 summary(survival_avg)
 
 # Predicted vs. observed (best model)
 survival_pred <- estimate_expectation(survival_best.model)
-survival_pred$survival_perc <- dat.survival$survival_perc
+survival_pred$survival_transf <- dat.survival$survival_transf
 
 survival_pred.plot <- survival_pred %>% 
-  ggplot(aes(x = survival_perc, y = Predicted)) +
+  ggplot(aes(x = survival_transf, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   ggtitle("Survival, predicted vs. actual (best model)")

@@ -1,5 +1,5 @@
 # Created: 2025-07-09
-# Updated: 2025-07-15
+# Updated: 2025-07-24
 
 # Purpose: Run linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #   Change_BGDensity, and Change_BGCover as response variable.
@@ -43,6 +43,10 @@
 #     Should use model 1 because most of the models do run and this fits the experimental
 #       design best. But R ^2 are very low and not all models converge.
 
+# Update from 7/24:
+#   Tweedie GLM actually isn't good for survival data because it does not consider an upper bound
+#     (data can be 0 - 1, inclusive of bounds). Beta-inflated (BEINF) needed instead, and have to
+#     transform 0 and 1.
 
 library(tidyverse)
 library(glmmTMB)
@@ -90,6 +94,10 @@ dat.survival <- dat %>%
 dat.survival <- dat.survival %>% 
   select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>% 
   distinct(.keep_all = TRUE)
+
+# Transform 0s and 1s
+dat.survival <- dat.survival %>% 
+  mutate(survival_transf = pmin(pmax(survival_perc, 1e-6), 1 - 1e-6))
 
 
 
@@ -1797,6 +1805,75 @@ r2(survival4_model8) # marginal: 0.544; conditional: 0.831
 # Model averaging of top models
 survival4_avg <- model.avg(survival4_set, subset = delta <= 2)
 summary(survival4_avg)
+
+
+
+## Survival 5: BEINF -----------------------------------------------
+
+# 5: glmmTMB version
+survival5 <- glmmTMB(survival_transf ~ Prev_year_precip_scaled +
+                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                       HerbCover_scaled + BGDensity_scaled +
+                       Prev_year_precip_scaled * ShrubCover_scaled +
+                       Prev_year_precip_scaled * HerbCover_scaled +
+                       Prev_year_precip_scaled * BGDensity_scaled +
+                       (1 | Site / Transect),
+                     data = dat.survival,
+                     family = beta_family(link = "logit"),
+                     ziformula = ~1,
+                     dispformula = ~1)
+summary(survival5)
+r2(survival5) # marginal: 0.333; conditional: 0.521
+res.survival5 <- simulateResiduals(survival5)
+plotQQunif(res.survival5)
+plotResiduals(res.survival5) # yikes
+check_collinearity(survival5) 
+check_model(survival5)
+check_overdispersion(survival5)
+
+
+### 5: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+survival5_set <- dredge(survival5) 
+
+# Examine best model
+survival5_best.model <- get.models(survival5_set, 1)[[1]]
+summary(survival5_best.model)
+r2(survival5_best.model) # marginal: 0.306; conditional: 0.591
+res.survival5_best.model <- simulateResiduals(survival5_best.model)
+plotQQunif(res.survival5_best.model)
+plotResiduals(res.survival5_best.model) # really does not look great
+check_model(survival5_best.model) 
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+survival5_top <- subset(survival5_set, delta <= 2) 
+for (i in 1:nrow(survival5_top)) {
+  assign(paste0("survival5_model", i), get.models(survival5_top, subset = i)[[1]])
+} 
+
+# R^2 of top models
+r2(survival5_model1) # marginal: 0.306; conditional: 0.591
+r2(survival5_model2) # marginal: 0.302; conditional: 0.590
+r2(survival5_model3) # marginal: 0.311; conditional: 0.565
+r2(survival5_model4) # marginal: 0.310; conditional: 0.597
+r2(survival5_model5) # marginal: 0.307; conditional: 0.565
+r2(survival5_model6) # marginal: 0.322; conditional: 0.563
+r2(survival5_model7) # marginal: 0.324; conditional: 0.540
+r2(survival5_model8) # marginal: 0.329; conditional: 0.533
+r2(survival5_model9) # marginal: 0.3131; conditional: 0.569
+r2(survival5_model10) # marginal: 0.314; conditional: 0.578
+r2(survival5_model11) # marginal: 0.324; conditional: 0.574
+r2(survival5_model12) # marginal: 0.334; conditional: 0.540
+r2(survival5_model13) # marginal: 0.310; conditional: 0.583
+r2(survival5_model14) # marginal: 0.33``; conditional: 0.545
+
+
+# Model averaging of top models
+survival5_avg <- model.avg(survival5_set, subset = delta <= 2)
+summary(survival5_avg)
+
 
 
 save.image("RData/06.4_linear-models-5.0.RData")
