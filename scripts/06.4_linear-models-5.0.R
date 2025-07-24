@@ -1830,6 +1830,7 @@ plotResiduals(res.survival5) # yikes
 check_collinearity(survival5) 
 check_model(survival5)
 check_overdispersion(survival5)
+check_zeroinflation(survival5)
 
 
 ### 5: Model selection ----------------------------------------------------
@@ -1875,5 +1876,68 @@ survival5_avg <- model.avg(survival5_set, subset = delta <= 2)
 summary(survival5_avg)
 
 
+
+## Survival 6: Beta regression --------------------------------------------
+
+# 6: glmmTMB version
+survival6 <- glmmTMB(survival_transf ~ Prev_year_precip_scaled +
+                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                       HerbCover_scaled + BGDensity_scaled +
+                       Prev_year_precip_scaled * ShrubCover_scaled +
+                       Prev_year_precip_scaled * HerbCover_scaled +
+                       Prev_year_precip_scaled * BGDensity_scaled +
+                       (1 | Site / Transect),
+                     data = dat.survival,
+                     family = beta_family(link = "logit"))
+summary(survival6)
+r2(survival6) # marginal: 0.567; conditional: 0.889
+res.survival6 <- simulateResiduals(survival6)
+plotQQunif(res.survival6)
+plotResiduals(res.survival6) # still looks janky
+check_model(survival6) # some of the 0 predictions are very off
+check_overdispersion(survival6)
+
+
+### 6: Model selection ----------------------------------------------------
+
+# Model selection
+options(na.action = "na.fail")
+survival6_set <- dredge(survival6) 
+
+# Examine best model
+survival6_best.model <- get.models(survival6_set, 1)[[1]]
+summary(survival6_best.model)
+r2(survival6_best.model) # marginal: 0.474; conditional: 0.915
+res.survival6_best.model <- simulateResiduals(survival6_best.model)
+plotQQunif(res.survival6_best.model)
+plotResiduals(res.survival6_best.model) # still janky
+check_model(survival6_best.model) 
+
+# Examine models within 2 AICc units of best and assign each top model to separate object
+survival6_top <- subset(survival6_set, delta <= 2) 
+for (i in 1:nrow(survival6_top)) {
+  assign(paste0("survival6_model", i), get.models(survival6_top, subset = i)[[1]])
+} 
+
+# R^2 of top models
+r2(survival6_model1) # marginal: 0.474; conditional: 0.915
+r2(survival6_model2) # marginal: 0.469; conditional: 0.914
+r2(survival6_model3) # marginal: 0.498; conditional: 0.906
+r2(survival6_model4) # marginal: 0.476; conditional: 0.917
+r2(survival6_model5) # marginal: 0.491; conditional: 0.905
+r2(survival6_model6) # marginal: 0.517; conditional: 0.905
+r2(survival6_model7) # marginal: 0.538; conditional: 0.896
+r2(survival6_model8) # marginal: 0.551; conditional: 0.894
+r2(survival6_model9) # marginal: 0.499; conditional: 0.907
+r2(survival6_model10) # marginal: 0.494; conditional: 0.910
+r2(survival6_model11) # marginal: 0.512; conditional: 0.909
+r2(survival6_model12) # marginal: 0.555; conditional: 0.896
+r2(survival6_model13) # marginal: 0.484; conditional: 0.913
+r2(survival6_model14) # marginal: 0.546; conditional: 0.898
+
+
+# Model averaging of top models
+survival6_avg <- model.avg(survival6_set, subset = delta <= 2)
+summary(survival6_avg)
 
 save.image("RData/06.4_linear-models-5.0.RData")

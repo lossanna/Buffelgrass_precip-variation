@@ -13,7 +13,7 @@
 # Continuous explanatory variables are centered and scaled. 
 
 # lme4 package used for all models except survival to use REML; survival modeled as 
-#   beta-inflated with glmmTMB package.
+#   beta regression with glmmTMB package.
 
 # Wrote out predicted vs. actual graphs (made with modelbased) for all five models.
 
@@ -306,9 +306,7 @@ survival <- glmmTMB(survival_transf ~ Prev_year_precip_scaled +
                       Prev_year_precip_scaled * BGDensity_scaled +
                       (1 | Site / Transect),
                     data = dat.survival,
-                    family = beta_family(link = "logit"),
-                    ziformula = ~1,
-                    dispformula = ~1)
+                    family = beta_family(link = "logit"))
 
 # Model selection
 options(na.action = "na.fail")
@@ -317,10 +315,10 @@ survival_set <- dredge(survival)
 # Examine best model
 survival_best.model <- get.models(survival_set, 1)[[1]]
 summary(survival_best.model)
-r2(survival_best.model) # marginal: 0.306; conditional: 0.591
+r2(survival_best.model) # marginal: 0.474; conditional: 0.915
 res.survival_best.model <- simulateResiduals(survival_best.model)
 plotQQunif(res.survival_best.model)
-plotResiduals(res.survival_best.model) # really does not look great
+plotResiduals(res.survival_best.model) # still janky
 check_model(survival_best.model) 
 
 # Examine models within 2 AICc units of best and assign each top model to separate object
@@ -330,20 +328,20 @@ for (i in 1:nrow(survival_top)) {
 } 
 
 # R^2 of top models
-r2(survival_model1) # marginal: 0.306; conditional: 0.591
-r2(survival_model2) # marginal: 0.302; conditional: 0.590
-r2(survival_model3) # marginal: 0.311; conditional: 0.565
-r2(survival_model4) # marginal: 0.310; conditional: 0.597
-r2(survival_model5) # marginal: 0.307; conditional: 0.565
-r2(survival_model6) # marginal: 0.322; conditional: 0.563
-r2(survival_model7) # marginal: 0.324; conditional: 0.540
-r2(survival_model8) # marginal: 0.329; conditional: 0.533
-r2(survival_model9) # marginal: 0.3131; conditional: 0.569
-r2(survival_model10) # marginal: 0.314; conditional: 0.578
-r2(survival_model11) # marginal: 0.324; conditional: 0.574
-r2(survival_model12) # marginal: 0.334; conditional: 0.540
-r2(survival_model13) # marginal: 0.310; conditional: 0.583
-r2(survival_model14) # marginal: 0.33``; conditional: 0.545
+r2(survival_model1) # marginal: 0.474; conditional: 0.915
+r2(survival_model2) # marginal: 0.469; conditional: 0.914
+r2(survival_model3) # marginal: 0.498; conditional: 0.906
+r2(survival_model4) # marginal: 0.476; conditional: 0.917
+r2(survival_model5) # marginal: 0.491; conditional: 0.905
+r2(survival_model6) # marginal: 0.517; conditional: 0.905
+r2(survival_model7) # marginal: 0.538; conditional: 0.896
+r2(survival_model8) # marginal: 0.551; conditional: 0.894
+r2(survival_model9) # marginal: 0.499; conditional: 0.907
+r2(survival_model10) # marginal: 0.494; conditional: 0.910
+r2(survival_model11) # marginal: 0.512; conditional: 0.909
+r2(survival_model12) # marginal: 0.555; conditional: 0.896
+r2(survival_model13) # marginal: 0.484; conditional: 0.913
+r2(survival_model14) # marginal: 0.546; conditional: 0.898
 
 
 # Model averaging of top models
