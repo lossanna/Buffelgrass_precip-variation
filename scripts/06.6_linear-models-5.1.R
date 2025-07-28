@@ -117,7 +117,9 @@ total_pred.plot <- total_pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Change in total culms, predicted vs. actual")
+  ggtitle("Total culm change model, predicted vs. observed") +
+  xlab(expression(Delta ~ "Total live culms [observed]")) +
+  theme_bw()
 total_pred.plot
 
 
@@ -178,7 +180,9 @@ repro_pred.plot <- repro_pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Change in reproductive culms, predicted vs. actual (best model)")
+  ggtitle("Reproductive culm change model, predicted vs. observed") +
+  xlab(expression(Delta ~ "Reproductive culms [observed]")) +
+  theme_bw()
 repro_pred.plot
 
 
@@ -235,7 +239,9 @@ bgden_pred.plot <- bgden_pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Change in density, predicted vs. actual (best model)")
+  ggtitle("Plot density change model, predicted vs. observed") +
+  xlab(expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ") [observed]"))) +
+  theme_bw()
 bgden_pred.plot
 
 
@@ -290,7 +296,9 @@ bgcov_pred.plot <- bgcov_pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Change in cover, predicted vs. actual (best model)")
+  ggtitle("Plot cover change model, predicted vs. observed") +
+  xlab(expression(Delta ~ "Buffelgrass cover (%) [observed]")) +
+  theme_bw()
 bgcov_pred.plot
 
 
@@ -356,7 +364,11 @@ survival_pred.plot <- survival_pred %>%
   ggplot(aes(x = survival_transf, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
-  ggtitle("Survival, predicted vs. actual (best model)")
+  ggtitle("Seedling survival model, predicted vs. observed")  +
+  xlab("Buffelgrass seedling survival (%) [observed]") +
+  theme_bw() +
+  scale_x_continuous(labels = scales::percent) +
+  scale_y_continuous(labels = scales::percent)
 survival_pred.plot
 
 
