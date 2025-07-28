@@ -1,5 +1,5 @@
 # Created: 2025-07-18
-# Updated: 2025-07-24
+# Updated: 2025-07-28
 
 # Purpose: Explore plots made with insight & ggeffects - graph predictions instead of simple
 #   linear regressions.
@@ -798,8 +798,8 @@ total.bgden.precip.ci <- total.pred.bgden.precip %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Total culm count"),
-       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
-       title = "Change in total culm count vs. plot density change",
+       x = expression(Delta ~ "Density (scaled)"),
+       title = "Change in total culm count vs. plot density change (scaled)",
        color = "Previous year \nprecip (scaled)",
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-120, 220))
@@ -1506,8 +1506,8 @@ repro.bgden.precip.ci <- repro.pred.bgden.precip %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
-       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
-       title = "Change in repro culm count vs. plot density change",
+       x = expression(Delta ~ "Density (scaled)"),
+       title = "Change in repro culm count vs. plot density change (scaled)",
        color = "Previous year \nprecip (scaled)",
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-120, 220))
@@ -2006,8 +2006,8 @@ bgden.shrub.precip.ci <- bgden.pred.shrub.precip %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
-       x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in buffelgrass density vs. shrub cover change",
+       x = expression(Delta ~ "Native shrub cover (scaled)"),
+       title = "Change in buffelgrass density vs. shrub cover change (scaled)",
        color = "Previous year \nprecip (scaled)",
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-24, 32),
@@ -2540,8 +2540,8 @@ bgcov.shrub.precip.ci <- bgcov.pred.shrub.precip %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Cover (%)"),
-       x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in buffelgrass cover vs. shrub cover change",
+       x = expression(Delta ~ "Native shrub cover (scaled)"),
+       title = "Change in buffelgrass cover vs. shrub cover change (scaled)",
        color = "Previous year \nprecip (scaled)",
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-50, 45),
@@ -2610,8 +2610,8 @@ bgcov.herb.precip.ci <- bgcov.pred.herb.precip %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Cover (%)"),
-       x = expression(Delta ~ "Native grass & forb cover (%)"),
-       title = "Change in buffelgrass cover vs. herb cover change",
+       x = expression(Delta ~ "Native grass & forb cover (scaled)"),
+       title = "Change in buffelgrass cover vs. herb cover change (scaled)",
        color = "Previous year \nprecip (scaled)",
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-50, 45),
