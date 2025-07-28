@@ -2,10 +2,10 @@
 # Updated: 2025-07-24
 
 # Purpose: Compile version 1 linear models with Change_Reproductive_culms,  
-#   Change_Total_Live_Culms, Change_BGDensity, Change_BGCover, and survival_perc 
+#   Change_Total_Live_Culms, Change_BGDensity, Change_BGCover, and survival_transf 
 #   as response variable.
 
-# Models iteration 1a from 06.4_linear-models-5.0.R script for all.
+# Models iteration 1a from 06.4_linear-models-5.0.R script for all except survival, which is iteration 6.
 
 # Explanatory variables include precip, aspect, plot slope, change in native cover, 
 #   change in buffelgrass plot density, precip-biotic interactions, and site,

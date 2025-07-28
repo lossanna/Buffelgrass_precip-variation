@@ -45,8 +45,8 @@
 
 # Update from 7/24:
 #   Tweedie GLM actually isn't good for survival data because it does not consider an upper bound
-#     (data can be 0 - 1, inclusive of bounds). Beta-inflated (BEINF) needed instead, and have to
-#     transform 0 and 1.
+#     (data can be 0 - 1, inclusive of bounds). Beta regression needed instead, and have to
+#     transform 0 and 1 (overdispersion and zero-inflation adjustments not necessary).
 
 library(tidyverse)
 library(glmmTMB)
@@ -1868,7 +1868,7 @@ r2(survival5_model10) # marginal: 0.314; conditional: 0.578
 r2(survival5_model11) # marginal: 0.324; conditional: 0.574
 r2(survival5_model12) # marginal: 0.334; conditional: 0.540
 r2(survival5_model13) # marginal: 0.310; conditional: 0.583
-r2(survival5_model14) # marginal: 0.33``; conditional: 0.545
+r2(survival5_model14) # marginal: 0.331; conditional: 0.545
 
 
 # Model averaging of top models
