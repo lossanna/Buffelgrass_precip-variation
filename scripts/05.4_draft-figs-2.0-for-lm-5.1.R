@@ -37,6 +37,7 @@ library(insight)
 library(ggeffects)
 library(viridis)
 library(modelbased)
+library(ggpubr)
 
 # Load data ---------------------------------------------------------------
 
@@ -2036,7 +2037,7 @@ bgden.slope <- dat.plot %>%
             color = "purple3") +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
-  ggtitle("Change in bgden culm count vs. slope") +
+  ggtitle("Change in buffelgrass density vs. slope") +
   labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
@@ -2280,7 +2281,7 @@ bgcov.shrub.ci <- dat.plot %>%
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+  labs(y = expression(Delta ~ "Cover (%)"),
        x = expression(Delta ~ "Native shrub cover (%)"),
        title = "Change in buffelgrass cover vs. shrub cover change") +
   geom_hline(yintercept = 0,
@@ -2305,7 +2306,7 @@ dat.plot %>%
             aes(y = Predicted), linewidth = 1,
             color = "purple3", linetype = "dashed") +
   theme_bw() +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+  labs(y = expression(Delta ~ "Cover (%)"),
        x = expression(Delta ~ "Native shrub cover (%)"),
        title = "Change in buffelgrass cover vs. shrub cover change") +
   geom_hline(yintercept = 0,
@@ -2338,7 +2339,7 @@ bgcov.slope <- dat.plot %>%
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
   ggtitle("Change in buffelgrass cover vs. slope") +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
+  labs(y = expression(Delta ~ "Cover (%)")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
@@ -2365,7 +2366,7 @@ bgcov.slope.ci <- dat.plot %>%
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
   ggtitle("Change in buffelgrass cover vs. slope") +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
+  labs(y = expression(Delta ~ "Cover (%)")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") 
@@ -2386,8 +2387,8 @@ dat.plot %>%
             color = "purple3", linetype = "dashed") +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
-  ggtitle("Change in bgcov culm count vs. slope") +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
+  ggtitle("Change in buffelgrass cover vs. slope") +
+  labs(y = expression(Delta ~ "Cover (%)")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") # insight again lower
@@ -3424,6 +3425,11 @@ tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover
      units = "in", height = 4, width = 6, res = 150)
 bgden.shrub.precip.ci
 dev.off()
+# BG density change interaction of precip*shrub (long)
+tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover-change-and-precip-interaction_long.tiff",
+     units = "in", height = 7, width = 6, res = 150)
+bgden.shrub.precip
+dev.off()
 
 
 # Not significant
@@ -3590,6 +3596,18 @@ dev.off()
 tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_herb-cover-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.herb.precip.ci
+dev.off()
+
+
+
+## Precip plot ------------------------------------------------------------
+
+# Combined precip plot for density, cover, survival
+tiff("figures/2025-07_draft-figures-2.0/Precip-combined_density-cover-survival.tiff",
+     units = "in", height = 7, width = 9, res = 150)
+ggarrange(bgden.precip, bgcov.precip, survival.precip,
+          ncol = 2, nrow = 2,
+          labels = c("(A)", "(B)", "(C)"))
 dev.off()
 
 
