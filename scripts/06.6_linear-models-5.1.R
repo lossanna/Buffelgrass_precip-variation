@@ -101,7 +101,6 @@ r2(total_best.model) # marginal: 0.119; conditional: 0.410
 # Model averaging of top models
 #   model averaging not needed for lme4 version; only 1 top model
 summary(total_best.model)
-report(total_best.model)
 
 # Predicted vs. observed
 total_pred <- estimate_expectation(total_best.model)
