@@ -1019,7 +1019,7 @@ survival2_pred.plot <- survival2_pred %>%
 survival2_pred.plot
 
 
-# Survival 3: (1 | Transect) ----------------------------------------------
+## Survival 3: (1 | Transect) ---------------------------------------------
 
 # Global model
 survival3 <- glmmTMB(survival_transf ~ Prev_year_precip_scaled +
