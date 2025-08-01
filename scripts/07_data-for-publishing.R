@@ -7,7 +7,7 @@ library(tidyverse)
 
 # Load data ---------------------------------------------------------------
 
-dat.raw <- read_csv("data/cleaned/04_demography-data_clean.csv")
+dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 culm.change.raw <- read_csv("data/cleaned/04_change-in-culm-density-cover_clean.csv")
 prism.dat.raw <- read_csv("data/cleaned/02_monitoring-info-with-PRISM-data_clean.csv")
 
@@ -32,3 +32,11 @@ plot.change <- culm.change %>%
   select(Year, Site, Transect, Plot, Aspect, PlotSlope, Prev_year_precip,
          Change_BGDensity, Change_BGCover, Change_ShrubCover, Change_HerbCover) %>% 
   distinct(.keep_all = TRUE) 
+
+# Survival
+dat.survival <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  select(Year, Site, Transect, Plot, Aspect, PlotSlope, Prev_year_precip,
+         survival_perc, BGDensity, BGCover, ShrubCover, HerbCover) %>% 
+  distinct(.keep_all = TRUE)
