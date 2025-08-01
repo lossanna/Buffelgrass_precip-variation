@@ -1,17 +1,14 @@
-# Created: 2025-07-18
-# Updated: 2025-07-28
+# Created: 2025-08-01
+# Updated: 2025-08-01
 
-# Purpose: Explore plots made with insight & ggeffects - graph predictions instead of simple
-#   linear regressions.
+# Purpose: Create graphs for linear models v6.3. Overlay model predictions on top of original data
+#   using ggeffects and insight packages.
 
 # https://easystats.github.io/modelbased/articles/visualisation_matrix.html#visualising-an-interaction-between-two-numeric-variables-three-way-interaction
 
-# Note: get_predicted() does not work with model averaged coefficients; needs actual model object
-#   (it actually worked out well that the total culm change model had only 1 top model).
-
-# For other models that have averaged coefficients, the model-predicted line using the best model is basically the
-#   same as including a line from every top model (I tried this with repro.bgden and repro.shrub).
-#   For simplicity, then, I will only use the best model in generating model-predicted lines.
+# Note: get_predicted() does not work with model averaged coefficients; needs actual model object.
+# For simplicity, I will use only the best model in generating model-predicted lines, as the lines
+#   are virtually the same for all top models (see comparison from 05.4_draft-figs-2.0-for-lm-5.1.R).
 
 # To graph back-transformed/unscale continuous explanatory variables, need to make datagrid of unscaled variable
 #   that is the same length as the datagrid with scaled variable and predictions, arranged by the variable
@@ -19,18 +16,8 @@
 
 # To add the 95% CI to the graph, make another datagrid of unscaled variable that is the same length as the
 #   table with CI (produced from predict_response() from ggeffects). 
-
-# The ggeffects and insight versions differ slightly. I've tried to find the CI via modelbased instead of ggeffects, 
-#   but it can't seem to handle the random effect. 
-# For the culm models, the difference is not that great, and I think it's more important to have the SE.
-# But for the density & cover models, the ggeffects version seems to have a consistently higher intercept that doesn't
-#   fit the original data as well, so I will go with the insight version. (I don't know why this difference is happening,
-#   and tried to test another top model, but it was basically the same, so that's not it. Perhaps it is how both of the
-#   packages are handling the random effects? Maybe that is why they are different?)
-# For survival and single variable, ggeffects and insight versions look similar. For interactions, the insight version
-#   has much higher y-intercept than ggeffects version, especially for wettest (but there aren't a lot of those original
-#   data points anyway).
-
+# Note: I don't know how to do this for interaction graphs, so those don't get graphs with 
+#   overlapped CI & original data.
 
 library(tidyverse)
 library(insight)
@@ -41,7 +28,7 @@ library(ggpubr)
 
 # Load data ---------------------------------------------------------------
 
-load("RData/06.6_linear-models-5.1.RData")
+load("RData/06.8_linear-models-6.3.RData")
 dat.survival.raw <- dat.survival
 
 
@@ -106,38 +93,16 @@ dat.bgden.unscaled <- plot.change %>%
 #   BG cover, plot change unscaled variables (for datagrid)
 dat.bgcov.unscaled <- plot.change %>% 
   select(Prev_year_precip, Aspect, PlotSlope, Change_ShrubCover, Change_HerbCover)
-  
+
 
 #   Survival unscaled variables (for datagrid)
 dat.survival.unscaled <- dat.survival.raw %>% 
   select(Prev_year_precip, PlotSlope, ShrubCover, HerbCover,
          BGDensity)
-  
+
 
 
 # Total culm change -------------------------------------------------------
-
-# With CI, scaled (automatically generated)
-# All fixed effects alone 
-total.pred <- predict_response(total_best.model)
-plot(total.pred)
-
-# Precip * BG density change
-total.pred.bgden.precip <- predict_response(total_best.model, 
-                                            terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
-plot(total.pred.bgden.precip)
-
-# Precip * shrub change
-total.pred.shrub.precip <- predict_response(total_best.model, 
-                                            terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
-plot(total.pred.shrub.precip)
-
-# Precip * herb change
-total.pred.herb.precip <- predict_response(total_best.model, 
-                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
-plot(total.pred.herb.precip)
-
-
 
 ## Total: Precip ----------------------------------------------------------
 
@@ -220,56 +185,14 @@ dat.culm %>%
 
 
 
-## Total: Aspect ----------------------------------------------------------
-
-# With a boxplot, I can't really graph the prediction on top of the original data, 
-#   so they will just have to stay separate graphs.
-
-# Original data (boxplot)
-total.change.aspect <- dat.culm %>% 
-  ggplot(aes(x = Aspect, y = Change_Total_Live_Culms)) +
-  geom_boxplot() +
-  geom_jitter(alpha = 0.3) +
-  theme_bw() +
-  labs(title = "Change in total culm count by aspect",
-       y = expression(Delta ~ "Total culm count"),
-       x = NULL) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  theme(axis.text.x = element_text(color = "black"))
-total.change.aspect
-
-
-# Generate CI
-total.pred.aspect <- predict_response(total_best.model, terms = "Aspect")
-
-# Graph with CI, prediction only (ggeffects version)
-total.pred.aspect <- total.pred.aspect %>% 
-  ggplot(aes(x, predicted)) +
-  geom_point() +
-  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
-  theme_bw() +
-  labs(title = "Prediction for total change by aspect",
-       y = expression(Delta ~ "Total culm count"),
-       x = NULL) +
-  scale_y_continuous(limits = c(-120, 220)) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  theme(axis.text.x = element_text(color = "black")) 
-total.pred.aspect
-
-
-
 ## Total: BG density ------------------------------------------------------
 
 # Generate prediction and add unscaled variable
 viz.total.bgden <- get_datagrid(dat.culm.ex, by = c("Change_BGDensity_scaled"),
-                                 length = 100)
+                                length = 100)
 viz.total.bgden$Predicted <- get_predicted(total_best.model, viz.total.bgden)
 unscaled.bgden100 <- get_datagrid(dat.culm.unscaled, by = "Change_BGDensity",
-                                   length = 100) %>% 
+                                  length = 100) %>% 
   arrange(Change_BGDensity)
 viz.total.bgden$Change_BGDensity <- unscaled.bgden100$Change_BGDensity
 
@@ -296,7 +219,7 @@ total.bgden
 # Generate CI and add unscaled variable
 ci.total.bgden <- predict_response(total_best.model, terms = "Change_BGDensity_scaled")
 unscaled.bgden9 <- get_datagrid(dat.culm.unscaled, by = "Change_BGDensity",
-                                  length = 9) %>% 
+                                length = 9) %>% 
   arrange(Change_BGDensity)
 ci.total.bgden$Change_BGDensity <- unscaled.bgden9$Change_BGDensity
 ci.total.bgden$Change_Total_Live_Culms <- ci.total.bgden$predicted
@@ -383,7 +306,7 @@ total.shrub
 # Generate CI and add unscaled variable
 ci.total.shrub <- predict_response(total_best.model, terms = "Change_ShrubCover_scaled")
 unscaled.shrub16 <- get_datagrid(dat.culm.unscaled, by = "Change_ShrubCover",
-                                length = 16) %>% 
+                                 length = 16) %>% 
   arrange(Change_ShrubCover)
 ci.total.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
 ci.total.shrub$Change_Total_Live_Culms <- ci.total.shrub$predicted
@@ -435,6 +358,74 @@ dat.culm %>%
 
 
 
+## Total: Precip * density ------------------------------------------------
+
+# Generate prediction and add unscaled variable
+viz.total.bgden.precip <- dat.culm.ex %>% 
+  get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  arrange(Change_BGDensity_scaled)
+viz.total.bgden.precip$Predicted <- get_predicted(total_best.model, viz.total.bgden.precip)
+unscaled.bgden.precip243 <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  arrange(Change_BGDensity)
+viz.total.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
+viz.total.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
+
+# Graph (insight version)
+total.bgden.precip <- dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = viz.total.bgden.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
+       title = "Change in total culm count vs. plot density change")
+total.bgden.precip
+
+
+# Generate CI with scaled x variable 
+total.pred.bgden.precip <- predict_response(total_best.model, 
+                                            terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
+total.pred.bgden.precip$group <- factor(total.pred.bgden.precip$group,
+                                        levels = c("1.01", "0.01", "-0.99"))
+
+# Graph with CI, scaled (ggeffects version)
+total.bgden.precip.ci <- total.pred.bgden.precip %>% 
+  ggplot(aes(x, predicted, group = group)) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.3) +
+  geom_line(aes(color = group),
+            linewidth = 1.3) +
+  theme_bw() +
+  scale_color_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  scale_fill_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Density (scaled)"),
+       title = "Change in total culm count vs. plot density change (scaled)",
+       color = "Previous year \nprecip (scaled)",
+       fill = "Previous year \nprecip (scaled)") +
+  scale_y_continuous(limits = c(-120, 220))
+total.bgden.precip.ci
+
+
+
 ## Total: Precip * shrub --------------------------------------------------
 
 # Generate prediction and add unscaled variable
@@ -470,12 +461,6 @@ total.shrub.precip <- dat.culm %>%
        x = expression(Delta ~ "Native shrub cover (%)"),
        title = "Change in total culm count vs. shrub cover change")
 total.shrub.precip
-
-
-# Generate CI and add unscaled variable
-ci.total.shrub.precip <- predict_response(total_best.model, terms = c("Change_ShrubCover_scaled",
-                                                                      "Prev_year_precip_scaled"))
-#   predict_response() generates 48 rows and I have no idea how to get datagrid of unscaled equivalent
 
 
 # Generate CI with scaled x variable
@@ -548,9 +533,9 @@ total.herb.precip
 
 # Generate CI with scaled x variable 
 total.pred.herb.precip <- predict_response(total_best.model, 
-                                            terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
+                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
 total.pred.herb.precip$group <- factor(total.pred.herb.precip$group,
-                                        levels = c("1.01", "0.01", "-0.99"))
+                                       levels = c("1.01", "0.01", "-0.99"))
 
 # Graph with CI, scaled prediction only (ggeffects version)
 total.herb.precip.ci <- total.pred.herb.precip %>% 
@@ -574,6 +559,48 @@ total.herb.precip.ci <- total.pred.herb.precip %>%
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-120, 220))
 total.herb.precip.ci
+
+
+
+## Total: Aspect (NS) -----------------------------------------------------
+
+# With a boxplot, I can't really graph the prediction on top of the original data, 
+#   so they will just have to stay separate graphs.
+
+# Original data (boxplot)
+total.change.aspect <- dat.culm %>% 
+  ggplot(aes(x = Aspect, y = Change_Total_Live_Culms)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  theme_bw() +
+  labs(title = "Change in total culm count by aspect",
+       y = expression(Delta ~ "Total culm count"),
+       x = NULL) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black"))
+total.change.aspect
+
+
+# Generate CI
+total.pred.aspect <- predict_response(total_best.model, terms = "Aspect")
+
+# Graph with CI, prediction only (ggeffects version)
+total.pred.aspect <- total.pred.aspect %>% 
+  ggplot(aes(x, predicted)) +
+  geom_point() +
+  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
+  theme_bw() +
+  labs(title = "Prediction for total change by aspect",
+       y = expression(Delta ~ "Total culm count"),
+       x = NULL) +
+  scale_y_continuous(limits = c(-120, 220)) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black")) 
+total.pred.aspect
 
 
 
@@ -658,10 +685,10 @@ dat.culm %>%
 
 # Generate prediction and add unscaled variable
 viz.total.herb <- get_datagrid(dat.culm.ex, by = c("Change_HerbCover_scaled"),
-                                length = 100)
+                               length = 100)
 viz.total.herb$Predicted <- get_predicted(total_best.model, viz.total.herb)
 unscaled.herb100 <- get_datagrid(dat.culm.unscaled, by = "Change_HerbCover",
-                                  length = 100) %>% 
+                                 length = 100) %>% 
   arrange(Change_HerbCover)
 viz.total.herb$Change_HerbCover <- unscaled.herb100$Change_HerbCover
 
@@ -688,7 +715,7 @@ total.herb
 # Generate CI and add unscaled variable
 ci.total.herb <- predict_response(total_best.model, terms = "Change_HerbCover_scaled")
 unscaled.herb8 <- get_datagrid(dat.culm.unscaled, by = "Change_HerbCover",
-                                length = 8) %>% 
+                               length = 8) %>% 
   arrange(Change_HerbCover)
 ci.total.herb$Change_HerbCover <- unscaled.herb8$Change_HerbCover
 ci.total.herb$Change_Total_Live_Culms <- ci.total.herb$predicted
@@ -740,267 +767,7 @@ dat.culm %>%
 
 
 
-## Total: Precip * density (NS) -------------------------------------------
-
-# Generate prediction and add unscaled variable
-viz.total.bgden.precip <- dat.culm.ex %>% 
-  get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
-  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
-  arrange(Change_BGDensity_scaled)
-viz.total.bgden.precip$Predicted <- get_predicted(total_best.model, viz.total.bgden.precip)
-unscaled.bgden.precip243 <- dat.culm.unscaled %>% 
-  get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 10) %>% 
-  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
-  arrange(Change_BGDensity)
-viz.total.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
-viz.total.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
-
-# Graph (insight version)
-total.bgden.precip <- dat.culm %>% 
-  ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms,
-             color = Prev_year_precip)) +
-  geom_point() +
-  geom_line(data = viz.total.bgden.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
-  theme_bw() +
-  scale_color_viridis(option = "viridis", direction = -1,
-                      name = "Previous year \nprecip (mm)") +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  geom_vline(xintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(y = expression(Delta ~ "Total culm count"),
-       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
-       title = "Change in total culm count vs. plot density change")
-total.bgden.precip
-
-
-# Generate CI with scaled x variable 
-total.pred.bgden.precip <- predict_response(total_best.model, 
-                                            terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
-total.pred.bgden.precip$group <- factor(total.pred.bgden.precip$group,
-                                        levels = c("1.01", "0.01", "-0.99"))
-
-# Graph with CI, scaled (ggeffects version)
-total.bgden.precip.ci <- total.pred.bgden.precip %>% 
-  ggplot(aes(x, predicted, group = group)) +
-  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.3) +
-  geom_line(aes(color = group),
-            linewidth = 1.3) +
-  theme_bw() +
-  scale_color_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
-  scale_fill_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  geom_vline(xintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(y = expression(Delta ~ "Total culm count"),
-       x = expression(Delta ~ "Density (scaled)"),
-       title = "Change in total culm count vs. plot density change (scaled)",
-       color = "Previous year \nprecip (scaled)",
-       fill = "Previous year \nprecip (scaled)") +
-  scale_y_continuous(limits = c(-120, 220))
-total.bgden.precip.ci
-
-
-
-
-# Test multiple versions of model ------------------------------------------
-
-# Buffelgrass density
-#   Scaled datagrid with prediction
-viz.repro.bgden <- get_datagrid(dat.culm.ex, by = c("Change_BGDensity_scaled"),
-                                length = 100)
-viz.repro.bgden$Predicted1 <- get_predicted(repro_best.model, viz.repro.bgden)
-viz.repro.bgden$Predicted2 <- get_predicted(repro_model2, viz.repro.bgden)
-viz.repro.bgden$Predicted3 <- get_predicted(repro_model3, viz.repro.bgden)
-viz.repro.bgden$Predicted4 <- get_predicted(repro_model4, viz.repro.bgden)
-viz.repro.bgden$Predicted5 <- get_predicted(repro_model5, viz.repro.bgden)
-viz.repro.bgden$Predicted6 <- get_predicted(repro_model6, viz.repro.bgden)
-viz.repro.bgden$Predicted7 <- get_predicted(repro_model7, viz.repro.bgden)
-viz.repro.bgden$Predicted8 <- get_predicted(repro_model8, viz.repro.bgden)
-#   Unscaled datagrid
-unscaled.bgden100 <- get_datagrid(dat.culm.unscaled, by = "Change_BGDensity",
-                                  length = 100) %>% 
-  arrange(Change_BGDensity)
-#   Data grid with prediction, unscaled variable added
-viz.repro.bgden$Change_BGDensity <- unscaled.bgden100$Change_BGDensity
-
-#   Graph (best model)
-repro.bgden <- dat.culm %>% 
-  ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
-  geom_point() +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted1), linewidth = 1.5,
-            color = "purple3") +
-  theme_bw() +
-  ggtitle("Change in repro culm count vs. plot density change") +
-  labs(y = expression(Delta ~ "Reproductive culm count"),
-       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")"))) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  geom_vline(xintercept = 0,
-             linetype = "dashed",
-             color = "red") 
-repro.bgden
-
-#   Graph (all 8 top models)
-repro.bgden.alltop8 <- dat.culm %>% 
-  ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
-  geom_point() +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted1), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted2), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted3), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted4), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted5), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted6), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted7), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.bgden,
-            aes(y = Predicted8), linewidth = 1,
-            color = "purple3") +
-  theme_bw() +
-  ggtitle("Change in repro culm count vs. plot density change") +
-  labs(y = expression(Delta ~ "Reproductive culm count"),
-       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")"))) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  geom_vline(xintercept = 0,
-             linetype = "dashed",
-             color = "red") 
-repro.bgden.alltop8
-
-# Compare graphs - they are basically the same
-repro.bgden
-repro.bgden.alltop8
-
-
-
-# Shrub cover change
-#   Generate prediction and add unscaled variable
-viz.repro.shrub <- get_datagrid(dat.culm.ex, by = c("Change_ShrubCover_scaled"),
-                                length = 100)
-viz.repro.shrub$Predicted1 <- get_predicted(repro_best.model, viz.repro.shrub)
-viz.repro.shrub$Predicted2 <- get_predicted(repro_model2, viz.repro.shrub)
-viz.repro.shrub$Predicted3 <- get_predicted(repro_model3, viz.repro.shrub)
-viz.repro.shrub$Predicted4 <- get_predicted(repro_model4, viz.repro.shrub)
-viz.repro.shrub$Predicted5 <- get_predicted(repro_model5, viz.repro.shrub)
-viz.repro.shrub$Predicted6 <- get_predicted(repro_model6, viz.repro.shrub)
-viz.repro.shrub$Predicted7 <- get_predicted(repro_model7, viz.repro.shrub)
-viz.repro.shrub$Predicted8 <- get_predicted(repro_model8, viz.repro.shrub)
-unscaled.shrub100 <- get_datagrid(dat.culm.unscaled, by = "Change_ShrubCover",
-                                  length = 100) %>% 
-  arrange(Change_ShrubCover)
-viz.repro.shrub$Change_ShrubCover <- unscaled.shrub100$Change_ShrubCover
-
-#   Graph (best model)
-repro.shrub <- dat.culm %>% 
-  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
-  geom_point() +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted1), linewidth = 1.5,
-            color = "purple3") +
-  theme_bw() +
-  ggtitle("Change in repro culm count vs. shrub cover change") +
-  labs(y = expression(Delta ~ "Reproductive culm count"),
-       x = expression(Delta ~ "Native shrub cover (%)")) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  geom_vline(xintercept = 0,
-             linetype = "dashed",
-             color = "red") 
-repro.shrub
-
-#   Graph (all top 8 models) 
-repro.shrub.alltop8 <- dat.culm %>% 
-  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
-  geom_point() +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted1), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted2), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted3), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted4), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted5), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted6), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted7), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.repro.shrub,
-            aes(y = Predicted8), linewidth = 1,
-            color = "purple3") +
-  theme_bw() +
-  ggtitle("Change in repro culm count vs. shrub cover change") +
-  labs(y = expression(Delta ~ "Reproductive culm count"),
-       x = expression(Delta ~ "Native shrub cover (%)")) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  geom_vline(xintercept = 0,
-             linetype = "dashed",
-             color = "red") 
-repro.shrub.alltop8
-
-# Compare graphs - they are basically the same
-repro.shrub
-repro.shrub.alltop8
-
-
-
-
 # Reproductive culm change ------------------------------------------------
-
-# With CI, scaled (automatic graphs)
-# All fixed effects alone
-repro.pred <- predict_response(repro_best.model)
-plot(repro.pred)
-
-# Precip * BG density change
-repro.pred.bgden.precip <- predict_response(repro_best.model, 
-                                            terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
-plot(repro.pred.bgden.precip)
-
-# Precip * shrub change
-repro.pred.shrub.precip <- predict_response(repro_best.model, 
-                                            terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
-plot(repro.pred.shrub.precip)
-
-# Precip * herb change
-repro.pred.herb.precip <- predict_response(repro_best.model, 
-                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
-plot(repro.pred.herb.precip)
-
-
 
 ## Repro: Aspect ----------------------------------------------------------
 
@@ -1747,7 +1514,7 @@ dat.plot %>%
 # Model 2
 # Generate prediction and add unscaled variable - model 2
 viz.bgden.precip2 <- get_datagrid(dat.bgden.ex, by = c("Prev_year_precip_scaled"),
-                                 length = 100)
+                                  length = 100)
 viz.bgden.precip2$Predicted <- get_predicted(bgden_model2, viz.bgden.precip)
 unscaled.precip100 <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
                                    length = 100) %>% 
@@ -2429,7 +2196,7 @@ bgcov.herb
 # Generate CI and add unscaled variable
 ci.bgcov.herb <- predict_response(bgcov_best.model, terms = "Change_HerbCover_scaled")
 unscaled.herb8 <- get_datagrid(dat.bgcov.unscaled, by = "Change_HerbCover",
-                                length = 8) %>% 
+                               length = 8) %>% 
   arrange(Change_HerbCover)
 ci.bgcov.herb$Change_HerbCover <- unscaled.herb8$Change_HerbCover
 ci.bgcov.herb$Change_BGCover <- ci.bgcov.herb$predicted
@@ -2648,7 +2415,7 @@ viz.survival.precip <- get_datagrid(dat.survival.ex, by = c("Prev_year_precip_sc
                                     length = 50)
 viz.survival.precip$Predicted <- get_predicted(survival_best.model, viz.survival.precip) # Predicting new random effect levels for terms: 1 | Transect:Site
 unscaled.precip50 <- get_datagrid(dat.survival.unscaled, by = "Prev_year_precip",
-                                   length = 50) %>% 
+                                  length = 50) %>% 
   arrange(Prev_year_precip)
 viz.survival.precip$Prev_year_precip <- unscaled.precip50$Prev_year_precip
 
@@ -2717,10 +2484,10 @@ dat.survival %>%
 
 # Generate prediction and add scaled variable 
 viz.survival.bgden <- get_datagrid(dat.survival.ex, by = c("BGDensity_scaled"),
-                                    length = 50)
+                                   length = 50)
 viz.survival.bgden$Predicted <- get_predicted(survival_best.model, viz.survival.bgden) # Predicting new random effect levels for terms: 1 | Transect:Site
 unscaled.bgden50 <- get_datagrid(dat.survival.unscaled, by = "BGDensity",
-                                  length = 50) %>% 
+                                 length = 50) %>% 
   arrange(BGDensity)
 viz.survival.bgden$BGDensity <- unscaled.bgden50$BGDensity
 
@@ -2742,7 +2509,7 @@ survival.bgden
 # Generate CI and add unscaled variable
 ci.survival.bgden <- predict_response(survival_best.model, terms = "BGDensity_scaled")
 unscaled.bgden9 <- get_datagrid(dat.survival.unscaled, by = "BGDensity",
-                                 length = 9) %>% 
+                                length = 9) %>% 
   arrange(BGDensity)
 ci.survival.bgden$BGDensity <- unscaled.bgden9$BGDensity
 ci.survival.bgden$survival_transf <- ci.survival.bgden$predicted 
@@ -3181,104 +2948,104 @@ survival.herb.precip.ci # insight version much higher than ggeffects
 
 # Significant
 # Total change vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_prev-year-precip.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.precip
 dev.off()
 # Total change vs. Prev_year_precip (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_prev-year-precip_CI.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_prev-year-precip_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.precip.ci
 dev.off()
 
-# Total change by Aspect (original data only)
-tiff("figures/2025-07_draft-figures-2.0/Total-change-by-aspect.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-total.change.aspect
-dev.off()
-# Total change by Aspect (prediction only)
-tiff("figures/2025-07_draft-figures-2.0/Total-change-aspect-predictions_CI.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-total.pred.aspect
-dev.off()
-
 # Total change vs. Change_BGDensity
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_BG-density-change.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_BG-density-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.bgden
 dev.off()
 # Total change vs. Change_BGDensity (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_BG-density-change_CI.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_BG-density-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.bgden.ci
 dev.off()
 
 # Total change vs. Change_ShrubCover
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_shrub-cover-change.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.shrub
 dev.off()
 # Total change vs. Change_ShrubCover (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_shrub-cover-change_CI.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_shrub-cover-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.shrub.ci
 dev.off()
 
+# Total change interaction of precip*BG density
+tiff("figures/2025-08_draft-figures/Total-change_prediction_BG-density-change-and-precip-interaction.tiff",
+     units = "in", height = 7, width = 6, res = 150)
+total.bgden.precip
+dev.off()
+# Total change interaction of precip*BG density (with CI, scaled)
+tiff("figures/2025-08_draft-figures/Total-change_prediction_BG-density-change-and-precip-interaction_CI-scaled.tiff",
+     units = "in", height = 7, width = 6, res = 150)
+total.bgden.precip.ci
+dev.off()
+
 # Total change interaction of precip*shrub
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.shrub.precip
 dev.off()
 # Total change interaction of precip*shrub (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.shrub.precip.ci
 dev.off()
 
 # Total change interaction of precip*herb
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_herb-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_herb-cover-change-and-precip-interaction.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.herb.precip
 dev.off()
 # Total change interaction of precip*herb (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.herb.precip.ci
 dev.off()
 
 
 # Not significant
+# Total change by Aspect (original data only)
+tiff("figures/2025-08_draft-figures/Total-change-by-aspect.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total.change.aspect
+dev.off()
+# Total change by Aspect (prediction only)
+tiff("figures/2025-08_draft-figures/Total-change-aspect-predictions_CI.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total.pred.aspect
+dev.off()
+
 # Total change vs. PlotSlope
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_plot-slope.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.slope
 dev.off()
 # Total change vs. PlotSlope (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_plot-slope_CI.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_plot-slope_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.slope.ci
 dev.off()
 
 # Total change vs. Change_HerbCover 
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_herb-cover-change.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.herb
 dev.off()
 # Total change vs. Change_HerbCover (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_herb-cover-change_CI.tiff",
+tiff("figures/2025-08_draft-figures/Total-change_prediction_herb-cover-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.herb.ci
-dev.off()
-
-# Total change interaction of precip*BG density
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_BG-density-change-and-precip-interaction.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-total.bgden.precip
-dev.off()
-# Total change interaction of precip*BG density (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Total-change_prediction_BG-density-change-and-precip-interaction_CI-scaled.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-total.bgden.precip.ci
 dev.off()
 
 
@@ -3287,45 +3054,45 @@ dev.off()
 
 # Significant
 # Repro change by Aspect (original data only)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change-by-aspect.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change-by-aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.change.aspect
 dev.off()
 # Repro change by Aspect (prediction only)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change-aspect-predictions_CI.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change-aspect-predictions_CI.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.pred.aspect
 dev.off()
 
 # Repro change vs. Change_BGDensity
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_BG-density-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.bgden
 dev.off()
 # Repro change vs. Change_BGDensity (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change_CI.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_BG-density-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.bgden.ci
 dev.off()
 
 # Repro change vs. Change_ShrubCover
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.shrub
 dev.off()
 # Repro change vs. Change_ShrubCover (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change_CI.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_shrub-cover-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.shrub.ci
 dev.off()
 
 # Repro change vs. Change_HerbCover
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.herb
 dev.off()
 # Repro change vs. Change_HerbCover (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change_CI.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_herb-cover-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.herb.ci
 dev.off()
@@ -3333,56 +3100,56 @@ dev.off()
 
 # Not significant
 # Repro change vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_prev-year-precip.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.precip
 dev.off()
 # Repro change vs. Prev_year_precip (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_prev-year-precip_CI.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_prev-year-precip_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.precip.ci
 dev.off()
 
 # Repro change vs. PlotSlope
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_plot-slope.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.slope
 dev.off()
 # Repro change vs. PlotSlope (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_plot-slope_CI.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_plot-slope_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.slope.ci
 dev.off()
 
 # Repro change interaction of precip*BG density
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_BG-density-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.bgden.precip
 dev.off()
 # Repro change interaction of precip*BG density (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_BG-density-change-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_BG-density-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.bgden.precip.ci
 dev.off()
 
 # Repro change interaction of precip*shrub
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.shrub.precip
 dev.off()
 # Repro change interaction of precip*shrub (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.shrub.precip.ci
 dev.off()
 
 # Repro change interaction of precip*herb
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_herb-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.herb.precip
 dev.off()
 # Repro change interaction of precip*herb (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Repro-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/Repro-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.herb.precip.ci
 dev.off()
@@ -3393,40 +3160,40 @@ dev.off()
 
 # Significant
 # BG density change vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_prev-year-precip.tiff",
+tiff("figures/2025-08_draft-figures/BG-density-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.precip
 dev.off()
 
 # BG density change by Aspect (original data only)
-tiff("figures/2025-07_draft-figures-2.0/BG-density-change-by-aspect.tiff",
+tiff("figures/2025-08_draft-figures/BG-density-change-by-aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.change.aspect
 dev.off()
 # BG density change by Aspect (prediction only)
-tiff("figures/2025-07_draft-figures-2.0/BG-density-change-aspect-predictions_CI.tiff",
+tiff("figures/2025-08_draft-figures/BG-density-change-aspect-predictions_CI.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.pred.aspect
 dev.off()
 
 # BG density change vs. Change_ShrubCover
-tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover-change.tiff",
+tiff("figures/2025-08_draft-figures/BG-density-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.shrub
 dev.off()
 
 # BG density change interaction of precip*shrub
-tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/BG-density-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.shrub.precip
 dev.off()
 # BG density change interaction of precip*shrub (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/BG-density-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.shrub.precip.ci
 dev.off()
 # BG density change interaction of precip*shrub (long)
-tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_shrub-cover-change-and-precip-interaction_long.tiff",
+tiff("figures/2025-08_draft-figures/BG-density-change_prediction_shrub-cover-change-and-precip-interaction_long.tiff",
      units = "in", height = 7, width = 6, res = 150)
 bgden.shrub.precip
 dev.off()
@@ -3434,7 +3201,7 @@ dev.off()
 
 # Not significant
 # BG density change vs. PlotSlope
-tiff("figures/2025-07_draft-figures-2.0/BG-density-change_prediction_plot-slope.tiff",
+tiff("figures/2025-08_draft-figures/BG-density-change_prediction_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.slope
 dev.off()
@@ -3445,24 +3212,24 @@ dev.off()
 
 # Significant
 # BG cover change vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_prev-year-precip.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.precip
 dev.off()
 
 # BG cover change by Aspect (original data only)
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change-by-aspect.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change-by-aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.change.aspect
 dev.off()
 # BG cover change by Aspect (prediction only)
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change-aspect-predictions_CI.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change-aspect-predictions_CI.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.pred.aspect
 dev.off()
 
 # BG cover change vs. Change_ShrubCover
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_shrub-cover-change.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.shrub
 dev.off()
@@ -3470,35 +3237,35 @@ dev.off()
 
 # Not significant
 # BG cover change vs. PlotSlope
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_plot-slope.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change_prediction_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.slope
 dev.off()
 
 # BG cover change vs. Change_HerbCover
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_herb-cover-change.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change_prediction_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.herb
 dev.off()
 
 # BG cover change interaction of precip*shrub
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.shrub.precip
 dev.off()
 # BG cover change interaction of precip*shrub (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change_prediction_shrub-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.shrub.precip.ci
 dev.off()
 
 # BG cover change interaction of precip*herb
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_herb-cover-change-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change_prediction_herb-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.herb.precip
 dev.off()
 # BG cover change interaction of precip*herb (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/BG-cover-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/BG-cover-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.herb.precip.ci
 dev.off()
@@ -3509,23 +3276,23 @@ dev.off()
 
 # Significant
 # Survival vs. Prev_year_precip
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_prev-year-precip.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.precip
 dev.off()
 # Survival vs. Prev_year_precip (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_prev-year-precip_CI.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_prev-year-precip_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.precip.ci
 dev.off()
 
 # Survival vs. BGDensity
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_BG-density.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_BG-density.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.bgden
 dev.off()
 # Survival vs. BGDensity (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_BG-density_CI.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_BG-density_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.bgden.ci
 dev.off()
@@ -3533,67 +3300,67 @@ dev.off()
 
 # Not significant
 # Survival vs. PlotSlope
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_plot-slope.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.slope
 dev.off()
 # Survival vs. PlotSlope (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_plot-slope_CI.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_plot-slope_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.slope.ci
 dev.off()
 
 # Survival vs. ShrubCover
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_shrub-cover.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_shrub-cover.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.shrub
 dev.off()
 # Survival vs. ShrubCover (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_shrub-cover_CI.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_shrub-cover_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.shrub.ci
 dev.off()
 
 # Survival vs. HerbCover
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_herb-cover.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_herb-cover.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.herb
 dev.off()
 # Survival vs. HerbCover (with CI)
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_herb-cover_CI.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_herb-cover_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.herb.ci
 dev.off()
 
 # Survival interaction of precip*density
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_BG-density-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_BG-density-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.bgden.precip
 dev.off()
 # Survival interaction of precip*density (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_BG-density-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_BG-density-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.bgden.precip.ci
 dev.off()
 
 # Survival interaction of precip*shrub
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_shrub-cover-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_shrub-cover-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.shrub.precip
 dev.off()
 # Survival interaction of precip*shrub (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_shrub-cover-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_shrub-cover-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.shrub.precip.ci
 dev.off()
 
 # Survival interaction of precip*herb
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_herb-cover-and-precip-interaction.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_herb-cover-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.herb.precip
 dev.off()
 # Survival interaction of precip*herb (with CI, scaled)
-tiff("figures/2025-07_draft-figures-2.0/Survival_prediction_herb-cover-and-precip-interaction_CI-scaled.tiff",
+tiff("figures/2025-08_draft-figures/Survival_prediction_herb-cover-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.herb.precip.ci
 dev.off()
@@ -3603,7 +3370,7 @@ dev.off()
 ## Precip plot ------------------------------------------------------------
 
 # Combined precip plot for density, cover, survival
-tiff("figures/2025-07_draft-figures-2.0/Precip-combined_density-cover-survival.tiff",
+tiff("figures/2025-08_draft-figures/Precip-combined_density-cover-survival.tiff",
      units = "in", height = 7, width = 9, res = 150)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
@@ -3611,4 +3378,4 @@ ggarrange(bgden.precip, bgcov.precip, survival.precip,
 dev.off()
 
 
-save.image("RData/05.4_draft-figs-2.0-for-lm-5.1.RData")
+save.image("RData/05.5_draft-figs-for-lm-6.3.RData")
