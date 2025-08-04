@@ -3115,7 +3115,7 @@ survival.shrub.precip.ci # wettest CI goes above 100%; insight version much high
 
 
 
-# Survival: Precip * herb (NS) --------------------------------------------
+## Survival: Precip * herb (NS) -------------------------------------------
 
 # Generate prediction and add unscaled variable
 viz.survival.herb.precip <- dat.survival.ex %>% 

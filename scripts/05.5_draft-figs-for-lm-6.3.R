@@ -1,5 +1,5 @@
 # Created: 2025-08-01
-# Updated: 2025-08-01
+# Updated: 2025-08-04
 
 # Purpose: Create graphs for linear models v6.3. Overlay model predictions on top of original data
 #   using ggeffects and insight packages.
@@ -767,6 +767,7 @@ dat.culm %>%
 
 
 
+
 # Reproductive culm change ------------------------------------------------
 
 ## Repro: Aspect ----------------------------------------------------------
@@ -885,7 +886,7 @@ dat.culm %>%
   labs(y = expression(Delta ~ "Repro culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red") # basically the same
+             color = "red") # insight slightly below
 
 
 
@@ -971,7 +972,7 @@ dat.culm %>%
              color = "red") +
   geom_vline(xintercept = 0,
              linetype = "dashed",
-             color = "red") # basically the same
+             color = "red") # insight just slightly below
 
 
 
@@ -1057,7 +1058,7 @@ dat.culm %>%
              color = "red") +
   geom_vline(xintercept = 0,
              linetype = "dashed",
-             color = "red") # insight just slightly higher
+             color = "red") # basically the same
 
 
 
@@ -1134,16 +1135,16 @@ dat.culm %>%
   labs(y = expression(Delta ~ "Reproductive culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red") # basically the same
+             color = "red") # insight just slightly lower
 
 
 
 ## Repro: Slope (NS) -----------------------------------------------------
 
-# Generate prediction and add unscaled variable (use model2, as best model does not include slope)
+# Generate prediction and add unscaled variable
 viz.repro.slope <- get_datagrid(dat.culm.ex, by = c("PlotSlope_scaled"),
                                 length = 100)
-viz.repro.slope$Predicted <- get_predicted(repro_model2, viz.repro.slope)
+viz.repro.slope$Predicted <- get_predicted(repro_best.model, viz.repro.slope)
 unscaled.slope100 <- get_datagrid(dat.culm.unscaled, by = "PlotSlope",
                                   length = 100) %>% 
   arrange(PlotSlope)
@@ -1211,7 +1212,7 @@ dat.culm %>%
   labs(y = expression(Delta ~ "Reproductive culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red") # basically the same
+             color = "red") # insight just slightly below
 
 
 
@@ -1248,7 +1249,8 @@ repro.bgden.precip <- dat.culm %>%
              color = "red") +
   labs(y = expression(Delta ~ "Reproductive culm count"),
        x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
-       title = "Change in repro culm count vs. plot density change")
+       title = "Change in repro culm count vs. plot density change") +
+  scale_y_continuous(limits = c(-88, 120))
 repro.bgden.precip
 
 
@@ -1278,7 +1280,7 @@ repro.bgden.precip.ci <- repro.pred.bgden.precip %>%
        title = "Change in repro culm count vs. plot density change (scaled)",
        color = "Previous year \nprecip (scaled)",
        fill = "Previous year \nprecip (scaled)") +
-  scale_y_continuous(limits = c(-120, 220))
+  scale_y_continuous(limits = c(-88, 120))
 repro.bgden.precip.ci
 
 
@@ -1346,7 +1348,7 @@ repro.shrub.precip.ci <- repro.pred.shrub.precip %>%
        title = "Change in repro culm count vs. shrub cover change (scaled)",
        color = "Previous year \nprecip (scaled)",
        fill = "Previous year \nprecip (scaled)") +
-  scale_y_continuous(limits = c(-120, 220))
+  scale_y_continuous(limits = c(-88, 120))
 repro.shrub.precip.ci
 
 
@@ -1384,7 +1386,8 @@ repro.herb.precip <- dat.culm %>%
              color = "red") +
   labs(y = expression(Delta ~ "Repro culm count"),
        x = expression(Delta ~ "Native grass & forb cover (%)"),
-       title = "Change in repro culm count vs. herb cover change")
+       title = "Change in repro culm count vs. herb cover change") +
+  scale_y_continuous(limits = c(-88, 120))
 repro.herb.precip
 
 
@@ -1414,7 +1417,7 @@ repro.herb.precip.ci <- repro.pred.herb.precip %>%
        title = "Change in repro culm count vs. herb cover change (scaled)",
        color = "Previous year \nprecip (scaled)",
        fill = "Previous year \nprecip (scaled)") +
-  scale_y_continuous(limits = c(-120, 220))
+  scale_y_continuous(limits = c(-88, 120))
 repro.herb.precip.ci
 
 
@@ -1422,22 +1425,9 @@ repro.herb.precip.ci
 
 # Buffelgrass density change ----------------------------------------------
 
-# With CI, scaled (automatically generated)
-# All fixed effects alone
-bgden.pred <- predict_response(bgden_best.model)
-plot(bgden.pred)
-
-# Precip * shrub change
-bgden.pred.shrub.precip <- predict_response(bgden_best.model, 
-                                            terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
-plot(bgden.pred.shrub.precip)
-
-
-
 ## BG density: Precip -----------------------------------------------------
 
-# Best model
-# Generate prediction and add unscaled variable - best model
+# Generate prediction and add unscaled variable 
 viz.bgden.precip <- get_datagrid(dat.bgden.ex, by = c("Prev_year_precip_scaled"),
                                  length = 100)
 viz.bgden.precip$Predicted <- get_predicted(bgden_best.model, viz.bgden.precip)
@@ -1446,7 +1436,11 @@ unscaled.precip100 <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
   arrange(Prev_year_precip)
 viz.bgden.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
 
-# Graph (insight version) - best model
+
+est.bgden.precip <- estimate_relation(bgden_best.model) 
+
+
+# Graph (insight version) 
 bgden.precip <- dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
@@ -1463,7 +1457,7 @@ bgden.precip <- dat.plot %>%
 bgden.precip
 
 
-# Generate CI and add unscaled variable - best model
+# Generate CI and add unscaled variable 
 ci.bgden.precip <- predict_response(bgden_best.model, terms = "Prev_year_precip_scaled")
 unscaled.precip15 <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
                                   length = 15) %>% 
@@ -1471,7 +1465,7 @@ unscaled.precip15 <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
 ci.bgden.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
 ci.bgden.precip$Change_BGDensity <- ci.bgden.precip$predicted 
 
-# Graph with CI (ggeffects version) - best model
+# Graph with CI (ggeffects version)
 bgden.precip.ci <- dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
@@ -1490,7 +1484,7 @@ bgden.precip.ci <- dat.plot %>%
 bgden.precip.ci
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects) - best model
+# Graph differences in prediction line (dashed is using insight, solid is from ggeffects) 
 dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
@@ -1509,81 +1503,6 @@ dat.plot %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") # insight is much lower (outside of ggeffects SE); insight seems to fit data better
-
-
-# Model 2
-# Generate prediction and add unscaled variable - model 2
-viz.bgden.precip2 <- get_datagrid(dat.bgden.ex, by = c("Prev_year_precip_scaled"),
-                                  length = 100)
-viz.bgden.precip2$Predicted <- get_predicted(bgden_model2, viz.bgden.precip)
-unscaled.precip100 <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
-                                   length = 100) %>% 
-  arrange(Prev_year_precip)
-viz.bgden.precip2$Prev_year_precip <- unscaled.precip100$Prev_year_precip
-
-# Graph (insight version) - model 2
-bgden.precip2 <- dat.plot %>% 
-  ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
-  geom_point() +
-  geom_line(data = viz.bgden.precip2,
-            aes(y = Predicted), linewidth = 1.5,
-            color = "purple3") +
-  theme_bw() +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  labs(x = "Previous year precip (mm)",
-       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
-       title = "Change in buffelgrass density vs. precip (model 2)")
-bgden.precip2 # (lol it is basically the same)
-
-
-# Generate CI and add unscaled variable - model 2
-ci.bgden.precip2 <- predict_response(bgden_model2, terms = "Prev_year_precip_scaled")
-unscaled.precip15 <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
-                                  length = 15) %>% 
-  arrange(Prev_year_precip)
-ci.bgden.precip2$Prev_year_precip <- unscaled.precip15$Prev_year_precip
-ci.bgden.precip2$Change_BGDensity <- ci.bgden.precip2$predicted 
-
-# Graph with CI (ggeffects version) - model 2
-bgden.precip.ci2 <- dat.plot %>% 
-  ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
-  geom_point() +
-  geom_ribbon(data = ci.bgden.precip2,
-              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.bgden.precip,
-            aes(y = predicted), linewidth = 1,
-            color = "purple3") +
-  theme_bw() +
-  labs(x = "Previous year precip (mm)",
-       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
-       title = "Change in buffelgrass density vs. precip (model 2)") +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red")
-bgden.precip.ci2
-
-
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects) - model 2
-dat.plot %>% 
-  ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
-  geom_point() +
-  geom_ribbon(data = ci.bgden.precip2,
-              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.bgden.precip2,
-            aes(y = predicted), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.bgden.precip2,
-            aes(y = Predicted), linewidth = 1,
-            color = "purple3", linetype = "dashed") +
-  theme_bw() +
-  labs(x = "Previous year precip (mm)",
-       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
-       title = "Change in buffelgrass density vs. precip (model 2)") +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") # differences are still the same as model 1
 
 
 
@@ -1628,7 +1547,84 @@ bgden.pred.aspect
 
 
 
-## BG density: Shrub ------------------------------------------------------
+## BG density: Slope (NS) -------------------------------------------------
+
+# Generate prediction and add unscaled variable (use model2, as best model does not include slope)
+viz.bgden.slope <- get_datagrid(dat.bgden.ex, by = c("PlotSlope_scaled"),
+                                length = 100)
+viz.bgden.slope$Predicted <- get_predicted(bgden_model2, viz.bgden.slope)
+unscaled.slope100 <- get_datagrid(dat.bgden.unscaled, by = "PlotSlope",
+                                  length = 100) %>% 
+  arrange(PlotSlope)
+viz.bgden.slope$PlotSlope <- unscaled.slope100$PlotSlope
+
+# Graph (insight version)
+bgden.slope <- dat.plot %>% 
+  ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
+  geom_point() +
+  geom_line(data = viz.bgden.slope,
+            aes(y = Predicted), linewidth = 1.5,
+            color = "purple3") +
+  theme_bw() +
+  xlab("Plot slope (\u00B0)") +
+  ggtitle("Change in buffelgrass density vs. slope") +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+bgden.slope
+
+
+# Generate CI and add unscaled variable
+ci.bgden.slope <- predict_response(bgden_model2, terms = "PlotSlope_scaled")
+unscaled.slope12 <- get_datagrid(dat.bgden.unscaled, by = "PlotSlope",
+                                 length = 12) %>% 
+  arrange(PlotSlope)
+ci.bgden.slope$PlotSlope <- unscaled.slope12$PlotSlope
+ci.bgden.slope$Change_BGDensity <- ci.bgden.slope$predicted
+
+# Graph with CI (ggeffects version)
+bgden.slope.ci <- dat.plot %>% 
+  ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
+  geom_point() +
+  geom_ribbon(data = ci.bgden.slope,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.bgden.slope,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  xlab("Plot slope (\u00B0)") +
+  ggtitle("Change in bgden culm count vs. slope") +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgden.slope.ci
+
+
+# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+dat.plot %>% 
+  ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
+  geom_point() +
+  geom_ribbon(data = ci.bgden.slope,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.bgden.slope,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.bgden.slope,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  xlab("Plot slope (\u00B0)") +
+  ggtitle("Change in bgden culm count vs. slope") +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") # insight again lower
+
+
+
+## BG density: Shrub (NS) -------------------------------------------------
 
 # Generate prediction and add unscaled variable
 viz.bgden.shrub <- get_datagrid(dat.bgden.ex, by = c("Change_ShrubCover_scaled"),
@@ -1714,7 +1710,92 @@ dat.plot %>%
 
 
 
-## BG density: Precip * shrub ---------------------------------------------
+## BG density: Herb (NS) --------------------------------------------------
+
+# Generate prediction and add unscaled variable
+viz.bgden.herb <- get_datagrid(dat.bgden.ex, by = c("Change_HerbCover_scaled"),
+                               length = 100)
+viz.bgden.herb$Predicted <- get_predicted(bgden_best.model, viz.bgden.herb)
+unscaled.herb100 <- get_datagrid(dat.bgden.unscaled, by = "Change_HerbCover",
+                                 length = 100) %>% 
+  arrange(Change_HerbCover)
+viz.bgden.herb$Change_HerbCover <- unscaled.herb100$Change_HerbCover
+
+# Graph (insight version)
+bgden.herb <- dat.plot %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_line(data = viz.bgden.herb,
+            aes(y = Predicted), linewidth = 1.5,
+            color = "purple3") +
+  theme_bw() +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in buffelgrass density vs. herb cover change") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgden.herb
+
+
+# Generate CI and add unscaled variable
+ci.bgden.herb <- predict_response(bgden_best.model, terms = "Change_HerbCover_scaled")
+unscaled.herb16 <- get_datagrid(dat.bgden.unscaled, by = "Change_HerbCover",
+                                length = 16) %>% 
+  arrange(Change_HerbCover)
+ci.bgden.herb$Change_HerbCover <- unscaled.herb16$Change_HerbCover
+ci.bgden.herb$Change_BGDensity <- ci.bgden.herb$predicted
+
+# Graph with CI (ggeffects version)
+bgden.herb.ci <- dat.plot %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_ribbon(data = ci.bgden.herb,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.bgden.herb,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in buffelgrass density vs. herb cover change") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgden.herb.ci
+
+
+# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+dat.plot %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_ribbon(data = ci.bgden.herb,
+              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_line(data = ci.bgden.herb,
+            aes(y = predicted), linewidth = 1,
+            color = "purple3") +
+  geom_line(data = viz.bgden.herb,
+            aes(y = Predicted), linewidth = 1,
+            color = "purple3", linetype = "dashed") +
+  theme_bw() +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in buffelgrass density vs. herb cover change") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") # insight much lower
+
+
+## BG density: Precip * shrub (NS) ----------------------------------------
 
 # Generate prediction and add unscaled variable
 viz.bgden.shrub.precip <- dat.bgden.ex %>% 
@@ -1784,82 +1865,73 @@ bgden.shrub.precip.ci # insight again lower and seems to fit data better?
 
 
 
-## BG density: Slope (NS) -------------------------------------------------
+## BG density: Precip * herb (NS) -----------------------------------------
 
-# Generate prediction and add unscaled variable (use model2, as best model does not include slope)
-viz.bgden.slope <- get_datagrid(dat.bgden.ex, by = c("PlotSlope_scaled"),
-                                length = 100)
-viz.bgden.slope$Predicted <- get_predicted(bgden_model2, viz.bgden.slope)
-unscaled.slope100 <- get_datagrid(dat.bgden.unscaled, by = "PlotSlope",
-                                  length = 100) %>% 
-  arrange(PlotSlope)
-viz.bgden.slope$PlotSlope <- unscaled.slope100$PlotSlope
+# Generate prediction and add unscaled variable
+viz.bgden.herb.precip <- dat.bgden.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+viz.bgden.herb.precip$Predicted <- get_predicted(bgden_best.model, viz.bgden.herb.precip)
+unscaled.herb.precip243 <- dat.bgden.unscaled %>% 
+  get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  arrange(Change_HerbCover)
+viz.bgden.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
+viz.bgden.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
 
 # Graph (insight version)
-bgden.slope <- dat.plot %>% 
-  ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
+bgden.herb.precip <- dat.plot %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
   geom_point() +
-  geom_line(data = viz.bgden.slope,
-            aes(y = Predicted), linewidth = 1.5,
-            color = "purple3") +
+  geom_line(data = viz.bgden.herb.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
   theme_bw() +
-  xlab("Plot slope (\u00B0)") +
-  ggtitle("Change in buffelgrass density vs. slope") +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red")
-bgden.slope
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in buffelgrass density vs. herb cover change")
+bgden.herb.precip
 
 
-# Generate CI and add unscaled variable
-ci.bgden.slope <- predict_response(bgden_model2, terms = "PlotSlope_scaled")
-unscaled.slope12 <- get_datagrid(dat.bgden.unscaled, by = "PlotSlope",
-                                 length = 12) %>% 
-  arrange(PlotSlope)
-ci.bgden.slope$PlotSlope <- unscaled.slope12$PlotSlope
-ci.bgden.slope$Change_BGDensity <- ci.bgden.slope$predicted
+# Generate CI with scaled x variable
+bgden.pred.herb.precip <- predict_response(bgden_best.model, 
+                                           terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
+bgden.pred.herb.precip$group <- factor(bgden.pred.herb.precip$group,
+                                       levels = c("1.24", "0.18", "-0.89"))
+bgden.pred.herb.precip <- as.data.frame(bgden.pred.herb.precip)
 
-# Graph with CI (ggeffects version)
-bgden.slope.ci <- dat.plot %>% 
-  ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
-  geom_point() +
-  geom_ribbon(data = ci.bgden.slope,
-              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.bgden.slope,
-            aes(y = predicted), linewidth = 1,
-            color = "purple3") +
+# Graph with CI, scaled prediction only (ggeffects version)  
+bgden.herb.precip.ci <- bgden.pred.herb.precip %>% 
+  ggplot(aes(x, predicted, group = group)) +
+  geom_ribbon(aes(ymin = conf.low, ymax = conf.high, fill = group), alpha = 0.3) +
+  geom_line(aes(color = group),
+            linewidth = 1.3) +
   theme_bw() +
-  xlab("Plot slope (\u00B0)") +
-  ggtitle("Change in bgden culm count vs. slope") +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
+  scale_color_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
+  scale_fill_manual(values = c("#440154FF", "#1F968BFF", "#FDE725FF")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red") 
-bgden.slope.ci
-
-
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
-dat.plot %>% 
-  ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
-  geom_point() +
-  geom_ribbon(data = ci.bgden.slope,
-              aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.bgden.slope,
-            aes(y = predicted), linewidth = 1,
-            color = "purple3") +
-  geom_line(data = viz.bgden.slope,
-            aes(y = Predicted), linewidth = 1,
-            color = "purple3", linetype = "dashed") +
-  theme_bw() +
-  xlab("Plot slope (\u00B0)") +
-  ggtitle("Change in bgden culm count vs. slope") +
-  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")"))) +
-  geom_hline(yintercept = 0,
+             color = "red") +
+  geom_vline(xintercept = 0,
              linetype = "dashed",
-             color = "red") # insight again lower
-
-
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native grass & forb cover (scaled)"),
+       title = "Change in buffelgrass density vs. herb cover change (scaled)",
+       color = "Previous year \nprecip (scaled)",
+       fill = "Previous year \nprecip (scaled)") +
+  scale_y_continuous(limits = c(-24, 32),
+                     breaks = c(-20, 0, 20)) 
+bgden.herb.precip.ci # insight again lower and seems to fit data better?
 
 
 # Buffelgrass cover change ------------------------------------------------
@@ -2882,7 +2954,7 @@ survival.shrub.precip.ci # wettest CI goes above 100%; insight version much high
 
 
 
-# Survival: Precip * herb (NS) --------------------------------------------
+## Survival: Precip * herb (NS) -------------------------------------------
 
 # Generate prediction and add unscaled variable
 viz.survival.herb.precip <- dat.survival.ex %>% 
