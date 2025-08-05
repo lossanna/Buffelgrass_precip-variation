@@ -435,7 +435,7 @@ total.bgden.precip <- dat.culm %>%
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = insight.total.bgden.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -503,7 +503,7 @@ total.shrub.precip <- dat.culm %>%
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = insight.total.shrub.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -571,7 +571,7 @@ total.herb.precip <- dat.culm %>%
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = insight.total.herb.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -1686,7 +1686,7 @@ bgden.shrub.precip <- dat.plot %>%
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = insight.bgden.shrub.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
