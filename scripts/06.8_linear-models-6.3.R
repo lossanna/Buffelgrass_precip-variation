@@ -424,7 +424,16 @@ survival_pred.plot
 dev.off()
 
 
-save.image("RData/06.8_linear-models-6.3.RData")
+# Save --------------------------------------------------------------------
+
+# Needed for graphs
 save(culm.change.flat.rm, plot.change, dat.survival,
-     total_best.model, repro_best.model, bgden_best.model, bgcov_best.model, survival_best.model,
+     total_best.model, 
+     repro_best.model, repro_model3, 
+     bgden_best.model, bgden_model2, bgden_model3, bgden_model4,
+     bgcov_best.model,
+     survival_best.model, survival_model5, survival_model6,
      file = "RData/06.8_data-and-best-models-6.3.RData")
+
+
+save.image("RData/06.8_linear-models-6.3.RData")
