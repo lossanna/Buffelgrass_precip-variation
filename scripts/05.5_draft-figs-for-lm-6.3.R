@@ -1,21 +1,32 @@
 # Created: 2025-08-01
-# Updated: 2025-08-04
+# Updated: 2025-08-05
 
 # Purpose: Create graphs for linear models v6.3. Overlay model predictions on top of original data
 #   using ggeffects and insight packages.
 
-# https://easystats.github.io/modelbased/articles/visualisation_matrix.html#visualising-an-interaction-between-two-numeric-variables-three-way-interaction
+# insight: https://easystats.github.io/modelbased/articles/visualisation_matrix.html#visualising-an-interaction-between-two-numeric-variables-three-way-interaction
+# ggeffects: https://strengejacke.github.io/ggeffects/
 
-# Note: get_predicted() does not work with model averaged coefficients; needs actual model object.
+# Note: get_predicted() from insight and predict_response() from ggeffects do not work with model averaged 
+#   coefficients; needs actual model object.
 # For simplicity, I will use only the best model in generating model-predicted lines, as the lines
 #   are virtually the same for all top models (see comparison from 05.4_draft-figs-2.0-for-lm-5.1.R).
 
-# To graph back-transformed/unscale continuous explanatory variables, need to make datagrid of unscaled variable
-#   that is the same length as the datagrid with scaled variable and predictions, arranged by the variable
-#   so the order will be the same. Then add that column to new dataframe.
+# To graph back-transformed/unscaled continuous explanatory variables with model prediction (insight version):
+#   1. Make datagrid of with prediction and CI with scaled variable using get_predicted() and get_predicted_CI().
+#        Name the prediction column the same as the y-axis of the graph (response variable).
+#   2. Make datagrid of unscaled variable that is the same length as the datagrid with predictions & CI.
+#        Arrange this datagrid with unscaled variable by that variable so the order will be the same as first datagrid. 
+#   3. Add the unscaled variable column to datagrid with predictions & CI.
 
-# To add the 95% CI to the graph, make another datagrid of unscaled variable that is the same length as the
-#   table with CI (produced from predict_response() from ggeffects). 
+# To graph original data with model prediction (ggeffects version):
+#   1. Generate table with prediction and CI based on scaled variable using predict_response(). Unlike insight version, 
+#         you cannot specify the length of the datagrid. Name the prediction column the same as the y-axis of the 
+#         graph (response variable).
+#   2. Make a datagrid of unscaled variable that is the same length as the table with prediction & CI.
+#        Arrange this datagrid with unscaled variable by that variable so the order will be the table with predictions & CI. 
+#   3. Add the unscaled variable column to the table with predictions & CI.
+
 # Note: I don't know how to do this for interaction graphs, so those don't get graphs with 
 #   overlapped CI & original data.
 
@@ -34,71 +45,61 @@ dat.survival.raw <- dat.survival
 
 # Data wrangling ----------------------------------------------------------
 
-# Dataset for graphing (all)
-#   Total and repro change dataset (all)
+# Need 3 datasets:
+#   1. Data for graphing observed data
+#   2. Data to construct datagrid with predictions & CI
+#   3. Data to construct datagrid with unscaled explanatory variable (to be added to #2)
+
+
+# 1. Dataset for graphing (response and unscaled explanatory variables)
+#   Culm change - total & repro
 dat.culm <- culm.change.flat.rm %>% 
-  select(Change_Total_Live_Culms, Change_Reproductive_culms, Prev_year_precip_scaled,
-         Aspect, PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
-         Change_BGDensity_scaled, Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+  select(Change_Total_Live_Culms, Change_Reproductive_culms, 
+         Prev_year_precip, Aspect, PlotSlope, Change_ShrubCover, Change_HerbCover,
          Change_BGDensity)
 
-#   Plot change dataset (all)
+#   Plot change - density & cover
 dat.plot <- plot.change %>% 
-  select(Change_BGDensity, Change_BGCover, Prev_year_precip_scaled,
-         Aspect, PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
-         Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover)
+  select(Change_BGDensity, Change_BGCover, 
+         Prev_year_precip, Aspect, PlotSlope, Change_ShrubCover, Change_HerbCover)
 
-#   Survival dataset (all)
+#   Survival  
 dat.survival <- dat.survival.raw %>% 
-  select(survival_perc, Prev_year_precip_scaled,
-         Aspect, PlotSlope_scaled, ShrubCover_scaled, HerbCover_scaled,
-         BGDensity_scaled, Prev_year_precip, PlotSlope, ShrubCover, HerbCover,
-         BGDensity)
+  select(survival_perc, 
+         Prev_year_precip, Aspect, BGDensity, PlotSlope, ShrubCover, HerbCover)
 
 
-# Explanatory variables 
-#   Culm change explanatory variables (for datagrid and prediction)
+# 2. Dataset for constructing datagrid with prediction & CI (scaled explanatory variables only)
+#   Culm change - total & repro 
 dat.culm.ex <- culm.change.flat.rm %>% 
   select(Prev_year_precip_scaled,
          Aspect, PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
          Change_BGDensity_scaled)
 
-#   Plot change explanatory variables (for datagrid and prediction) - density
-dat.bgden.ex <- plot.change %>% 
+#   Plot change - density & cover
+dat.plot.ex <- plot.change %>% 
   select(Prev_year_precip_scaled,
          Aspect, PlotSlope_scaled, Change_ShrubCover_scaled)
 
-#   Plot change explanatory variables (for datagrid and prediction) - cover
-dat.bgcov.ex <- plot.change %>% 
-  select(Prev_year_precip_scaled,
-         Aspect, PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled)
-
-#   Survival explanatory variables (for datagrid and prediction)
+#   Survival  
 dat.survival.ex <- dat.survival.raw %>% 
   select(Prev_year_precip_scaled,
          PlotSlope_scaled, ShrubCover_scaled, HerbCover_scaled,
          BGDensity_scaled)
 
 
-# Unscaled variables
-#   Culm change unscaled variables (for datagrid) 
+# 3. Dataset for constructing datagrid with unscaled variables to match graph (unscaled explanatory variables only)
+#   Culm change - total & repro
 dat.culm.unscaled <- culm.change.flat.rm %>% 
-  select(Prev_year_precip, Aspect, PlotSlope, Change_ShrubCover, Change_HerbCover,
-         Change_BGDensity)
+  select(Prev_year_precip, Aspect, PlotSlope, Change_BGDensity, Change_ShrubCover, Change_HerbCover)
 
-#   BG density, plot change unscaled variables (for datagrid)
-dat.bgden.unscaled <- plot.change %>% 
-  select(Prev_year_precip, Aspect, PlotSlope, Change_ShrubCover)
-
-#   BG cover, plot change unscaled variables (for datagrid)
-dat.bgcov.unscaled <- plot.change %>% 
+#   Plot change - density & cover
+dat.plot.unscaled <- plot.change %>% 
   select(Prev_year_precip, Aspect, PlotSlope, Change_ShrubCover, Change_HerbCover)
 
-
-#   Survival unscaled variables (for datagrid)
+#   Survival 
 dat.survival.unscaled <- dat.survival.raw %>% 
-  select(Prev_year_precip, PlotSlope, ShrubCover, HerbCover,
-         BGDensity)
+  select(Prev_year_precip, PlotSlope, BGDensity, ShrubCover, HerbCover)
 
 
 
@@ -106,15 +107,20 @@ dat.survival.unscaled <- dat.survival.raw %>%
 
 ## Total: Precip ----------------------------------------------------------
 
-# Scaled datagrid with prediction
+# insight version
+#   Construct datagrid with scaled variable 
 viz.total.precip <- get_datagrid(dat.culm.ex, by = c("Prev_year_precip_scaled"),
                                  length = 100)
-viz.total.precip$Predicted <- get_predicted(total_best.model, viz.total.precip)
-# Unscaled datagrid
+#   Add prediction column (must be must be named the same as y-axis in graph)
+viz.total.precip$Change_Total_Live_Culms <- get_predicted(total_best.model, viz.total.precip) 
+#   Add SE and CI columns
+viz.total.precip$SE <- get_predicted_ci(total_best.model, data = viz.total.precip)$SE
+viz.total.precip$CI <- viz.total.precip$SE * 1.96
+#   Construct datagrid of same length with unscaled variable
 unscaled.precip100 <- get_datagrid(dat.culm.unscaled, by = "Prev_year_precip",
                                    length = 100) %>% 
   arrange(Prev_year_precip)
-# Data grid with prediction, unscaled variable added
+#   Add unscaled variable to datagrid with prediction & CI
 viz.total.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
 
 # Graph (insight version)
@@ -122,8 +128,11 @@ total.precip <- dat.culm %>%
   ggplot(aes(x = Prev_year_precip, y = Change_Total_Live_Culms)) +
   geom_point() +
   geom_line(data = viz.total.precip,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3") +
+  geom_ribbon(data = viz.total.precip,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI), 
+              alpha = 0.2) +
   theme_bw() +
   xlab("Previous year precip (mm)") +
   ggtitle("Change in total culm count vs. precip") +
@@ -134,13 +143,14 @@ total.precip <- dat.culm %>%
 total.precip
 
 
-# Generate CI 
+# ggeffects version
+#   Generate table with predictions & CI
 ci.total.precip <- predict_response(total_best.model, terms = "Prev_year_precip_scaled")
-# Unscaled datagrid
+#   Create datagrid of same length with unscaled variable
 unscaled.precip15 <- get_datagrid(dat.culm.unscaled, by = "Prev_year_precip",
                                   length = 15) %>% 
   arrange(Prev_year_precip)
-# Data grid with prediction & CI, unscaled variable added
+#   Add unscaled variable to table with prediction & CI
 ci.total.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
 ci.total.precip$Change_Total_Live_Culms <- ci.total.precip$predicted # must be named the same as y-axis in graph
 
@@ -169,11 +179,14 @@ dat.culm %>%
   geom_point() +
   geom_ribbon(data = ci.total.precip,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_ribbon(data = viz.total.precip,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI), 
+              alpha = 0.2) +
   geom_line(data = ci.total.precip,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
   geom_line(data = viz.total.precip,
-            aes(y = Predicted), linewidth = 1,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3", linetype = "dashed") +
   theme_bw() +
   xlab("Previous year precip (mm)") +
@@ -1428,25 +1441,25 @@ repro.herb.precip.ci
 ## BG density: Precip -----------------------------------------------------
 
 # Generate prediction and add unscaled variable 
-viz.bgden.precip <- get_datagrid(dat.bgden.ex, by = c("Prev_year_precip_scaled"),
+viz.bgden.precip <- get_datagrid(dat.plot.ex, by = c("Prev_year_precip_scaled"),
                                  length = 100)
-viz.bgden.precip$Predicted <- get_predicted(bgden_best.model, viz.bgden.precip)
-unscaled.precip100 <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
+viz.bgden.precip$Change_BGDensity <- get_predicted(bgden_best.model, viz.bgden.precip)
+viz.bgden.precip$SE <- get_predicted_ci(bgden_best.model, data = viz.bgden.precip)$SE
+viz.bgden.precip$CI <- viz.bgden.precip$SE * 1.96
+unscaled.precip100 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
                                    length = 100) %>% 
   arrange(Prev_year_precip)
 viz.bgden.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
-
-
-est.bgden.precip <- estimate_relation(bgden_best.model) 
-
 
 # Graph (insight version) 
 bgden.precip <- dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
   geom_line(data = viz.bgden.precip,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Change_BGDensity), linewidth = 1,
             color = "purple3") +
+  geom_ribbon(data = viz.bgden.precip,
+              aes(ymin = Change_BGDensity - CI, ymax = Change_BGDensity + CI), alpha = 0.2) +
   theme_bw() +
   geom_hline(yintercept = 0,
              linetype = "dashed",
@@ -1459,7 +1472,7 @@ bgden.precip
 
 # Generate CI and add unscaled variable 
 ci.bgden.precip <- predict_response(bgden_best.model, terms = "Prev_year_precip_scaled")
-unscaled.precip15 <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
+unscaled.precip15 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
                                   length = 15) %>% 
   arrange(Prev_year_precip)
 ci.bgden.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
@@ -1490,11 +1503,13 @@ dat.plot %>%
   geom_point() +
   geom_ribbon(data = ci.bgden.precip,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
+  geom_ribbon(data = viz.bgden.precip,
+              aes(ymin = Change_BGDensity - CI, ymax = Change_BGDensity + CI), alpha = 0.2) +
   geom_line(data = ci.bgden.precip,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
   geom_line(data = viz.bgden.precip,
-            aes(y = Predicted), linewidth = 1,
+            aes(y = Change_BGDensity), linewidth = 1,
             color = "purple3", linetype = "dashed") +
   theme_bw() +
   labs(x = "Previous year precip (mm)",
@@ -1550,10 +1565,10 @@ bgden.pred.aspect
 ## BG density: Slope (NS) -------------------------------------------------
 
 # Generate prediction and add unscaled variable (use model2, as best model does not include slope)
-viz.bgden.slope <- get_datagrid(dat.bgden.ex, by = c("PlotSlope_scaled"),
+viz.bgden.slope <- get_datagrid(dat.plot.ex, by = c("PlotSlope_scaled"),
                                 length = 100)
 viz.bgden.slope$Predicted <- get_predicted(bgden_model2, viz.bgden.slope)
-unscaled.slope100 <- get_datagrid(dat.bgden.unscaled, by = "PlotSlope",
+unscaled.slope100 <- get_datagrid(dat.plot.unscaled, by = "PlotSlope",
                                   length = 100) %>% 
   arrange(PlotSlope)
 viz.bgden.slope$PlotSlope <- unscaled.slope100$PlotSlope
@@ -1577,7 +1592,7 @@ bgden.slope
 
 # Generate CI and add unscaled variable
 ci.bgden.slope <- predict_response(bgden_model2, terms = "PlotSlope_scaled")
-unscaled.slope12 <- get_datagrid(dat.bgden.unscaled, by = "PlotSlope",
+unscaled.slope12 <- get_datagrid(dat.plot.unscaled, by = "PlotSlope",
                                  length = 12) %>% 
   arrange(PlotSlope)
 ci.bgden.slope$PlotSlope <- unscaled.slope12$PlotSlope
@@ -1627,10 +1642,10 @@ dat.plot %>%
 ## BG density: Shrub (NS) -------------------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.bgden.shrub <- get_datagrid(dat.bgden.ex, by = c("Change_ShrubCover_scaled"),
+viz.bgden.shrub <- get_datagrid(dat.plot.ex, by = c("Change_ShrubCover_scaled"),
                                 length = 100)
 viz.bgden.shrub$Predicted <- get_predicted(bgden_best.model, viz.bgden.shrub)
-unscaled.shrub100 <- get_datagrid(dat.bgden.unscaled, by = "Change_ShrubCover",
+unscaled.shrub100 <- get_datagrid(dat.plot.unscaled, by = "Change_ShrubCover",
                                   length = 100) %>% 
   arrange(Change_ShrubCover)
 viz.bgden.shrub$Change_ShrubCover <- unscaled.shrub100$Change_ShrubCover
@@ -1657,7 +1672,7 @@ bgden.shrub
 
 # Generate CI and add unscaled variable
 ci.bgden.shrub <- predict_response(bgden_best.model, terms = "Change_ShrubCover_scaled")
-unscaled.shrub16 <- get_datagrid(dat.bgden.unscaled, by = "Change_ShrubCover",
+unscaled.shrub16 <- get_datagrid(dat.plot.unscaled, by = "Change_ShrubCover",
                                  length = 16) %>% 
   arrange(Change_ShrubCover)
 ci.bgden.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
@@ -1713,10 +1728,10 @@ dat.plot %>%
 ## BG density: Herb (NS) --------------------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.bgden.herb <- get_datagrid(dat.bgden.ex, by = c("Change_HerbCover_scaled"),
+viz.bgden.herb <- get_datagrid(dat.plot.ex, by = c("Change_HerbCover_scaled"),
                                length = 100)
 viz.bgden.herb$Predicted <- get_predicted(bgden_best.model, viz.bgden.herb)
-unscaled.herb100 <- get_datagrid(dat.bgden.unscaled, by = "Change_HerbCover",
+unscaled.herb100 <- get_datagrid(dat.plot.unscaled, by = "Change_HerbCover",
                                  length = 100) %>% 
   arrange(Change_HerbCover)
 viz.bgden.herb$Change_HerbCover <- unscaled.herb100$Change_HerbCover
@@ -1743,7 +1758,7 @@ bgden.herb
 
 # Generate CI and add unscaled variable
 ci.bgden.herb <- predict_response(bgden_best.model, terms = "Change_HerbCover_scaled")
-unscaled.herb16 <- get_datagrid(dat.bgden.unscaled, by = "Change_HerbCover",
+unscaled.herb16 <- get_datagrid(dat.plot.unscaled, by = "Change_HerbCover",
                                 length = 16) %>% 
   arrange(Change_HerbCover)
 ci.bgden.herb$Change_HerbCover <- unscaled.herb16$Change_HerbCover
@@ -1798,12 +1813,12 @@ dat.plot %>%
 ## BG density: Precip * shrub (NS) ----------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.bgden.shrub.precip <- dat.bgden.ex %>% 
+viz.bgden.shrub.precip <- dat.plot.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled)
 viz.bgden.shrub.precip$Predicted <- get_predicted(bgden_best.model, viz.bgden.shrub.precip)
-unscaled.shrub.precip243 <- dat.bgden.unscaled %>% 
+unscaled.shrub.precip243 <- dat.plot.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover)
@@ -1868,12 +1883,12 @@ bgden.shrub.precip.ci # insight again lower and seems to fit data better?
 ## BG density: Precip * herb (NS) -----------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.bgden.herb.precip <- dat.bgden.ex %>% 
+viz.bgden.herb.precip <- dat.plot.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
 viz.bgden.herb.precip$Predicted <- get_predicted(bgden_best.model, viz.bgden.herb.precip)
-unscaled.herb.precip243 <- dat.bgden.unscaled %>% 
+unscaled.herb.precip243 <- dat.plot.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover)
@@ -1956,10 +1971,10 @@ plot(bgcov.pred.herb.precip)
 ## BG cover: Precip -------------------------------------------------------
 
 # Generate prediction and add scaled variable 
-viz.bgcov.precip <- get_datagrid(dat.bgcov.ex, by = c("Prev_year_precip_scaled"),
+viz.bgcov.precip <- get_datagrid(dat.plot.ex, by = c("Prev_year_precip_scaled"),
                                  length = 100)
 viz.bgcov.precip$Predicted <- get_predicted(bgcov_best.model, viz.bgcov.precip)
-unscaled.precip100 <- get_datagrid(dat.bgcov.unscaled, by = "Prev_year_precip",
+unscaled.precip100 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
                                    length = 100) %>% 
   arrange(Prev_year_precip)
 viz.bgcov.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
@@ -1983,7 +1998,7 @@ bgcov.precip
 
 # Generate CI and add unscaled variable
 ci.bgcov.precip <- predict_response(bgcov_best.model, terms = "Prev_year_precip_scaled")
-unscaled.precip15 <- get_datagrid(dat.bgcov.unscaled, by = "Prev_year_precip",
+unscaled.precip15 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
                                   length = 15) %>% 
   arrange(Prev_year_precip)
 ci.bgcov.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
@@ -2074,10 +2089,10 @@ bgcov.pred.aspect
 ## BG cover: Shrub --------------------------------------------------------
 
 # Generate prediction and add scaled variable 
-viz.bgcov.shrub <- get_datagrid(dat.bgcov.ex, by = c("Change_ShrubCover_scaled"),
+viz.bgcov.shrub <- get_datagrid(dat.plot.ex, by = c("Change_ShrubCover_scaled"),
                                 length = 100)
 viz.bgcov.shrub$Predicted <- get_predicted(bgcov_best.model, viz.bgcov.shrub)
-unscaled.shrub100 <- get_datagrid(dat.bgcov.unscaled, by = "Change_ShrubCover",
+unscaled.shrub100 <- get_datagrid(dat.plot.unscaled, by = "Change_ShrubCover",
                                   length = 100) %>% 
   arrange(Change_ShrubCover)
 viz.bgcov.shrub$Change_ShrubCover <- unscaled.shrub100$Change_ShrubCover
@@ -2104,7 +2119,7 @@ bgcov.shrub
 
 # Generate CI and add unscaled variable
 ci.bgcov.shrub <- predict_response(bgcov_best.model, terms = "Change_ShrubCover_scaled")
-unscaled.shrub16 <- get_datagrid(dat.bgcov.unscaled, by = "Change_ShrubCover",
+unscaled.shrub16 <- get_datagrid(dat.plot.unscaled, by = "Change_ShrubCover",
                                  length = 16) %>% 
   arrange(Change_ShrubCover)
 ci.bgcov.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
@@ -2160,10 +2175,10 @@ dat.plot %>%
 ## BG cover: Slope (NS) ---------------------------------------------------
 
 # Generate prediction and add unscaled variable 
-viz.bgcov.slope <- get_datagrid(dat.bgcov.ex, by = c("PlotSlope_scaled"),
+viz.bgcov.slope <- get_datagrid(dat.plot.ex, by = c("PlotSlope_scaled"),
                                 length = 100)
 viz.bgcov.slope$Predicted <- get_predicted(bgcov_best.model, viz.bgcov.slope)
-unscaled.slope100 <- get_datagrid(dat.bgcov.unscaled, by = "PlotSlope",
+unscaled.slope100 <- get_datagrid(dat.plot.unscaled, by = "PlotSlope",
                                   length = 100) %>% 
   arrange(PlotSlope)
 viz.bgcov.slope$PlotSlope <- unscaled.slope100$PlotSlope
@@ -2187,7 +2202,7 @@ bgcov.slope
 
 # Generate CI and add unscaled variable
 ci.bgcov.slope <- predict_response(bgcov_best.model, terms = "PlotSlope_scaled")
-unscaled.slope12 <- get_datagrid(dat.bgcov.unscaled, by = "PlotSlope",
+unscaled.slope12 <- get_datagrid(dat.plot.unscaled, by = "PlotSlope",
                                  length = 12) %>% 
   arrange(PlotSlope)
 ci.bgcov.slope$PlotSlope <- unscaled.slope12$PlotSlope
@@ -2237,10 +2252,10 @@ dat.plot %>%
 ## BG cover: Herb (NS) ----------------------------------------------------
 
 # Generate prediction and add scaled variable 
-viz.bgcov.herb <- get_datagrid(dat.bgcov.ex, by = c("Change_HerbCover_scaled"),
+viz.bgcov.herb <- get_datagrid(dat.plot.ex, by = c("Change_HerbCover_scaled"),
                                length = 100)
 viz.bgcov.herb$Predicted <- get_predicted(bgcov_best.model, viz.bgcov.herb)
-unscaled.herb100 <- get_datagrid(dat.bgcov.unscaled, by = "Change_HerbCover",
+unscaled.herb100 <- get_datagrid(dat.plot.unscaled, by = "Change_HerbCover",
                                  length = 100) %>% 
   arrange(Change_HerbCover)
 viz.bgcov.herb$Change_HerbCover <- unscaled.herb100$Change_HerbCover
@@ -2267,7 +2282,7 @@ bgcov.herb
 
 # Generate CI and add unscaled variable
 ci.bgcov.herb <- predict_response(bgcov_best.model, terms = "Change_HerbCover_scaled")
-unscaled.herb8 <- get_datagrid(dat.bgcov.unscaled, by = "Change_HerbCover",
+unscaled.herb8 <- get_datagrid(dat.plot.unscaled, by = "Change_HerbCover",
                                length = 8) %>% 
   arrange(Change_HerbCover)
 ci.bgcov.herb$Change_HerbCover <- unscaled.herb8$Change_HerbCover
@@ -2323,12 +2338,12 @@ dat.plot %>%
 ## BG cover: Precip * shrub (NS) ------------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.bgcov.shrub.precip <- dat.bgcov.ex %>% 
+viz.bgcov.shrub.precip <- dat.plot.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled)
 viz.bgcov.shrub.precip$Predicted <- get_predicted(bgcov_best.model, viz.bgcov.shrub.precip)
-unscaled.shrub.precip243 <- dat.bgcov.unscaled %>% 
+unscaled.shrub.precip243 <- dat.plot.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover)
@@ -2393,12 +2408,12 @@ bgcov.shrub.precip.ci # insight again lower
 ## BG cover: Precip * herb (NS) -------------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.bgcov.herb.precip <- dat.bgcov.ex %>% 
+viz.bgcov.herb.precip <- dat.plot.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
 viz.bgcov.herb.precip$Predicted <- get_predicted(bgcov_best.model, viz.bgcov.herb.precip)
-unscaled.herb.precip243 <- dat.bgcov.unscaled %>% 
+unscaled.herb.precip243 <- dat.plot.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover)
