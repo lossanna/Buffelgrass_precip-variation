@@ -27,19 +27,25 @@
 #        Arrange this datagrid with unscaled variable by that variable so the order will be the table with predictions & CI. 
 #   3. Add the unscaled variable column to the table with predictions & CI.
 
-# Note: I don't know how to do this for interaction graphs, so those don't get graphs with 
-#   overlapped CI & original data.
+# Note: I don't know how to do this for interaction graphs, so those don't get graphs with original data
+#       and overlaid CI. 
+#   get_predicted_ci() does not work because there is only one level for Aspect so it can't calculate SE, but
+#       Aspect must be included because it is included in the linear model.
+#   ggeffects version doesn't work because I can't figure out how to make an equivalent datagrid for unscaled variable.
+
+# Note: I don't know how to graph the Aspect boxplots using insight, so they will have a ggeffects version only
+#   (those graphs aren't very interesting and so it's not worth trying to figure).
+
 
 library(tidyverse)
 library(insight)
 library(ggeffects)
 library(viridis)
-library(modelbased)
 library(ggpubr)
 
 # Load data ---------------------------------------------------------------
 
-load("RData/06.8_linear-models-6.3.RData")
+load("RData/06.8_data-and-best-models-6.3.RData")
 dat.survival.raw <- dat.survival
 
 
@@ -72,9 +78,8 @@ dat.survival <- dat.survival.raw %>%
 # 2. Dataset for constructing datagrid with prediction & CI (scaled explanatory variables only)
 #   Culm change - total & repro 
 dat.culm.ex <- culm.change.flat.rm %>% 
-  select(Prev_year_precip_scaled,
-         Aspect, PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
-         Change_BGDensity_scaled)
+  select(Prev_year_precip_scaled, Aspect, PlotSlope_scaled, 
+         Change_BGDensity_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled)
 
 #   Plot change - density & cover
 dat.plot.ex <- plot.change %>% 
@@ -109,28 +114,28 @@ dat.survival.unscaled <- dat.survival.raw %>%
 
 # insight version
 #   Construct datagrid with scaled variable 
-viz.total.precip <- get_datagrid(dat.culm.ex, by = c("Prev_year_precip_scaled"),
+insight.total.precip <- get_datagrid(dat.culm.ex, by = c("Prev_year_precip_scaled"),
                                  length = 100)
 #   Add prediction column (must be must be named the same as y-axis in graph)
-viz.total.precip$Change_Total_Live_Culms <- get_predicted(total_best.model, viz.total.precip) 
+insight.total.precip$Change_Total_Live_Culms <- get_predicted(total_best.model, insight.total.precip) 
 #   Add SE and CI columns
-viz.total.precip$SE <- get_predicted_ci(total_best.model, data = viz.total.precip)$SE
-viz.total.precip$CI <- viz.total.precip$SE * 1.96
+insight.total.precip$SE <- get_predicted_ci(total_best.model, data = insight.total.precip)$SE
+insight.total.precip$CI <- insight.total.precip$SE * 1.96
 #   Construct datagrid of same length with unscaled variable
 unscaled.precip100 <- get_datagrid(dat.culm.unscaled, by = "Prev_year_precip",
                                    length = 100) %>% 
   arrange(Prev_year_precip)
 #   Add unscaled variable to datagrid with prediction & CI
-viz.total.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
+insight.total.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
 
 # Graph (insight version)
 total.precip <- dat.culm %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_line(data = viz.total.precip,
+  geom_line(data = insight.total.precip,
             aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3") +
-  geom_ribbon(data = viz.total.precip,
+  geom_ribbon(data = insight.total.precip,
               aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI), 
               alpha = 0.2) +
   theme_bw() +
@@ -145,22 +150,22 @@ total.precip
 
 # ggeffects version
 #   Generate table with predictions & CI
-ci.total.precip <- predict_response(total_best.model, terms = "Prev_year_precip_scaled")
+gg.total.precip <- predict_response(total_best.model, terms = "Prev_year_precip_scaled")
 #   Create datagrid of same length with unscaled variable
 unscaled.precip15 <- get_datagrid(dat.culm.unscaled, by = "Prev_year_precip",
                                   length = 15) %>% 
   arrange(Prev_year_precip)
 #   Add unscaled variable to table with prediction & CI
-ci.total.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
-ci.total.precip$Change_Total_Live_Culms <- ci.total.precip$predicted # must be named the same as y-axis in graph
+gg.total.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
+gg.total.precip$Change_Total_Live_Culms <- gg.total.precip$predicted # must be named the same as y-axis in graph
 
-# Graph with CI (ggeffects version)
-total.precip.ci <- dat.culm %>% 
+# Graph (ggeffects version)
+total.precip.gg <- dat.culm %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.precip,
+  geom_ribbon(data = gg.total.precip,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.precip,
+  geom_line(data = gg.total.precip,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
@@ -170,22 +175,22 @@ total.precip.ci <- dat.culm %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
-total.precip.ci
+total.precip.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.precip,
+  geom_ribbon(data = gg.total.precip,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_ribbon(data = viz.total.precip,
+  geom_ribbon(data = insight.total.precip,
               aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI), 
               alpha = 0.2) +
-  geom_line(data = ci.total.precip,
+  geom_line(data = gg.total.precip,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
-  geom_line(data = viz.total.precip,
+  geom_line(data = insight.total.precip,
             aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3", linetype = "dashed") +
   theme_bw() +
@@ -194,28 +199,34 @@ dat.culm %>%
   labs(y = expression(Delta ~ "Total culm count")) +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red") # insight slightly higher
+             color = "red") # insight just slightly higher
 
 
 
 ## Total: BG density ------------------------------------------------------
 
-# Generate prediction and add unscaled variable
-viz.total.bgden <- get_datagrid(dat.culm.ex, by = c("Change_BGDensity_scaled"),
+# insight version
+#   Generate prediction and add unscaled variable
+insight.total.bgden <- get_datagrid(dat.culm.ex, by = c("Change_BGDensity_scaled"),
                                 length = 100)
-viz.total.bgden$Predicted <- get_predicted(total_best.model, viz.total.bgden)
+insight.total.bgden$Change_Total_Live_Culms <- get_predicted(total_best.model, insight.total.bgden)
+insight.total.bgden$SE <- get_predicted_ci(total_best.model, data = insight.total.bgden)$SE
+insight.total.bgden$CI <- insight.total.bgden$SE * 1.96
 unscaled.bgden100 <- get_datagrid(dat.culm.unscaled, by = "Change_BGDensity",
                                   length = 100) %>% 
   arrange(Change_BGDensity)
-viz.total.bgden$Change_BGDensity <- unscaled.bgden100$Change_BGDensity
+insight.total.bgden$Change_BGDensity <- unscaled.bgden100$Change_BGDensity
 
-# Graph (insight version)
+#   Graph (insight version)
 total.bgden <- dat.culm %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_line(data = viz.total.bgden,
-            aes(y = Predicted), linewidth = 1.5,
+  geom_line(data = insight.total.bgden,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3") +
+  geom_ribbon(data = insight.total.bgden,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
   theme_bw() +
   ggtitle("Change in total culm count vs. plot density change") +
   labs(y = expression(Delta ~ "Total culm count"),
@@ -229,21 +240,22 @@ total.bgden <- dat.culm %>%
 total.bgden
 
 
-# Generate CI and add unscaled variable
-ci.total.bgden <- predict_response(total_best.model, terms = "Change_BGDensity_scaled")
+# ggeffects version
+#   Generate CI and add unscaled variable
+gg.total.bgden <- predict_response(total_best.model, terms = "Change_BGDensity_scaled")
 unscaled.bgden9 <- get_datagrid(dat.culm.unscaled, by = "Change_BGDensity",
                                 length = 9) %>% 
   arrange(Change_BGDensity)
-ci.total.bgden$Change_BGDensity <- unscaled.bgden9$Change_BGDensity
-ci.total.bgden$Change_Total_Live_Culms <- ci.total.bgden$predicted
+gg.total.bgden$Change_BGDensity <- unscaled.bgden9$Change_BGDensity
+gg.total.bgden$Change_Total_Live_Culms <- gg.total.bgden$predicted
 
-# Graph with CI (ggeffects version)
-total.bgden.ci <- dat.culm %>% 
+#   Graph (ggeffects version)
+total.bgden.gg <- dat.culm %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.bgden,
+  geom_ribbon(data = gg.total.bgden,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.bgden,
+  geom_line(data = gg.total.bgden,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
@@ -256,20 +268,23 @@ total.bgden.ci <- dat.culm %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-total.bgden.ci
+total.bgden.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.bgden,
+  geom_ribbon(data = gg.total.bgden,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.bgden,
+  geom_ribbon(data = insight.total.bgden,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
+  geom_line(data = gg.total.bgden,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
-  geom_line(data = viz.total.bgden,
-            aes(y = Predicted), linewidth = 1,
+  geom_line(data = insight.total.bgden,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3", linetype = "dashed") +
   theme_bw() +
   labs(y = expression(Delta ~ "Total culm count"),
@@ -287,22 +302,28 @@ dat.culm %>%
 
 ## Total: Shrub -----------------------------------------------------------
 
-# Generate prediction with unscaled variable added
-viz.total.shrub <- get_datagrid(dat.culm.ex, by = c("Change_ShrubCover_scaled"),
+# insight version
+#   Generate prediction with unscaled variable added
+insight.total.shrub <- get_datagrid(dat.culm.ex, by = c("Change_ShrubCover_scaled"),
                                 length = 100)
-viz.total.shrub$Predicted <- get_predicted(total_best.model, viz.total.shrub)
+insight.total.shrub$Change_Total_Live_Culms <- get_predicted(total_best.model, insight.total.shrub)
+insight.total.shrub$SE <- get_predicted_ci(total_best.model, data = insight.total.shrub)$SE
+insight.total.shrub$CI <- insight.total.shrub$SE * 1.96
 unscaled.shrub100 <- get_datagrid(dat.culm.unscaled, by = "Change_ShrubCover",
                                   length = 100) %>% 
   arrange(Change_ShrubCover)
-viz.total.shrub$Change_ShrubCover <- unscaled.shrub100$Change_ShrubCover
+insight.total.shrub$Change_ShrubCover <- unscaled.shrub100$Change_ShrubCover
 
-# Graph (insight version)
+#   Graph (insight version)
 total.shrub <- dat.culm %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_line(data = viz.total.shrub,
-            aes(y = Predicted), linewidth = 1.5,
+  geom_line(data = insight.total.shrub,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3") +
+  geom_ribbon(data = insight.total.shrub,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
   theme_bw() +
   ggtitle("Change in total culm count vs. shrub cover change") +
   labs(y = expression(Delta ~ "Total culm count"),
@@ -315,22 +336,22 @@ total.shrub <- dat.culm %>%
              color = "red") 
 total.shrub
 
-
-# Generate CI and add unscaled variable
-ci.total.shrub <- predict_response(total_best.model, terms = "Change_ShrubCover_scaled")
+# ggeffects version
+#   Generate CI and add unscaled variable
+gg.total.shrub <- predict_response(total_best.model, terms = "Change_ShrubCover_scaled")
 unscaled.shrub16 <- get_datagrid(dat.culm.unscaled, by = "Change_ShrubCover",
                                  length = 16) %>% 
   arrange(Change_ShrubCover)
-ci.total.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
-ci.total.shrub$Change_Total_Live_Culms <- ci.total.shrub$predicted
+gg.total.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
+gg.total.shrub$Change_Total_Live_Culms <- gg.total.shrub$predicted
 
-# Graph with CI (ggeffects version)
-total.shrub.ci <- dat.culm %>% 
+#   Graph (ggeffects version)
+total.shrub.gg <- dat.culm %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.shrub,
+  geom_ribbon(data = gg.total.shrub,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.shrub,
+  geom_line(data = gg.total.shrub,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
@@ -343,20 +364,23 @@ total.shrub.ci <- dat.culm %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-total.shrub.ci
+total.shrub.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.shrub,
+  geom_ribbon(data = gg.total.shrub,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.shrub,
+  geom_ribbon(data = insight.total.shrub,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
+  geom_line(data = gg.total.shrub,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
-  geom_line(data = viz.total.shrub,
-            aes(y = Predicted), linewidth = 1,
+  geom_line(data = insight.total.shrub,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3", linetype = "dashed") +
   theme_bw() +
   ggtitle("Change in total culm count vs. shrub cover change") +
@@ -374,25 +398,25 @@ dat.culm %>%
 ## Total: Precip * density ------------------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.total.bgden.precip <- dat.culm.ex %>% 
+insight.total.bgden.precip <- dat.culm.ex %>% 
   get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_BGDensity_scaled)
-viz.total.bgden.precip$Predicted <- get_predicted(total_best.model, viz.total.bgden.precip)
+insight.total.bgden.precip$Predicted <- get_predicted(total_best.model, insight.total.bgden.precip)
 unscaled.bgden.precip243 <- dat.culm.unscaled %>% 
   get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
   arrange(Change_BGDensity)
-viz.total.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
-viz.total.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
+insight.total.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
+insight.total.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 total.bgden.precip <- dat.culm %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms,
              color = Prev_year_precip)) +
   geom_point() +
-  geom_line(data = viz.total.bgden.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  geom_line(data = insight.total.bgden.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -408,7 +432,7 @@ total.bgden.precip <- dat.culm %>%
 total.bgden.precip
 
 
-# Generate CI with scaled x variable 
+# Generate CI with scaled explanatory variable 
 total.pred.bgden.precip <- predict_response(total_best.model, 
                                             terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
 total.pred.bgden.precip$group <- factor(total.pred.bgden.precip$group,
@@ -442,25 +466,25 @@ total.bgden.precip.ci
 ## Total: Precip * shrub --------------------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.total.shrub.precip <- dat.culm.ex %>% 
+insight.total.shrub.precip <- dat.culm.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled)
-viz.total.shrub.precip$Predicted <- get_predicted(total_best.model, viz.total.shrub.precip)
+insight.total.shrub.precip$Predicted <- get_predicted(total_best.model, insight.total.shrub.precip)
 unscaled.shrub.precip243 <- dat.culm.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover)
-viz.total.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
-viz.total.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+insight.total.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
+insight.total.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 total.shrub.precip <- dat.culm %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms,
              color = Prev_year_precip)) +
   geom_point() +
-  geom_line(data = viz.total.shrub.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  geom_line(data = insight.total.shrub.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -476,7 +500,7 @@ total.shrub.precip <- dat.culm %>%
 total.shrub.precip
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 total.pred.shrub.precip <- predict_response(total_best.model, 
                                             terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
 total.pred.shrub.precip$group <- factor(total.pred.shrub.precip$group,
@@ -510,25 +534,25 @@ total.shrub.precip.ci
 ## Total: Precip * herb ---------------------------------------------------
 
 # Generate prediction and add unscaled variable
-viz.total.herb.precip <- dat.culm.ex %>% 
+insight.total.herb.precip <- dat.culm.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 3) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
-viz.total.herb.precip$Predicted <- get_predicted(total_best.model, viz.total.herb.precip)
+insight.total.herb.precip$Predicted <- get_predicted(total_best.model, insight.total.herb.precip)
 unscaled.herb.precip243 <- dat.culm.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover)
-viz.total.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
-viz.total.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
+insight.total.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
+insight.total.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 total.herb.precip <- dat.culm %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms,
              color = Prev_year_precip)) +
   geom_point() +
-  geom_line(data = viz.total.herb.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  geom_line(data = insight.total.herb.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -544,7 +568,7 @@ total.herb.precip <- dat.culm %>%
 total.herb.precip
 
 
-# Generate CI with scaled x variable 
+# Generate CI with scaled explanatory variable 
 total.pred.herb.precip <- predict_response(total_best.model, 
                                            terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
 total.pred.herb.precip$group <- factor(total.pred.herb.precip$group,
@@ -577,14 +601,26 @@ total.herb.precip.ci
 
 ## Total: Aspect (NS) -----------------------------------------------------
 
-# With a boxplot, I can't really graph the prediction on top of the original data, 
-#   so they will just have to stay separate graphs.
+# ggeffects version
+#   Generate prediction & CI
+gg.total.aspect <- predict_response(total_best.model, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_Total_Live_Culms = predicted)
 
-# Original data (boxplot)
-total.change.aspect <- dat.culm %>% 
+# Graph (ggeffects version)
+total.aspect.gg <- dat.culm %>% 
   ggplot(aes(x = Aspect, y = Change_Total_Live_Culms)) +
   geom_boxplot() +
   geom_jitter(alpha = 0.3) +
+  geom_pointrange(data = gg.total.aspect,
+                  aes(ymin = conf.low, ymax = conf.high),
+                  color = "purple3",
+                  linewidth = 1.3) +
+  geom_point(data = gg.total.aspect,
+             aes(x = Aspect, y = Change_Total_Live_Culms),
+             color = "purple3",
+             size = 3,
+             shape = 15) +
   theme_bw() +
   labs(title = "Change in total culm count by aspect",
        y = expression(Delta ~ "Total culm count"),
@@ -593,48 +629,34 @@ total.change.aspect <- dat.culm %>%
              linetype = "dashed",
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
-total.change.aspect
-
-
-# Generate CI
-total.pred.aspect <- predict_response(total_best.model, terms = "Aspect")
-
-# Graph with CI, prediction only (ggeffects version)
-total.pred.aspect <- total.pred.aspect %>% 
-  ggplot(aes(x, predicted)) +
-  geom_point() +
-  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
-  theme_bw() +
-  labs(title = "Prediction for total change by aspect",
-       y = expression(Delta ~ "Total culm count"),
-       x = NULL) +
-  scale_y_continuous(limits = c(-120, 220)) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  theme(axis.text.x = element_text(color = "black")) 
-total.pred.aspect
+total.aspect.gg
 
 
 
 ## Total: Slope (NS) ------------------------------------------------------
 
-# Generate prediction and add unscaled variable
-viz.total.slope <- get_datagrid(dat.culm.ex, by = c("PlotSlope_scaled"),
+# insight version
+#   Generate prediction and add unscaled variable
+insight.total.slope <- get_datagrid(dat.culm.ex, by = c("PlotSlope_scaled"),
                                 length = 100)
-viz.total.slope$Predicted <- get_predicted(total_best.model, viz.total.slope)
+insight.total.slope$Change_Total_Live_Culms <- get_predicted(total_best.model, insight.total.slope)
+insight.total.slope$SE <- get_predicted_ci(total_best.model, data = insight.total.slope)$SE
+insight.total.slope$CI <- insight.total.slope$SE * 1.96
 unscaled.slope100 <- get_datagrid(dat.culm.unscaled, by = "PlotSlope",
                                   length = 100) %>% 
   arrange(PlotSlope)
-viz.total.slope$PlotSlope <- unscaled.slope100$PlotSlope
+insight.total.slope$PlotSlope <- unscaled.slope100$PlotSlope
 
-# Graph (insight version)
+#   Graph (insight version)
 total.slope <- dat.culm %>% 
   ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_line(data = viz.total.slope,
-            aes(y = Predicted), linewidth = 1.5,
+  geom_line(data = insight.total.slope,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3") +
+  geom_ribbon(data = insight.total.slope,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
   ggtitle("Change in total culm count vs. slope") +
@@ -645,21 +667,22 @@ total.slope <- dat.culm %>%
 total.slope
 
 
-# Generate CI and add unscaled variable
-ci.total.slope <- predict_response(total_best.model, terms = "PlotSlope_scaled")
+# ggeffects version
+#   Generate CI and add unscaled variable
+gg.total.slope <- predict_response(total_best.model, terms = "PlotSlope_scaled")
 unscaled.slope12 <- get_datagrid(dat.culm.unscaled, by = "PlotSlope",
                                  length = 12) %>% 
   arrange(PlotSlope)
-ci.total.slope$PlotSlope <- unscaled.slope12$PlotSlope
-ci.total.slope$Change_Total_Live_Culms <- ci.total.slope$predicted
+gg.total.slope$PlotSlope <- unscaled.slope12$PlotSlope
+gg.total.slope$Change_Total_Live_Culms <- gg.total.slope$predicted
 
-# Graph with CI (ggeffects version)
-total.slope.ci <- dat.culm %>% 
+#   Graph (ggeffects version)
+total.slope.gg <- dat.culm %>% 
   ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.slope,
+  geom_ribbon(data = gg.total.slope,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.slope,
+  geom_line(data = gg.total.slope,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
@@ -669,20 +692,23 @@ total.slope.ci <- dat.culm %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") 
-total.slope.ci
+total.slope.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.culm %>% 
   ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.slope,
+  geom_ribbon(data = gg.total.slope,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.slope,
+  geom_ribbon(data = insight.total.slope,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
+  geom_line(data = gg.total.slope,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
-  geom_line(data = viz.total.slope,
-            aes(y = Predicted), linewidth = 1,
+  geom_line(data = insight.total.slope,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3", linetype = "dashed") +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
@@ -696,22 +722,28 @@ dat.culm %>%
 
 ## Total: Herb (NS) -------------------------------------------------------
 
-# Generate prediction and add unscaled variable
-viz.total.herb <- get_datagrid(dat.culm.ex, by = c("Change_HerbCover_scaled"),
+# insight version
+#   Generate prediction and add unscaled variable
+insight.total.herb <- get_datagrid(dat.culm.ex, by = c("Change_HerbCover_scaled"),
                                length = 100)
-viz.total.herb$Predicted <- get_predicted(total_best.model, viz.total.herb)
+insight.total.herb$Change_Total_Live_Culms <- get_predicted(total_best.model, insight.total.herb)
+insight.total.herb$SE <- get_predicted_ci(total_best.model, data = insight.total.herb)$SE
+insight.total.herb$CI = insight.total.herb$SE * 1.96
 unscaled.herb100 <- get_datagrid(dat.culm.unscaled, by = "Change_HerbCover",
                                  length = 100) %>% 
   arrange(Change_HerbCover)
-viz.total.herb$Change_HerbCover <- unscaled.herb100$Change_HerbCover
+insight.total.herb$Change_HerbCover <- unscaled.herb100$Change_HerbCover
 
 # Graph (insight version)
 total.herb <- dat.culm %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_line(data = viz.total.herb,
-            aes(y = Predicted), linewidth = 1.5,
+  geom_line(data = insight.total.herb,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3") +
+  geom_ribbon(data = insight.total.herb,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
   theme_bw() +
   ggtitle("Change in total culm count vs. herb cover change") +
   labs(y = expression(Delta ~ "Total culm count"),
@@ -726,20 +758,20 @@ total.herb
 
 
 # Generate CI and add unscaled variable
-ci.total.herb <- predict_response(total_best.model, terms = "Change_HerbCover_scaled")
+gg.total.herb <- predict_response(total_best.model, terms = "Change_HerbCover_scaled")
 unscaled.herb8 <- get_datagrid(dat.culm.unscaled, by = "Change_HerbCover",
                                length = 8) %>% 
   arrange(Change_HerbCover)
-ci.total.herb$Change_HerbCover <- unscaled.herb8$Change_HerbCover
-ci.total.herb$Change_Total_Live_Culms <- ci.total.herb$predicted
+gg.total.herb$Change_HerbCover <- unscaled.herb8$Change_HerbCover
+gg.total.herb$Change_Total_Live_Culms <- gg.total.herb$predicted
 
-# Graph with CI (ggeffects version)
-total.herb.ci <- dat.culm %>% 
+# Graph (ggeffects version)
+total.herb.gg <- dat.culm %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.herb,
+  geom_ribbon(data = gg.total.herb,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.herb,
+  geom_line(data = gg.total.herb,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
@@ -752,20 +784,23 @@ total.herb.ci <- dat.culm %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-total.herb.ci
+total.herb.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms)) +
   geom_point() +
-  geom_ribbon(data = ci.total.herb,
+  geom_ribbon(data = gg.total.herb,
               aes(ymin = conf.low, ymax = conf.high), alpha = 0.2) +
-  geom_line(data = ci.total.herb,
+  geom_ribbon(data = insight.total.herb,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
+  geom_line(data = gg.total.herb,
             aes(y = predicted), linewidth = 1,
             color = "purple3") +
-  geom_line(data = viz.total.herb,
-            aes(y = Predicted), linewidth = 1,
+  geom_line(data = insight.total.herb,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3", linetype = "dashed") +
   theme_bw() +
   ggtitle("Change in total culm count vs. herb cover change") +
@@ -785,11 +820,26 @@ dat.culm %>%
 
 ## Repro: Aspect ----------------------------------------------------------
 
-# Original data (boxplot)
-repro.change.aspect <- dat.culm %>% 
+# ggeffects version
+#   Generate prediction & CI
+gg.repro.aspect <- predict_response(repro_best.model, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_Reproductive_culms = predicted)
+
+# Graph (ggeffects version)
+repro.aspect.gg <- dat.culm %>% 
   ggplot(aes(x = Aspect, y = Change_Reproductive_culms)) +
   geom_boxplot() +
   geom_jitter(alpha = 0.3) +
+  geom_pointrange(data = gg.repro.aspect,
+                  aes(ymin = conf.low, ymax = conf.high),
+                  color = "purple3",
+                  linewidth = 1.3) +
+  geom_point(data = gg.repro.aspect,
+             aes(x = Aspect, y = Change_Reproductive_culms),
+             color = "purple3",
+             size = 3,
+             shape = 15) +
   theme_bw() +
   labs(title = "Change in repro culm count by aspect",
        y = expression(Delta ~ "Reproductive culm count"),
@@ -798,32 +848,13 @@ repro.change.aspect <- dat.culm %>%
              linetype = "dashed",
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
-repro.change.aspect
-
-
-# Generate CI
-repro.pred.aspect <- predict_response(repro_best.model, terms = "Aspect")
-
-# Graph with CI, prediction only (ggeffects version)
-repro.pred.aspect <- repro.pred.aspect %>% 
-  ggplot(aes(x, predicted)) +
-  geom_point() +
-  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
-  theme_bw() +
-  labs(title = "Prediction for repro change by aspect",
-       y = expression(Delta ~ "Reproductive culm count"),
-       x = NULL) +
-  scale_y_continuous(limits = c(-120, 220)) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  theme(axis.text.x = element_text(color = "black")) 
-repro.pred.aspect
+repro.aspect.gg
 
 
 
 ## Repro: BG density -------------------------------------------------------
 
+# insight version
 # Generate prediction and add unscaled variable
 viz.repro.bgden <- get_datagrid(dat.culm.ex, by = c("Change_BGDensity_scaled"),
                                 length = 100)
@@ -838,7 +869,7 @@ repro.bgden <- dat.culm %>%
   ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_line(data = viz.repro.bgden,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   ggtitle("Change in repro culm count vs. plot density change") +
@@ -861,8 +892,8 @@ unscaled.bgden9 <- get_datagrid(dat.culm.unscaled, by = "Change_BGDensity",
 ci.repro.bgden$Change_BGDensity <- unscaled.bgden9$Change_BGDensity
 ci.repro.bgden$Change_Reproductive_culms <- ci.repro.bgden$predicted
 
-# Graph with CI (ggeffects version)
-repro.bgden.ci <- dat.culm %>% 
+# Graph (ggeffects version)
+repro.bgden.gg <- dat.culm %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_ribbon(data = ci.repro.bgden,
@@ -877,10 +908,10 @@ repro.bgden.ci <- dat.culm %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
-repro.bgden.ci
+repro.bgden.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms)) +
   geom_point() +
@@ -919,7 +950,7 @@ repro.shrub <- dat.culm %>%
   ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_line(data = viz.repro.shrub,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   ggtitle("Change in repro culm count vs. shrub cover change") +
@@ -942,8 +973,8 @@ unscaled.shrub16 <- get_datagrid(dat.culm.unscaled, by = "Change_ShrubCover",
 ci.repro.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
 ci.repro.shrub$Change_Reproductive_culms <- ci.repro.shrub$predicted
 
-# Graph with CI (ggeffects version)
-repro.shrub.ci <- dat.culm %>% 
+# Graph (ggeffects version)
+repro.shrub.gg <- dat.culm %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_ribbon(data = ci.repro.shrub,
@@ -961,10 +992,10 @@ repro.shrub.ci <- dat.culm %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-repro.shrub.ci
+repro.shrub.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms)) +
   geom_point() +
@@ -1005,7 +1036,7 @@ repro.herb <- dat.culm %>%
   ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_line(data = viz.repro.herb,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   ggtitle("Change in repro culm count vs. herb cover change") +
@@ -1028,8 +1059,8 @@ unscaled.herb8 <- get_datagrid(dat.culm.unscaled, by = "Change_HerbCover",
 ci.repro.herb$Change_HerbCover <- unscaled.herb8$Change_HerbCover
 ci.repro.herb$Change_Reproductive_culms <- ci.repro.herb$predicted
 
-# Graph with CI (ggeffects version)
-repro.herb.ci <- dat.culm %>% 
+# Graph (ggeffects version)
+repro.herb.gg <- dat.culm %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_ribbon(data = ci.repro.herb,
@@ -1047,10 +1078,10 @@ repro.herb.ci <- dat.culm %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-repro.herb.ci
+repro.herb.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms)) +
   geom_point() +
@@ -1091,7 +1122,7 @@ repro.precip <- dat.culm %>%
   ggplot(aes(x = Prev_year_precip, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_line(data = viz.repro.precip,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   xlab("Previous year precip (mm)") +
@@ -1111,8 +1142,8 @@ unscaled.precip15 <- get_datagrid(dat.culm.unscaled, by = "Prev_year_precip",
 ci.repro.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
 ci.repro.precip$Change_Reproductive_culms <- ci.repro.precip$predicted 
 
-# Graph with CI (ggeffects version)
-repro.precip.ci <- dat.culm %>% 
+# Graph (ggeffects version)
+repro.precip.gg <- dat.culm %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_ribbon(data = ci.repro.precip,
@@ -1127,10 +1158,10 @@ repro.precip.ci <- dat.culm %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
-repro.precip.ci
+repro.precip.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects)
 dat.culm %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_Reproductive_culms)) +
   geom_point() +
@@ -1168,7 +1199,7 @@ repro.slope <- dat.culm %>%
   ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_line(data = viz.repro.slope,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
@@ -1188,8 +1219,8 @@ unscaled.slope12 <- get_datagrid(dat.culm.unscaled, by = "PlotSlope",
 ci.repro.slope$PlotSlope <- unscaled.slope12$PlotSlope
 ci.repro.slope$Change_Reproductive_culms <- ci.repro.slope$predicted
 
-# Graph with CI (ggeffects version)
-repro.slope.ci <- dat.culm %>% 
+# Graph (ggeffects version)
+repro.slope.gg <- dat.culm %>% 
   ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms)) +
   geom_point() +
   geom_ribbon(data = ci.repro.slope,
@@ -1204,10 +1235,10 @@ repro.slope.ci <- dat.culm %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") 
-repro.slope.ci
+repro.slope.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.culm %>% 
   ggplot(aes(x = PlotSlope, y = Change_Reproductive_culms)) +
   geom_point() +
@@ -1244,13 +1275,13 @@ unscaled.bgden.precip243 <- dat.culm.unscaled %>%
 viz.repro.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
 viz.repro.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 repro.bgden.precip <- dat.culm %>% 
   ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.repro.bgden.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -1267,7 +1298,7 @@ repro.bgden.precip <- dat.culm %>%
 repro.bgden.precip
 
 
-# Generate CI with scaled x variable 
+# Generate CI with scaled explanatory variable 
 repro.pred.bgden.precip <- predict_response(repro_best.model, 
                                             terms = c("Change_BGDensity_scaled", "Prev_year_precip_scaled"))
 repro.pred.bgden.precip$group <- factor(repro.pred.bgden.precip$group,
@@ -1313,13 +1344,13 @@ unscaled.shrub.precip243 <- dat.culm.unscaled %>%
 viz.repro.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
 viz.repro.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 repro.shrub.precip <- dat.culm %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.repro.shrub.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -1335,7 +1366,7 @@ repro.shrub.precip <- dat.culm %>%
 repro.shrub.precip
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 repro.pred.shrub.precip <- predict_response(repro_best.model, 
                                             terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
 repro.pred.shrub.precip$group <- factor(repro.pred.shrub.precip$group,
@@ -1381,13 +1412,13 @@ unscaled.herb.precip243 <- dat.culm.unscaled %>%
 viz.repro.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
 viz.repro.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 repro.herb.precip <- dat.culm %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.repro.herb.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -1404,7 +1435,7 @@ repro.herb.precip <- dat.culm %>%
 repro.herb.precip
 
 
-# Generate CI with scaled x variable 
+# Generate CI with scaled explanatory variable 
 repro.pred.herb.precip <- predict_response(repro_best.model, 
                                            terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
 repro.pred.herb.precip$group <- factor(repro.pred.herb.precip$group,
@@ -1478,7 +1509,7 @@ unscaled.precip15 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
 ci.bgden.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
 ci.bgden.precip$Change_BGDensity <- ci.bgden.precip$predicted 
 
-# Graph with CI (ggeffects version)
+# Graph (ggeffects version)
 bgden.precip.ci <- dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
@@ -1497,7 +1528,7 @@ bgden.precip.ci <- dat.plot %>%
 bgden.precip.ci
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects) 
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects) 
 dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point() +
@@ -1523,11 +1554,26 @@ dat.plot %>%
 
 ## BG density: Aspect -----------------------------------------------------
 
-# Original data (boxplot)
-bgden.change.aspect <- dat.plot %>% 
+# ggeffects version
+#   Generate prediction & CI
+gg.bgden.aspect <- predict_response(bgden_best.model, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_BGDensity = predicted)
+
+# Graph (ggeffects version)
+bgden.aspect.gg <- dat.plot %>% 
   ggplot(aes(x = Aspect, y = Change_BGDensity)) +
   geom_boxplot() +
   geom_jitter(alpha = 0.3) +
+  geom_pointrange(data = gg.bgden.aspect,
+                  aes(ymin = conf.low, ymax = conf.high),
+                  color = "purple3",
+                  linewidth = 1.3) +
+  geom_point(data = gg.bgden.aspect,
+             aes(x = Aspect, y = Change_BGDensity),
+             color = "purple3",
+             size = 3,
+             shape = 15) +
   theme_bw() +
   labs(title = "Change in plot density by aspect",
        y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
@@ -1536,29 +1582,7 @@ bgden.change.aspect <- dat.plot %>%
              linetype = "dashed",
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
-bgden.change.aspect
-
-
-# Generate CI
-bgden.pred.aspect <- predict_response(bgden_best.model, terms = "Aspect")
-bgden.pred.aspect <- as.data.frame(bgden.pred.aspect)
-
-# Graph with CI, prediction only (ggeffects version)
-bgden.pred.aspect <- bgden.pred.aspect %>% 
-  ggplot(aes(x, predicted)) +
-  geom_point() +
-  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
-  theme_bw() +
-  labs(title = "Prediction for plot density change by aspect",
-       y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
-       x = NULL) +
-  scale_y_continuous(limits = c(-24, 32),
-                     breaks = c(-20, 0, 20)) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  theme(axis.text.x = element_text(color = "black")) 
-bgden.pred.aspect
+bgden.aspect.gg
 
 
 
@@ -1578,7 +1602,7 @@ bgden.slope <- dat.plot %>%
   ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
   geom_point() +
   geom_line(data = viz.bgden.slope,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
@@ -1598,8 +1622,8 @@ unscaled.slope12 <- get_datagrid(dat.plot.unscaled, by = "PlotSlope",
 ci.bgden.slope$PlotSlope <- unscaled.slope12$PlotSlope
 ci.bgden.slope$Change_BGDensity <- ci.bgden.slope$predicted
 
-# Graph with CI (ggeffects version)
-bgden.slope.ci <- dat.plot %>% 
+# Graph (ggeffects version)
+bgden.slope.gg <- dat.plot %>% 
   ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
   geom_point() +
   geom_ribbon(data = ci.bgden.slope,
@@ -1614,10 +1638,10 @@ bgden.slope.ci <- dat.plot %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") 
-bgden.slope.ci
+bgden.slope.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.plot %>% 
   ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
   geom_point() +
@@ -1655,7 +1679,7 @@ bgden.shrub <- dat.plot %>%
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity)) +
   geom_point() +
   geom_line(data = viz.bgden.shrub,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
@@ -1678,8 +1702,8 @@ unscaled.shrub16 <- get_datagrid(dat.plot.unscaled, by = "Change_ShrubCover",
 ci.bgden.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
 ci.bgden.shrub$Change_BGDensity <- ci.bgden.shrub$predicted
 
-# Graph with CI (ggeffects version)
-bgden.shrub.ci <- dat.plot %>% 
+# Graph (ggeffects version)
+bgden.shrub.gg <- dat.plot %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity)) +
   geom_point() +
   geom_ribbon(data = ci.bgden.shrub,
@@ -1697,10 +1721,10 @@ bgden.shrub.ci <- dat.plot %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-bgden.shrub.ci
+bgden.shrub.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.plot %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity)) +
   geom_point() +
@@ -1741,7 +1765,7 @@ bgden.herb <- dat.plot %>%
   ggplot(aes(x = Change_HerbCover, y = Change_BGDensity)) +
   geom_point() +
   geom_line(data = viz.bgden.herb,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
@@ -1764,8 +1788,8 @@ unscaled.herb16 <- get_datagrid(dat.plot.unscaled, by = "Change_HerbCover",
 ci.bgden.herb$Change_HerbCover <- unscaled.herb16$Change_HerbCover
 ci.bgden.herb$Change_BGDensity <- ci.bgden.herb$predicted
 
-# Graph with CI (ggeffects version)
-bgden.herb.ci <- dat.plot %>% 
+# Graph (ggeffects version)
+bgden.herb.gg <- dat.plot %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGDensity)) +
   geom_point() +
   geom_ribbon(data = ci.bgden.herb,
@@ -1783,10 +1807,10 @@ bgden.herb.ci <- dat.plot %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-bgden.herb.ci
+bgden.herb.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.plot %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGDensity)) +
   geom_point() +
@@ -1825,13 +1849,13 @@ unscaled.shrub.precip243 <- dat.plot.unscaled %>%
 viz.bgden.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
 viz.bgden.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 bgden.shrub.precip <- dat.plot %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.bgden.shrub.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -1847,7 +1871,7 @@ bgden.shrub.precip <- dat.plot %>%
 bgden.shrub.precip
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 bgden.pred.shrub.precip <- predict_response(bgden_best.model, 
                                             terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
 bgden.pred.shrub.precip$group <- factor(bgden.pred.shrub.precip$group,
@@ -1895,13 +1919,13 @@ unscaled.herb.precip243 <- dat.plot.unscaled %>%
 viz.bgden.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
 viz.bgden.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 bgden.herb.precip <- dat.plot %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGDensity,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.bgden.herb.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -1917,7 +1941,7 @@ bgden.herb.precip <- dat.plot %>%
 bgden.herb.precip
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 bgden.pred.herb.precip <- predict_response(bgden_best.model, 
                                            terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
 bgden.pred.herb.precip$group <- factor(bgden.pred.herb.precip$group,
@@ -1984,7 +2008,7 @@ bgcov.precip <- dat.plot %>%
   ggplot(aes(x = Prev_year_precip, y = Change_BGCover)) +
   geom_point() +
   geom_line(data = viz.bgcov.precip,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   geom_hline(yintercept = 0,
@@ -2004,8 +2028,8 @@ unscaled.precip15 <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
 ci.bgcov.precip$Prev_year_precip <- unscaled.precip15$Prev_year_precip
 ci.bgcov.precip$Change_BGCover <- ci.bgcov.precip$predicted 
 
-# Graph with CI (ggeffects version)
-bgcov.precip.ci <- dat.plot %>% 
+# Graph (ggeffects version)
+bgcov.precip.gg <- dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGCover)) +
   geom_point() +
   geom_ribbon(data = ci.bgcov.precip,
@@ -2020,10 +2044,10 @@ bgcov.precip.ci <- dat.plot %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red")
-bgcov.precip.ci
+bgcov.precip.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects)
 dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGCover)) +
   geom_point() +
@@ -2047,11 +2071,26 @@ dat.plot %>%
 
 ## BG cover: Aspect -------------------------------------------------------
 
-# Original data (boxplot)
-bgcov.change.aspect <- dat.plot %>% 
+# ggeffects version
+#   Generate prediction & CI
+gg.bgcov.aspect <- predict_response(bgcov_best.model, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_BGCover = predicted)
+
+# Graph (ggeffects version)
+bgcov.aspect.gg <- dat.plot %>% 
   ggplot(aes(x = Aspect, y = Change_BGCover)) +
   geom_boxplot() +
   geom_jitter(alpha = 0.3) +
+  geom_pointrange(data = gg.bgcov.aspect,
+                  aes(ymin = conf.low, ymax = conf.high),
+                  color = "purple3",
+                  linewidth = 1.3) +
+  geom_point(data = gg.bgcov.aspect,
+             aes(x = Aspect, y = Change_BGCover),
+             color = "purple3",
+             size = 3,
+             shape = 15) +
   theme_bw() +
   labs(title = "Change in plot cover by aspect",
        y = expression(Delta ~ "Cover (%)"),
@@ -2060,29 +2099,7 @@ bgcov.change.aspect <- dat.plot %>%
              linetype = "dashed",
              color = "red") +
   theme(axis.text.x = element_text(color = "black"))
-bgcov.change.aspect
-
-
-# Generate CI
-bgcov.pred.aspect <- predict_response(bgcov_best.model, terms = "Aspect")
-bgcov.pred.aspect <- as.data.frame(bgcov.pred.aspect)
-
-# Graph with CI, prediction only (ggeffects version)
-bgcov.pred.aspect <- bgcov.pred.aspect %>% 
-  ggplot(aes(x, predicted)) +
-  geom_point() +
-  geom_pointrange(aes(ymin = conf.low, ymax = conf.high), linetype = "dashed") +
-  theme_bw() +
-  labs(title = "Prediction for plot cover change by aspect",
-       y = expression(Delta ~ "Cover (%)"),
-       x = NULL) +
-  scale_y_continuous(limits = c(-50, 45),
-                     breaks = c(-50, -25, 0, 25)) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") +
-  theme(axis.text.x = element_text(color = "black")) 
-bgcov.pred.aspect
+bgcov.aspect.gg
 
 
 
@@ -2102,7 +2119,7 @@ bgcov.shrub <- dat.plot %>%
   ggplot(aes(x = Change_ShrubCover, y = Change_BGCover)) +
   geom_point() +
   geom_line(data = viz.bgcov.shrub,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   labs(y = expression(Delta ~ "Cover (%)"),
@@ -2125,8 +2142,8 @@ unscaled.shrub16 <- get_datagrid(dat.plot.unscaled, by = "Change_ShrubCover",
 ci.bgcov.shrub$Change_ShrubCover <- unscaled.shrub16$Change_ShrubCover
 ci.bgcov.shrub$Change_BGCover <- ci.bgcov.shrub$predicted
 
-# Graph with CI (ggeffects version)
-bgcov.shrub.ci <- dat.plot %>% 
+# Graph (ggeffects version)
+bgcov.shrub.gg <- dat.plot %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGCover)) +
   geom_point() +
   geom_ribbon(data = ci.bgcov.shrub,
@@ -2144,10 +2161,10 @@ bgcov.shrub.ci <- dat.plot %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-bgcov.shrub.ci
+bgcov.shrub.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.plot %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGCover)) +
   geom_point() +
@@ -2188,7 +2205,7 @@ bgcov.slope <- dat.plot %>%
   ggplot(aes(x = PlotSlope, y = Change_BGCover)) +
   geom_point() +
   geom_line(data = viz.bgcov.slope,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
@@ -2208,8 +2225,8 @@ unscaled.slope12 <- get_datagrid(dat.plot.unscaled, by = "PlotSlope",
 ci.bgcov.slope$PlotSlope <- unscaled.slope12$PlotSlope
 ci.bgcov.slope$Change_BGCover <- ci.bgcov.slope$predicted
 
-# Graph with CI (ggeffects version)
-bgcov.slope.ci <- dat.plot %>% 
+# Graph (ggeffects version)
+bgcov.slope.gg <- dat.plot %>% 
   ggplot(aes(x = PlotSlope, y = Change_BGCover)) +
   geom_point() +
   geom_ribbon(data = ci.bgcov.slope,
@@ -2224,10 +2241,10 @@ bgcov.slope.ci <- dat.plot %>%
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") 
-bgcov.slope.ci
+bgcov.slope.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.plot %>% 
   ggplot(aes(x = PlotSlope, y = Change_BGCover)) +
   geom_point() +
@@ -2265,7 +2282,7 @@ bgcov.herb <- dat.plot %>%
   ggplot(aes(x = Change_HerbCover, y = Change_BGCover)) +
   geom_point() +
   geom_line(data = viz.bgcov.herb,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   labs(y = expression(Delta ~ "Cover (%)"),
@@ -2288,8 +2305,8 @@ unscaled.herb8 <- get_datagrid(dat.plot.unscaled, by = "Change_HerbCover",
 ci.bgcov.herb$Change_HerbCover <- unscaled.herb8$Change_HerbCover
 ci.bgcov.herb$Change_BGCover <- ci.bgcov.herb$predicted
 
-# Graph with CI (ggeffects version)
-bgcov.herb.ci <- dat.plot %>% 
+# Graph (ggeffects version)
+bgcov.herb.gg <- dat.plot %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGCover)) +
   geom_point() +
   geom_ribbon(data = ci.bgcov.herb,
@@ -2307,10 +2324,10 @@ bgcov.herb.ci <- dat.plot %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") 
-bgcov.herb.ci
+bgcov.herb.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is using ggeffects)
+# Graph differences in prediction line (dashed = insight, solid = ggeffects)
 dat.plot %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGCover)) +
   geom_point() +
@@ -2350,13 +2367,13 @@ unscaled.shrub.precip243 <- dat.plot.unscaled %>%
 viz.bgcov.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
 viz.bgcov.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 bgcov.shrub.precip <- dat.plot %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGCover,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.bgcov.shrub.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -2372,7 +2389,7 @@ bgcov.shrub.precip <- dat.plot %>%
 bgcov.shrub.precip
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 bgcov.pred.shrub.precip <- predict_response(bgcov_best.model, 
                                             terms = c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"))
 bgcov.pred.shrub.precip$group <- factor(bgcov.pred.shrub.precip$group,
@@ -2420,13 +2437,13 @@ unscaled.herb.precip243 <- dat.plot.unscaled %>%
 viz.bgcov.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
 viz.bgcov.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 bgcov.herb.precip <- dat.plot %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGCover,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.bgcov.herb.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -2442,7 +2459,7 @@ bgcov.herb.precip <- dat.plot %>%
 bgcov.herb.precip
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 bgcov.pred.herb.precip <- predict_response(bgcov_best.model, 
                                            terms = c("Change_HerbCover_scaled", "Prev_year_precip_scaled"))
 bgcov.pred.herb.precip$group <- factor(bgcov.pred.herb.precip$group,
@@ -2511,7 +2528,7 @@ survival.precip <- dat.survival %>%
   ggplot(aes(x = Prev_year_precip, y = survival_transf)) +
   geom_point() +
   geom_line(data = viz.survival.precip,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   scale_y_continuous(labels = scales::percent) +
@@ -2529,8 +2546,8 @@ unscaled.precip11 <- get_datagrid(dat.survival.unscaled, by = "Prev_year_precip"
 ci.survival.precip$Prev_year_precip <- unscaled.precip11$Prev_year_precip
 ci.survival.precip$survival_transf <- ci.survival.precip$predicted 
 
-# Graph with CI (ggeffects version)
-survival.precip.ci <- dat.survival %>% 
+# Graph (ggeffects version)
+survival.precip.gg <- dat.survival %>% 
   ggplot(aes(x = Prev_year_precip, y = survival_transf)) +
   geom_point() +
   geom_ribbon(data = ci.survival.precip,
@@ -2543,10 +2560,10 @@ survival.precip.ci <- dat.survival %>%
   labs(x = "Previous year precip (mm)",
        y = "Seedling survival (%)",
        title = "Buffelgrass seedling survival vs. precip") 
-survival.precip.ci
+survival.precip.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects)
 dat.survival %>% 
   ggplot(aes(x = Prev_year_precip, y = survival_transf)) +
   geom_point() +
@@ -2583,7 +2600,7 @@ survival.bgden <- dat.survival %>%
   ggplot(aes(x = BGDensity, y = survival_transf)) +
   geom_point() +
   geom_line(data = viz.survival.bgden,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   scale_y_continuous(labels = scales::percent) +
@@ -2601,8 +2618,8 @@ unscaled.bgden9 <- get_datagrid(dat.survival.unscaled, by = "BGDensity",
 ci.survival.bgden$BGDensity <- unscaled.bgden9$BGDensity
 ci.survival.bgden$survival_transf <- ci.survival.bgden$predicted 
 
-# Graph with CI (ggeffects version)
-survival.bgden.ci <- dat.survival %>% 
+# Graph (ggeffects version)
+survival.bgden.gg <- dat.survival %>% 
   ggplot(aes(x = BGDensity, y = survival_transf)) +
   geom_point() +
   geom_ribbon(data = ci.survival.bgden,
@@ -2615,10 +2632,10 @@ survival.bgden.ci <- dat.survival %>%
   labs(x = expression(paste("Density (individuals / ", m^2, ")")),
        y = "Seedling survival (%)",
        title = "Buffelgrass seedling survival vs. plot density") 
-survival.bgden.ci
+survival.bgden.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects)
 dat.survival %>% 
   ggplot(aes(x = BGDensity, y = survival_transf)) +
   geom_point() +
@@ -2655,7 +2672,7 @@ survival.slope <- dat.survival %>%
   ggplot(aes(x = PlotSlope, y = survival_transf)) +
   geom_point() +
   geom_line(data = viz.survival.slope,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   scale_y_continuous(labels = scales::percent) +
@@ -2673,8 +2690,8 @@ unscaled.slope24 <- get_datagrid(dat.survival.unscaled, by = "PlotSlope",
 ci.survival.slope$PlotSlope <- unscaled.slope24$PlotSlope
 ci.survival.slope$survival_transf <- ci.survival.slope$predicted 
 
-# Graph with CI (ggeffects version)
-survival.slope.ci <- dat.survival %>% 
+# Graph (ggeffects version)
+survival.slope.gg <- dat.survival %>% 
   ggplot(aes(x = PlotSlope, y = survival_transf)) +
   geom_point() +
   geom_ribbon(data = ci.survival.slope,
@@ -2687,10 +2704,10 @@ survival.slope.ci <- dat.survival %>%
   labs(x = "Plot slope (\u00B0)",
        y = "Seedling survival (%)",
        title = "Buffelgrass seedling survival vs. plot slope") 
-survival.slope.ci
+survival.slope.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects)
 dat.survival %>% 
   ggplot(aes(x = PlotSlope, y = survival_transf)) +
   geom_point() +
@@ -2726,7 +2743,7 @@ survival.shrub <- dat.survival %>%
   ggplot(aes(x = ShrubCover, y = survival_transf)) +
   geom_point() +
   geom_line(data = viz.survival.shrub,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   scale_y_continuous(labels = scales::percent) +
@@ -2744,8 +2761,8 @@ unscaled.shrub11 <- get_datagrid(dat.survival.unscaled, by = "ShrubCover",
 ci.survival.shrub$ShrubCover <- unscaled.shrub11$ShrubCover
 ci.survival.shrub$survival_transf <- ci.survival.shrub$predicted 
 
-# Graph with CI (ggeffects version)
-survival.shrub.ci <- dat.survival %>% 
+# Graph (ggeffects version)
+survival.shrub.gg <- dat.survival %>% 
   ggplot(aes(x = ShrubCover, y = survival_transf)) +
   geom_point() +
   geom_ribbon(data = ci.survival.shrub,
@@ -2758,10 +2775,10 @@ survival.shrub.ci <- dat.survival %>%
   labs(x = "Native shrub cover (%)",
        y = "Seedling survival (%)",
        title = "Buffelgrass seedling survival vs. shrub") 
-survival.shrub.ci
+survival.shrub.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects)
 dat.survival %>% 
   ggplot(aes(x = ShrubCover, y = survival_transf)) +
   geom_point() +
@@ -2797,7 +2814,7 @@ survival.herb <- dat.survival %>%
   ggplot(aes(x =HerbCover, y = survival_transf)) +
   geom_point() +
   geom_line(data = viz.survival.herb,
-            aes(y = Predicted), linewidth = 1.5,
+            aes(y = Predicted), linewidth = 1,
             color = "purple3") +
   theme_bw() +
   scale_y_continuous(labels = scales::percent) +
@@ -2815,8 +2832,8 @@ unscaled.herb24 <- get_datagrid(dat.survival.unscaled, by = "HerbCover",
 ci.survival.herb$HerbCover <- unscaled.herb24$HerbCover
 ci.survival.herb$survival_transf <- ci.survival.herb$predicted 
 
-# Graph with CI (ggeffects version)
-survival.herb.ci <- dat.survival %>% 
+# Graph (ggeffects version)
+survival.herb.gg <- dat.survival %>% 
   ggplot(aes(x = HerbCover, y = survival_transf)) +
   geom_point() +
   geom_ribbon(data = ci.survival.herb,
@@ -2829,10 +2846,10 @@ survival.herb.ci <- dat.survival %>%
   labs(x = "Native forb & grass cover (%)",
        y = "Seedling survival (%)",
        title = "Buffelgrass seedling survival vs. herb cover") 
-survival.herb.ci
+survival.herb.gg
 
 
-# Graph differences in prediction line (dashed is using insight, solid is from ggeffects)
+# Graph differences in prediction line (dashed = insight, solid is from ggeffects)
 dat.survival %>% 
   ggplot(aes(x = HerbCover, y = survival_transf)) +
   geom_point() +
@@ -2867,13 +2884,13 @@ unscaled.bgden.precip243 <- dat.survival.unscaled %>%
 viz.survival.bgden.precip$BGDensity <- unscaled.bgden.precip243$BGDensity
 viz.survival.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 survival.bgden.precip <- dat.survival %>% 
   ggplot(aes(x = BGDensity, y = survival_transf,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.survival.bgden.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -2884,7 +2901,7 @@ survival.bgden.precip <- dat.survival %>%
 survival.bgden.precip # lines are kind of weird and not smooth
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 survival.pred.bgden.precip <- predict_response(survival_best.model, 
                                                terms = c("BGDensity_scaled", "Prev_year_precip_scaled"))
 survival.pred.bgden.precip$group <- factor(survival.pred.bgden.precip$group,
@@ -2925,13 +2942,13 @@ unscaled.shrub.precip243 <- dat.survival.unscaled %>%
 viz.survival.shrub.precip$ShrubCover <- unscaled.shrub.precip243$ShrubCover
 viz.survival.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, no CI (insight version)
 survival.shrub.precip <- dat.survival %>% 
   ggplot(aes(x = ShrubCover, y = survival_transf,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.survival.shrub.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -2942,7 +2959,7 @@ survival.shrub.precip <- dat.survival %>%
 survival.shrub.precip # lol all the lines are just flat
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 survival.pred.shrub.precip <- predict_response(survival_best.model, 
                                                terms = c("ShrubCover_scaled", "Prev_year_precip_scaled"))
 survival.pred.shrub.precip$group <- factor(survival.pred.shrub.precip$group,
@@ -2984,13 +3001,13 @@ unscaled.herb.precip243 <- dat.survival.unscaled %>%
 viz.survival.herb.precip$HerbCover <- unscaled.herb.precip243$HerbCover
 viz.survival.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
 
-# Graph (insight version)
+# Graph, CI (insight version)
 survival.herb.precip <- dat.survival %>% 
   ggplot(aes(x = HerbCover, y = survival_transf,
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = viz.survival.herb.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -3001,7 +3018,7 @@ survival.herb.precip <- dat.survival %>%
 survival.herb.precip 
 
 
-# Generate CI with scaled x variable
+# Generate CI with scaled explanatory variable
 survival.pred.herb.precip <- predict_response(survival_best.model, 
                                               terms = c("HerbCover_scaled", "Prev_year_precip_scaled"))
 survival.pred.herb.precip$group <- factor(survival.pred.herb.precip$group,
@@ -3033,16 +3050,11 @@ survival.herb.precip.ci # insight version much higher than ggeffects
 
 ## Total change -----------------------------------------------------------
 
-# Significant
+# Significant (insight & ggeffects all very similar)
 # Total change vs. Prev_year_precip
 tiff("figures/2025-08_draft-figures/Total-change_prediction_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.precip
-dev.off()
-# Total change vs. Prev_year_precip (with CI)
-tiff("figures/2025-08_draft-figures/Total-change_prediction_prev-year-precip_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-total.precip.ci
 dev.off()
 
 # Total change vs. Change_BGDensity
@@ -3050,21 +3062,11 @@ tiff("figures/2025-08_draft-figures/Total-change_prediction_BG-density-change.ti
      units = "in", height = 4, width = 5, res = 150)
 total.bgden
 dev.off()
-# Total change vs. Change_BGDensity (with CI)
-tiff("figures/2025-08_draft-figures/Total-change_prediction_BG-density-change_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-total.bgden.ci
-dev.off()
 
 # Total change vs. Change_ShrubCover
 tiff("figures/2025-08_draft-figures/Total-change_prediction_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.shrub
-dev.off()
-# Total change vs. Change_ShrubCover (with CI)
-tiff("figures/2025-08_draft-figures/Total-change_prediction_shrub-cover-change_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-total.shrub.ci
 dev.off()
 
 # Total change interaction of precip*BG density
@@ -3101,16 +3103,11 @@ total.herb.precip.ci
 dev.off()
 
 
-# Not significant
-# Total change by Aspect (original data only)
-tiff("figures/2025-08_draft-figures/Total-change-by-aspect.tiff",
+# Not significant (insight & ggeffects all very similar)
+# Total change by Aspect
+tiff("figures/2025-08_draft-figures/Total-change_prediction_aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
-total.change.aspect
-dev.off()
-# Total change by Aspect (prediction only)
-tiff("figures/2025-08_draft-figures/Total-change-aspect-predictions_CI.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-total.pred.aspect
+total.aspect.gg
 dev.off()
 
 # Total change vs. PlotSlope
@@ -3118,21 +3115,11 @@ tiff("figures/2025-08_draft-figures/Total-change_prediction_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.slope
 dev.off()
-# Total change vs. PlotSlope (with CI)
-tiff("figures/2025-08_draft-figures/Total-change_prediction_plot-slope_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-total.slope.ci
-dev.off()
 
 # Total change vs. Change_HerbCover 
 tiff("figures/2025-08_draft-figures/Total-change_prediction_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.herb
-dev.off()
-# Total change vs. Change_HerbCover (with CI)
-tiff("figures/2025-08_draft-figures/Total-change_prediction_herb-cover-change_CI.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-total.herb.ci
 dev.off()
 
 
@@ -3159,7 +3146,7 @@ dev.off()
 # Repro change vs. Change_BGDensity (with CI)
 tiff("figures/2025-08_draft-figures/Repro-change_prediction_BG-density-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-repro.bgden.ci
+repro.bgden.gg
 dev.off()
 
 # Repro change vs. Change_ShrubCover
@@ -3170,7 +3157,7 @@ dev.off()
 # Repro change vs. Change_ShrubCover (with CI)
 tiff("figures/2025-08_draft-figures/Repro-change_prediction_shrub-cover-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-repro.shrub.ci
+repro.shrub.gg
 dev.off()
 
 # Repro change vs. Change_HerbCover
@@ -3181,7 +3168,7 @@ dev.off()
 # Repro change vs. Change_HerbCover (with CI)
 tiff("figures/2025-08_draft-figures/Repro-change_prediction_herb-cover-change_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-repro.herb.ci
+repro.herb.gg
 dev.off()
 
 
@@ -3194,7 +3181,7 @@ dev.off()
 # Repro change vs. Prev_year_precip (with CI)
 tiff("figures/2025-08_draft-figures/Repro-change_prediction_prev-year-precip_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-repro.precip.ci
+repro.precip.gg
 dev.off()
 
 # Repro change vs. PlotSlope
@@ -3205,7 +3192,7 @@ dev.off()
 # Repro change vs. PlotSlope (with CI)
 tiff("figures/2025-08_draft-figures/Repro-change_prediction_plot-slope_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-repro.slope.ci
+repro.slope.gg
 dev.off()
 
 # Repro change interaction of precip*BG density
@@ -3370,7 +3357,7 @@ dev.off()
 # Survival vs. Prev_year_precip (with CI)
 tiff("figures/2025-08_draft-figures/Survival_prediction_prev-year-precip_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-survival.precip.ci
+survival.precip.gg
 dev.off()
 
 # Survival vs. BGDensity
@@ -3381,7 +3368,7 @@ dev.off()
 # Survival vs. BGDensity (with CI)
 tiff("figures/2025-08_draft-figures/Survival_prediction_BG-density_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-survival.bgden.ci
+survival.bgden.gg
 dev.off()
 
 
@@ -3394,7 +3381,7 @@ dev.off()
 # Survival vs. PlotSlope (with CI)
 tiff("figures/2025-08_draft-figures/Survival_prediction_plot-slope_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-survival.slope.ci
+survival.slope.gg
 dev.off()
 
 # Survival vs. ShrubCover
@@ -3405,7 +3392,7 @@ dev.off()
 # Survival vs. ShrubCover (with CI)
 tiff("figures/2025-08_draft-figures/Survival_prediction_shrub-cover_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-survival.shrub.ci
+survival.shrub.gg
 dev.off()
 
 # Survival vs. HerbCover
@@ -3416,7 +3403,7 @@ dev.off()
 # Survival vs. HerbCover (with CI)
 tiff("figures/2025-08_draft-figures/Survival_prediction_herb-cover_CI.tiff",
      units = "in", height = 4, width = 5, res = 150)
-survival.herb.ci
+survival.herb.gg
 dev.off()
 
 # Survival interaction of precip*density

@@ -1,5 +1,5 @@
 # Created: 2025-08-01
-# Updated: 2025-08-01
+# Updated: 2025-08-05
 
 # Purpose: Compile version 6.3 linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #  Change_BGDensity, Change_BGCover, and survival_transf as response variable.
@@ -425,3 +425,6 @@ dev.off()
 
 
 save.image("RData/06.8_linear-models-6.3.RData")
+save(culm.change.flat.rm, plot.change, dat.survival,
+     total_best.model, repro_best.model, bgden_best.model, bgcov_best.model, survival_best.model,
+     file = "RData/06.8_data-and-best-models-6.3.RData")
