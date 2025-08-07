@@ -1,5 +1,5 @@
 # Created: 2025-08-01
-# Updated: 2025-08-05
+# Updated: 2025-08-07
 
 # Purpose: Create graphs for linear models v6.3. Overlay model predictions on top of original data
 #   using ggeffects and insight packages.
@@ -37,6 +37,7 @@
 #   get_predicted_ci() does not work because there is only one level for Aspect so it can't calculate SE, but
 #       Aspect must be included because it is included in the linear model.
 #   ggeffects version doesn't work because I can't figure out how to make an equivalent datagrid for unscaled variable.
+#   estimate_relation() from modelbased also doesn't work because it creates a bunch of levels for precip, not just 3.
 
 # Note: I don't know how to graph the Aspect boxplots using insight, so they will have a ggeffects version only
 #   (those graphs aren't very interesting and so it's not worth trying to figure).
@@ -54,6 +55,7 @@
 
 library(tidyverse)
 library(insight)
+library(modelbased)
 library(ggeffects)
 library(viridis)
 library(ggpubr)
@@ -76,7 +78,9 @@ dat.survival.raw <- dat.survival
 #   Culm change - total & repro
 dat.culm <- culm.change.flat.rm %>% 
   select(Change_Total_Live_Culms, Change_Reproductive_culms, 
-         Prev_year_precip, Aspect, PlotSlope, Change_BGDensity, Change_ShrubCover, Change_HerbCover)
+         Prev_year_precip, Aspect, PlotSlope, Change_BGDensity, Change_ShrubCover, Change_HerbCover,
+         Prev_year_precip_scaled, PlotSlope_scaled, Change_BGDensity_scaled,
+         Change_ShrubCover_scaled, Change_HerbCover_scaled)
 
 #   Plot change - density & cover
 dat.plot <- plot.change %>% 
@@ -480,6 +484,9 @@ total.bgden.precip.ci <- total.pred.bgden.precip %>%
   scale_y_continuous(limits = c(-120, 220))
 total.bgden.precip.ci
 
+# Multiply 
+
+
 
 
 ## Total: Precip * shrub --------------------------------------------------
@@ -557,6 +564,8 @@ insight.total.herb.precip <- dat.culm.ex %>%
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 3) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
+unique(insight.total.herb.precip$Prev_year_precip_scaled) # -0.945, 0.356, 1.658
+summary(dat.culm$Prev_year_precip_scaled) # not sure what middle value is, it's in between median and mean
 insight.total.herb.precip$Predicted <- get_predicted(total_best.model, insight.total.herb.precip)
 unscaled.herb.precip243 <- dat.culm.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
@@ -615,6 +624,60 @@ total.herb.precip.ci <- total.pred.herb.precip %>%
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-120, 220))
 total.herb.precip.ci
+
+
+# My attempt at trying to get CI on modelbased graph
+mb.total.herb.precip <- estimate_relation(total_best.model, dat.culm)
+mb.total.herb.precip2 <- estimate_expectation(total_best.model, dat.culm) 
+identical(mb.total.herb.precip, mb.total.herb.precip2) # estimate_relation() and estimate_expectation() produce identical results
+identical(mb.total.herb.precip$Prev_year_precip_scaled, dat.culm$Prev_year_precip_scaled) # explanatory variables are same value as original data
+unique(mb.total.herb.precip2$Prev_year_precip_scaled) # creates a bunch of levels
+mb.total.herb.precip$Prev_year_precip <- dat.culm$Prev_year_precip
+mb.total.herb.precip$Change_HerbCover <- dat.culm$Change_HerbCover
+mb.total.herb.precip$Change_Total_Live_Culms <- mb.total.herb.precip$Predicted
+
+# Graph, no CI (modelbased version)
+dat.culm %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = mb.total.herb.precip,
+            aes(y = Change_Total_Live_Culms, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in total culm count vs. herb cover change") # lol what is happening 
+
+# Graph with CI (modelbased version)
+dat.culm %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = mb.total.herb.precip,
+            aes(y = Change_Total_Live_Culms, group = Prev_year_precip), linewidth = 1.5) +
+  geom_ribbon(data = mb.total.herb.precip,
+              aes(ymin = CI_low, ymax = CI_high),
+              alpha = 0.2) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in total culm count vs. herb cover change") # idk but it doesn't like the CI inputs
 
 
 
