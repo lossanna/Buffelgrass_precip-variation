@@ -1,32 +1,26 @@
-# Created: 2025-08-01
-# Updated: 2025-08-05
+# Created: 2025-08-12
+# Updated: 2025-08-12
 
-# Purpose: Compile version 6.3 linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
-#  Change_BGDensity, Change_BGCover, and survival_transf as response variable.
+# Purpose: Write script for finalized published model results.
 
-# Continuous explanatory variables are centered and scaled. 
-# lme4 package used for all models except survival to use REML; survival modeled as 
-#   beta regression with glmmTMB package.
-
-# Version 3 from 06.7_linear-models-6.0.R uses (1 | Transect) as random effect. Will
-#   be applying this to all models.
-
-# Wrote out predicted vs. observed graphs (made with modelbased) for all five models.
+# Identical to 06.8_linear-models-6.3.R (except for some small name changes, and also
+#   bgden_model3 and bgden_model4 are switched for some reason; not sure why).
 
 
 library(tidyverse)
-library(glmmTMB)
-library(performance)
-library(DHARMa)
 library(lme4)
 library(lmerTest)
+library(glmmTMB)
+library(DHARMa)
 library(MuMIn)
+library(performance)
 library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
-dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
-culm.change.raw <- read_csv("data/cleaned/04_change-in-culm-density-cover_clean.csv")
+culm.change.raw <- read_csv("data/publish/culm-data.csv")
+plot.change.raw <- read_csv("data/publish/plot-data.csv")
+survival.dat.raw <- read_csv("data/publish/survival-data.csv")
 
 # Data wrangling ----------------------------------------------------------
 
@@ -38,48 +32,37 @@ culm.change <- culm.change.raw %>%
          Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
          Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1])
 
-culm.change.flat.rm <- culm.change %>% 
-  filter(Aspect != "flat")
+plot.change <- plot.change.raw %>% 
+  mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
+         Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
+         Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
+         Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1])
 
-# Separate out plot-level data
-plot.change <- culm.change.flat.rm %>% 
-  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm,
-         -Change_Reproductive_culms, -Change_Total_Live_Culms, -Notes) %>% 
-  distinct(.keep_all = TRUE)
-
-
-# Prepare survival data
-dat.survival <- dat %>% 
-  filter(!is.na(survival_perc),
-         Aspect != "flat") %>% 
+survival.dat <- survival.dat.raw %>% 
   mutate(Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          ShrubCover_scaled = scale(ShrubCover, center = TRUE, scale = TRUE)[, 1],
          HerbCover_scaled = scale(HerbCover, center = TRUE, scale = TRUE)[, 1],
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          BGDensity_scaled = scale(BGDensity, center = TRUE, scale = TRUE)[, 1])
 
-dat.survival <- dat.survival %>% 
-  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm,
-         -Notes) %>% 
-  distinct(.keep_all = TRUE)
 
-#   Transform 0s and 1s
-dat.survival <- dat.survival %>% 
-  mutate(survival_transf = pmin(pmax(survival_perc, 1e-6), 1 - 1e-6))
+# Transform 0s and 1s for survival data to accomodate beta regression
+survival.dat <- survival.dat %>% 
+  mutate(Survival_transf = pmin(pmax(Survival_perc, 1e-6), 1 - 1e-6))
 
 
 
 # Total culm change -------------------------------------------------------
 
 # Global model
-total <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
-                 Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                 Change_BGDensity_scaled +
-                 Prev_year_precip_scaled * Change_BGDensity_scaled +
-                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                 Prev_year_precip_scaled * Change_HerbCover_scaled +
-                 (1 | Transect),
-               data = culm.change.flat.rm)
+total <- lmer(Change_TotalCulms ~ Prev_year_precip_scaled +  
+                Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                Change_BGDensity_scaled +
+                Prev_year_precip_scaled * Change_BGDensity_scaled +
+                Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                Prev_year_precip_scaled * Change_HerbCover_scaled +
+                (1 | Transect),
+              data = culm.change)
 
 # Model selection
 options(na.action = "na.fail")
@@ -110,10 +93,10 @@ summary(total_avg)
 
 # Predicted vs. observed (best model)
 total_pred <- estimate_expectation(total_best.model)
-total_pred$Change_Total_Live_Culms <- culm.change.flat.rm$Change_Total_Live_Culms
+total_pred$Change_TotalCulms <- culm.change$Change_TotalCulms
 
 total_pred.plot <- total_pred %>% 
-  ggplot(aes(x = Change_Total_Live_Culms, y = Predicted)) +
+  ggplot(aes(x = Change_TotalCulms, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   geom_hline(yintercept = 0,
@@ -122,7 +105,7 @@ total_pred.plot <- total_pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Total culm change model, predicted vs. observed") +
+  ggtitle("Total culm change model, predicted vs. observed (best model)") +
   xlab(expression(Delta ~ "Total live culms [observed]")) +
   theme_bw()
 total_pred.plot
@@ -132,14 +115,14 @@ total_pred.plot
 # Reproductive culm change ------------------------------------------------
 
 # Global model
-repro <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +  
-                 Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                 Change_BGDensity_scaled +
-                 Prev_year_precip_scaled * Change_BGDensity_scaled +
-                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                 Prev_year_precip_scaled * Change_HerbCover_scaled +
-                 (1 | Transect),
-               data = culm.change.flat.rm)
+repro <- lmer(Change_ReproductiveCulms ~ Prev_year_precip_scaled +  
+                Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                Change_BGDensity_scaled +
+                Prev_year_precip_scaled * Change_BGDensity_scaled +
+                Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                Prev_year_precip_scaled * Change_HerbCover_scaled +
+                (1 | Transect),
+              data = culm.change)
 
 # Model selection
 options(na.action = "na.fail")
@@ -173,10 +156,10 @@ summary(repro_avg)
 
 # Predicted vs. observed (best model)
 repro_pred <- estimate_expectation(repro_best.model)
-repro_pred$Change_Reproductive_culms <- culm.change.flat.rm$Change_Reproductive_culms
+repro_pred$Change_ReproductiveCulms <- culm.change$Change_ReproductiveCulms
 
 repro_pred.plot <- repro_pred %>% 
-  ggplot(aes(x = Change_Reproductive_culms, y = Predicted)) +
+  ggplot(aes(x = Change_ReproductiveCulms, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   geom_hline(yintercept = 0,
@@ -185,7 +168,7 @@ repro_pred.plot <- repro_pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Reproductive culm change model, predicted vs. observed") +
+  ggtitle("Reproductive culm change model, predicted vs. observed (best model)") +
   xlab(expression(Delta ~ "Reproductive culms [observed]")) +
   theme_bw()
 repro_pred.plot
@@ -196,12 +179,12 @@ repro_pred.plot
 
 # Global model
 bgden <- lmer(Change_BGDensity ~ Prev_year_precip_scaled + 
-                 Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                 Change_HerbCover_scaled + 
-                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                 Prev_year_precip_scaled * Change_HerbCover_scaled +
-                 (1 | Transect),
-               data = plot.change)
+                Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                Change_HerbCover_scaled + 
+                Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                Prev_year_precip_scaled * Change_HerbCover_scaled +
+                (1 | Transect),
+              data = plot.change)
 
 # Model selection
 options(na.action = "na.fail")
@@ -225,8 +208,8 @@ for (i in 1:nrow(bgden_top)) {
 # R^2 of top models
 r2(bgden_model1) # marginal: 0.364; conditional: 0.456
 r2(bgden_model2) # marginal: 0.375; conditional: 0.440
-r2(bgden_model3) # marginal: 0.360; conditional: 0.458
-r2(bgden_model4) # marginal: 0.389; conditional: 0.423
+r2(bgden_model3) # marginal: 0.389; conditional: 0.423
+r2(bgden_model4) # marginal: 0.360; conditional: 0.458
 r2(bgden_model5) # marginal: 0.370; conditional: 0.443
 
 # Model averaging of top models
@@ -247,7 +230,7 @@ bgden_pred.plot <- bgden_pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Plot density change model, predicted vs. observed") +
+  ggtitle("Plot density change model, predicted vs. observed (best model)") +
   xlab(expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ") [observed]"))) +
   theme_bw()
 bgden_pred.plot
@@ -258,12 +241,12 @@ bgden_pred.plot
 
 # Global model
 bgcov <- lmer(Change_BGCover ~ Prev_year_precip_scaled + 
-                 Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
-                 Change_HerbCover_scaled + 
-                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                 Prev_year_precip_scaled * Change_HerbCover_scaled +
-                 (1 | Transect),
-               data = plot.change)
+                Aspect + PlotSlope_scaled + Change_ShrubCover_scaled +
+                Change_HerbCover_scaled + 
+                Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                Prev_year_precip_scaled * Change_HerbCover_scaled +
+                (1 | Transect),
+              data = plot.change)
 
 # Model selection
 options(na.action = "na.fail")
@@ -314,7 +297,7 @@ bgcov_pred.plot <- bgcov_pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Plot cover change model, predicted vs. observed") +
+  ggtitle("Plot cover change model, predicted vs. observed (best model)") +
   xlab(expression(Delta ~ "Buffelgrass cover (%) [observed]")) +
   theme_bw()
 bgcov_pred.plot
@@ -324,15 +307,15 @@ bgcov_pred.plot
 # Survival ----------------------------------------------------------------
 
 # Global model
-survival <- glmmTMB(survival_transf ~ Prev_year_precip_scaled +
-                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
-                       HerbCover_scaled + BGDensity_scaled +
-                       Prev_year_precip_scaled * ShrubCover_scaled +
-                       Prev_year_precip_scaled * HerbCover_scaled +
-                       Prev_year_precip_scaled * BGDensity_scaled +
-                       (1 | Transect),
-                     data = dat.survival,
-                     family = beta_family(link = "logit"))
+survival <- glmmTMB(Survival_transf ~ Prev_year_precip_scaled +
+                      Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                      HerbCover_scaled + BGDensity_scaled +
+                      Prev_year_precip_scaled * ShrubCover_scaled +
+                      Prev_year_precip_scaled * HerbCover_scaled +
+                      Prev_year_precip_scaled * BGDensity_scaled +
+                      (1 | Transect),
+                    data = survival.dat,
+                    family = beta_family(link = "logit"))
 
 # Model selection
 options(na.action = "na.fail")
@@ -376,13 +359,13 @@ summary(survival_avg)
 
 # Predicted vs. observed (best model)
 survival_pred <- estimate_expectation(survival_best.model)
-survival_pred$survival_transf <- dat.survival$survival_transf
+survival_pred$Survival_transf <- survival.dat$Survival_transf
 
 survival_pred.plot <- survival_pred %>% 
-  ggplot(aes(x = survival_transf, y = Predicted)) +
+  ggplot(aes(x = Survival_transf, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
-  ggtitle("Seedling survival model, predicted vs. observed")  +
+  ggtitle("Seedling survival model, predicted vs. observed (best model)")  +
   xlab("Buffelgrass seedling survival (%) [observed]") +
   theme_bw() +
   scale_x_continuous(labels = scales::percent) +
@@ -391,49 +374,16 @@ survival_pred.plot
 
 
 
-# Write out predicted vs. observed graphs ---------------------------------
-
-# Total change
-tiff("figures/2025-08_draft-figures/Total-change_predicted-vs-observed.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-total_pred.plot
-dev.off()
-
-# Repro change
-tiff("figures/2025-08_draft-figures/Repro-change_predicted-vs-observed.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-repro_pred.plot
-dev.off()
-
-# BG density change
-tiff("figures/2025-08_draft-figures/BG-density-change_predicted-vs-observed.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-bgden_pred.plot
-dev.off()
-
-# BG cover change
-tiff("figures/2025-08_draft-figures/BG-cover-change_predicted-vs-observed.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-bgcov_pred.plot
-dev.off()
-
-# Survival
-tiff("figures/2025-08_draft-figures/Survival_predicted-vs-observed.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-survival_pred.plot
-dev.off()
-
-
 # Save --------------------------------------------------------------------
 
 # Needed for graphs
-save(culm.change.flat.rm, plot.change, dat.survival,
+save(culm.change, plot.change, survival.dat,
      total_best.model, 
      repro_best.model, repro_model3, 
      bgden_best.model, bgden_model2, bgden_model3, bgden_model4,
      bgcov_best.model,
      survival_best.model, survival_model5, survival_model6,
-     file = "RData/06.8_data-and-best-models-6.3.RData")
+     file = "RData/publish_data-and-best-models.RData")
 
 
-save.image("RData/06.8_linear-models-6.3.RData")
+save.image("RData/publish_linear-models.RData")
