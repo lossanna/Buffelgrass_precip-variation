@@ -403,31 +403,31 @@ survival_pred.plot
 # Write out predicted vs. observed graphs ---------------------------------
 
 # Total change
-tiff("figures/2025-08_draft-figures/Total-change_predicted-vs-observed.tiff",
+tiff("figures/2025-08_draft-figures-1.1/Total-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 total_pred.plot
 dev.off()
 
 # Repro change
-tiff("figures/2025-08_draft-figures/Repro-change_predicted-vs-observed.tiff",
+tiff("figures/2025-08_draft-figures-1.1/Repro-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro_pred.plot
 dev.off()
 
 # BG density change
-tiff("figures/2025-08_draft-figures/BG-density-change_predicted-vs-observed.tiff",
+tiff("figures/2025-08_draft-figures-1.1/BG-density-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden_pred.plot
 dev.off()
 
 # BG cover change
-tiff("figures/2025-08_draft-figures/BG-cover-change_predicted-vs-observed.tiff",
+tiff("figures/2025-08_draft-figures-1.1/BG-cover-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov_pred.plot
 dev.off()
 
 # Survival
-tiff("figures/2025-08_draft-figures/Survival_predicted-vs-observed.tiff",
+tiff("figures/2025-08_draft-figures-1.1/Survival_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival_pred.plot
 dev.off()
