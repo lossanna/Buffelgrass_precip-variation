@@ -1,67 +1,94 @@
 # Created: 2025-08-12
 # Updated: 2025-08-12
 
-# Purpose: Write script for finalized published model results.
+# Purpose: Compile version 6.3 linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
+#  Change_BGDensity, Change_BGCover, and survival_transf as response variable.
 
-# Identical to 06.9_linear-models-6.3.1.R.
+# Continuous explanatory variables are centered and scaled. 
+# lme4 package used for all models except survival to use REML; survival modeled as 
+#   beta regression with glmmTMB package.
+
+# Version 3 from 06.7_linear-models-6.0.R uses (1 | Transect) as random effect. Will
+#   be applying this to all models.
+
+# Wrote out predicted vs. observed graphs (made with modelbased) for all five models.
+
+# Differs from linear models v6.3 because:
+#   1. "flat" observations were removed before centering and scaling variables for culm change models.
+#   2. Centering and scaling happened for plot-level data specifically, rather than using
+#        what had been centered and scaled from the culm change data.
+#   3. Centering and scaling happened for survival data after replicate culm-level rows were removed.
 
 
 library(tidyverse)
+library(glmmTMB)
+library(performance)
+library(DHARMa)
 library(lme4)
 library(lmerTest)
-library(glmmTMB)
-library(DHARMa)
 library(MuMIn)
-library(performance)
 library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
-culm.change.raw <- read_csv("data/publish/culm-data.csv")
-plot.change.raw <- read_csv("data/publish/plot-data.csv")
-survival.dat.raw <- read_csv("data/publish/survival-data.csv")
+dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
+culm.change.raw <- read_csv("data/cleaned/04_change-in-culm-density-cover_clean.csv")
 
 # Data wrangling ----------------------------------------------------------
 
 # Center and scale numeric variables
-culm.change <- culm.change.raw %>% 
+culm.change.flat.rm <- culm.change.raw %>% 
+  filter(Aspect != "flat") %>% 
   mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          Change_BGDensity_scaled = scale(Change_BGDensity, scale = TRUE)[, 1],
          Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
          Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1])
 
-plot.change <- plot.change.raw %>% 
+# Separate out plot-level data
+plot.change <- culm.change.raw %>% 
+  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm,
+         -Change_Reproductive_culms, -Change_Total_Live_Culms, -Notes) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  filter(Aspect != "flat") %>% 
   mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
          Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1])
 
-survival.dat <- survival.dat.raw %>% 
+
+# Prepare survival data
+dat.survival <- dat %>% 
+  filter(!is.na(survival_perc),
+         Aspect != "flat") %>% 
+  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm,
+         -Notes) %>% 
+  distinct(.keep_all = TRUE)
+
+dat.survival <- dat.survival %>% 
   mutate(Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          ShrubCover_scaled = scale(ShrubCover, center = TRUE, scale = TRUE)[, 1],
          HerbCover_scaled = scale(HerbCover, center = TRUE, scale = TRUE)[, 1],
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          BGDensity_scaled = scale(BGDensity, center = TRUE, scale = TRUE)[, 1])
 
-
-# Transform 0s and 1s for survival data to accomodate beta regression
-survival.dat <- survival.dat %>% 
-  mutate(Survival_transf = pmin(pmax(Survival_perc, 1e-6), 1 - 1e-6))
+#   Transform 0s and 1s
+dat.survival <- dat.survival %>% 
+  mutate(survival_transf = pmin(pmax(survival_perc, 1e-6), 1 - 1e-6))
 
 
 
 # Total culm change -------------------------------------------------------
 
 # Global model
-total <- lmer(Change_TotalCulms ~ Prev_year_precip_scaled +  
+total <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
                 Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                 Change_BGDensity_scaled +
                 Prev_year_precip_scaled * Change_BGDensity_scaled +
                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
                 Prev_year_precip_scaled * Change_HerbCover_scaled +
                 (1 | Transect),
-              data = culm.change)
+              data = culm.change.flat.rm)
 
 # Model selection
 options(na.action = "na.fail")
@@ -92,10 +119,10 @@ summary(total_avg)
 
 # Predicted vs. observed (best model)
 total_pred <- estimate_expectation(total_best.model)
-total_pred$Change_TotalCulms <- culm.change$Change_TotalCulms
+total_pred$Change_Total_Live_Culms <- culm.change.flat.rm$Change_Total_Live_Culms
 
 total_pred.plot <- total_pred %>% 
-  ggplot(aes(x = Change_TotalCulms, y = Predicted)) +
+  ggplot(aes(x = Change_Total_Live_Culms, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   geom_hline(yintercept = 0,
@@ -114,14 +141,14 @@ total_pred.plot
 # Reproductive culm change ------------------------------------------------
 
 # Global model
-repro <- lmer(Change_ReproductiveCulms ~ Prev_year_precip_scaled +  
+repro <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +  
                 Aspect + PlotSlope_scaled + Change_ShrubCover_scaled + Change_HerbCover_scaled +
                 Change_BGDensity_scaled +
                 Prev_year_precip_scaled * Change_BGDensity_scaled +
                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
                 Prev_year_precip_scaled * Change_HerbCover_scaled +
                 (1 | Transect),
-              data = culm.change)
+              data = culm.change.flat.rm)
 
 # Model selection
 options(na.action = "na.fail")
@@ -155,10 +182,10 @@ summary(repro_avg)
 
 # Predicted vs. observed (best model)
 repro_pred <- estimate_expectation(repro_best.model)
-repro_pred$Change_ReproductiveCulms <- culm.change$Change_ReproductiveCulms
+repro_pred$Change_Reproductive_culms <- culm.change.flat.rm$Change_Reproductive_culms
 
 repro_pred.plot <- repro_pred %>% 
-  ggplot(aes(x = Change_ReproductiveCulms, y = Predicted)) +
+  ggplot(aes(x = Change_Reproductive_culms, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   geom_hline(yintercept = 0,
@@ -306,14 +333,14 @@ bgcov_pred.plot
 # Survival ----------------------------------------------------------------
 
 # Global model
-survival <- glmmTMB(Survival_transf ~ Prev_year_precip_scaled +
+survival <- glmmTMB(survival_transf ~ Prev_year_precip_scaled +
                       Aspect + PlotSlope_scaled + ShrubCover_scaled +
                       HerbCover_scaled + BGDensity_scaled +
                       Prev_year_precip_scaled * ShrubCover_scaled +
                       Prev_year_precip_scaled * HerbCover_scaled +
                       Prev_year_precip_scaled * BGDensity_scaled +
                       (1 | Transect),
-                    data = survival.dat,
+                    data = dat.survival,
                     family = beta_family(link = "logit"))
 
 # Model selection
@@ -358,10 +385,10 @@ summary(survival_avg)
 
 # Predicted vs. observed (best model)
 survival_pred <- estimate_expectation(survival_best.model)
-survival_pred$Survival_transf <- survival.dat$Survival_transf
+survival_pred$survival_transf <- dat.survival$survival_transf
 
 survival_pred.plot <- survival_pred %>% 
-  ggplot(aes(x = Survival_transf, y = Predicted)) +
+  ggplot(aes(x = survival_transf, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   ggtitle("Seedling survival model, predicted vs. observed (best model)")  +
@@ -373,16 +400,49 @@ survival_pred.plot
 
 
 
+# Write out predicted vs. observed graphs ---------------------------------
+
+# Total change
+tiff("figures/2025-08_draft-figures/Total-change_predicted-vs-observed.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+total_pred.plot
+dev.off()
+
+# Repro change
+tiff("figures/2025-08_draft-figures/Repro-change_predicted-vs-observed.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro_pred.plot
+dev.off()
+
+# BG density change
+tiff("figures/2025-08_draft-figures/BG-density-change_predicted-vs-observed.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgden_pred.plot
+dev.off()
+
+# BG cover change
+tiff("figures/2025-08_draft-figures/BG-cover-change_predicted-vs-observed.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgcov_pred.plot
+dev.off()
+
+# Survival
+tiff("figures/2025-08_draft-figures/Survival_predicted-vs-observed.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival_pred.plot
+dev.off()
+
+
 # Save --------------------------------------------------------------------
 
 # Needed for graphs
-save(culm.change, plot.change, survival.dat,
+save(culm.change.flat.rm, plot.change, dat.survival,
      total_best.model, 
      repro_best.model, repro_model3, 
      bgden_best.model, bgden_model2, bgden_model3, bgden_model4,
      bgcov_best.model,
      survival_best.model, survival_model5, survival_model6,
-     file = "RData/publish_data-and-best-models.RData")
+     file = "RData/06.9_data-and-best-models-6.3.1.RData")
 
 
-save.image("RData/publish_linear-models.RData")
+save.image("RData/06.9_linear-models-6.3.1.RData")
