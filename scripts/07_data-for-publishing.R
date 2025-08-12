@@ -1,5 +1,5 @@
 # Created: 2025-08-01
-# Updated: 2025-08-01
+# Updated: 2025-08-12
 
 # Purpose: Create data for publishing.
 
@@ -39,4 +39,17 @@ dat.survival <- dat %>%
          Aspect != "flat") %>% 
   select(Year, Site, Transect, Plot, Aspect, PlotSlope, Prev_year_precip,
          survival_perc, BGDensity, BGCover, ShrubCover, HerbCover) %>% 
-  distinct(.keep_all = TRUE)
+  distinct(.keep_all = TRUE) %>% 
+  rename(Survival_perc = survival_perc)
+
+
+# Write to csv ------------------------------------------------------------
+
+write_csv(prism.dat,
+          file = "data/publish/Site-info.csv")
+write_csv(culm.change,
+          file = "data/publish/Culm-data.csv")
+write_csv(plot.change,
+          file = "data/publish/Plot-data.csv")
+write_csv2(dat.survival,
+           file = "data/publish/Survival-data.csv")
