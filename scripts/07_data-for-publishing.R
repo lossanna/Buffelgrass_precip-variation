@@ -38,7 +38,7 @@ dat.survival <- dat %>%
   filter(!is.na(survival_perc),
          Aspect != "flat") %>% 
   select(Year, Site, Transect, Plot, Aspect, PlotSlope, Prev_year_precip,
-         survival_perc, BGDensity, BGCover, ShrubCover, HerbCover) %>% 
+         survival_perc, BGDensity, ShrubCover, HerbCover) %>% 
   distinct(.keep_all = TRUE) %>% 
   rename(Survival_perc = survival_perc)
 
