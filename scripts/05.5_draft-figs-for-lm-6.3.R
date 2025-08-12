@@ -39,9 +39,6 @@
 #   ggeffects version doesn't work because I can't figure out how to make an equivalent datagrid for unscaled variable.
 #   estimate_relation() from modelbased also doesn't work because it creates a bunch of levels for precip, not just 3.
 
-# Note: I don't know how to graph the Aspect boxplots using insight, so they will have a ggeffects version only
-#   (those graphs aren't very interesting and so it's not worth trying to figure).
-
 
 # insight vs. ggeffects:
 #   Both packages are developed by the same team so their predictions should be similar. This is the case for
@@ -483,9 +480,6 @@ total.bgden.precip.ci <- total.pred.bgden.precip %>%
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-120, 220))
 total.bgden.precip.ci
-
-# Multiply 
-
 
 
 
