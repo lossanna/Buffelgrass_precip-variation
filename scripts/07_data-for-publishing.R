@@ -46,10 +46,10 @@ dat.survival <- dat %>%
 # Write to csv ------------------------------------------------------------
 
 write_csv(prism.dat,
-          file = "data/publish/Site-info.csv")
+          file = "data/publish/site-info.csv")
 write_csv(culm.change,
-          file = "data/publish/Culm-data.csv")
+          file = "data/publish/culm-data.csv")
 write_csv(plot.change,
-          file = "data/publish/Plot-data.csv")
-write_csv2(dat.survival,
-           file = "data/publish/Survival-data.csv")
+          file = "data/publish/plot-data.csv")
+write_csv(dat.survival,
+          file = "data/publish/survival-data.csv")
