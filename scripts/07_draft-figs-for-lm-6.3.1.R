@@ -1,5 +1,5 @@
 # Created: 2025-08-12
-# Updated: 2025-08-12
+# Updated: 2025-08-13
 
 # Purpose: Create graphs for linear models v6.3.1. Overlay model predictions on top of original data
 #   using ggeffects and insight packages.
@@ -47,7 +47,11 @@
 #     differences look smaller (although maybe not?). I am unsure what is going on.
 #   But insight is meant to supersede ggeffects, so I will go with insight versions. They also seem to fit the
 #     data a bit better.
-#   For precip interaction plots, insight is also usually higher than ggeffects. I don't know what's causing this, either.
+#   For precip interaction plots, insight is also usually higher than ggeffects. I think this is because
+#     the three precip levels differ. For insight, they are -0.952, 0.345, 1.641 (culm), 
+#     -0.957, 0.326, 1.609 (density/cover), or -1.036, 1.240, 3.515 (survival) but for ggeffects they are all -1, 0, 1.
+#     Survival precip levels are in particuar pretty different from ggeffects -1/0/1.
+#   Insight version of precip level fits the data better.
 
 
 library(tidyverse)
@@ -259,6 +263,7 @@ unscaled.bgden.precip243 <- dat.culm.unscaled %>%
   arrange(Change_BGDensity)
 insight.total.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
 insight.total.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
+unique(insight.total.bgden.precip$Prev_year_precip_scaled) # -0.952, 0.345, 1.641
 
 # Graph, no CI (insight version)
 total.bgden.precip <- dat.culm %>% 
@@ -313,6 +318,44 @@ total.bgden.precip.ci
 
 
 
+### modelbased interaction graph attempt ----------------------------------
+
+# Lol this is my attempt again at an interaction graph with SE bc ggeffects vs. insight versions 
+#   seem to have slightly different slopes. I think this is because the precip levels (scaled)
+#   for insight are different than those for ggeffects.
+
+# Precip levels - note levels are different
+unique(insight.total.bgden.precip$Prev_year_precip_scaled) # -0.952, 0.345, 1.641
+unique(total.pred.bgden.precip$group) # -1, 0, 1
+
+
+# Using estimate_expectation() - estimate & CI for every observation   
+mb.total.bgden.precip <- estimate_expectation(total_best.model) # generates CI
+identical(mb.total.bgden.precip$Change_BGDensity_scaled, dat.culm$Change_BGDensity_scaled) # dfs are both in same order
+mb.total.bgden.precip$Prev_year_precip <- dat.culm$Prev_year_precip
+mb.total.bgden.precip$Change_BGDensity <- dat.culm$Change_BGDensity
+mb.total.bgden.precip$Change_Total_Live_Culms <- mb.total.bgden.precip$Predicted
+#   but now the problem is I don't know how to group things into three precip levels,
+#     which is needed for graphing.
+
+
+# Using estimate_relation() - creates datagrid with 8-9 levels
+mb2.total.bgden.precip <- estimate_relation(total_best.model)
+unique(mb2.total.bgden.precip$Change_BGDensity_scaled) # 9 levels
+unique(mb2.total.bgden.precip$Change_HerbCover_scaled) # 9 levels
+unique(mb2.total.bgden.precip$Change_ShrubCover_scaled) # 9 levels
+unique(mb2.total.bgden.precip$PlotSlope_scaled) # 8 levels
+unique(mb2.total.bgden.precip$Prev_year_precip_scaled) # 9 levels
+unique(mb2.total.bgden.precip$Aspect) # 5 levels
+unique(mb2.total.bgden.precip$Transect) # I guess this means it accounted for random effects?
+#   I could then try to filter out rows to hold the other variables constant, thus sort of generating
+#     an equivalent to datagrid made from first line of insight code,
+#         `get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10)`,
+#     and then apply `get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all")` to get
+#     three precip levels.
+
+
+
 ## Total: Precip * shrub --------------------------------------------------
 
 # Generate prediction and add unscaled variable
@@ -327,6 +370,7 @@ unscaled.shrub.precip243 <- dat.culm.unscaled %>%
   arrange(Change_ShrubCover)
 insight.total.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
 insight.total.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+unique(insight.total.shrub.precip$Prev_year_precip_scaled) # -0.952, 0.345, 1.641
 
 # Graph, no CI (insight version)
 total.shrub.precip <- dat.culm %>% 
@@ -395,6 +439,7 @@ unscaled.herb.precip243 <- dat.culm.unscaled %>%
   arrange(Change_HerbCover)
 insight.total.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
 insight.total.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
+unique(insight.total.herb.precip$Prev_year_precip_scaled) # -0.952, 0.345, 1.641
 
 # Graph, no CI (insight version)
 total.herb.precip <- dat.culm %>% 
@@ -795,6 +840,7 @@ unscaled.bgden.precip243 <- dat.culm.unscaled %>%
   arrange(Change_BGDensity)
 insight.repro.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
 insight.repro.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
+unique(insight.repro.bgden.precip$Prev_year_precip_scaled) # -0.952, 0.345, 1.641
 
 # Graph, no CI (insight version)
 repro.bgden.precip <- dat.culm %>% 
@@ -864,6 +910,7 @@ unscaled.shrub.precip243 <- dat.culm.unscaled %>%
   arrange(Change_ShrubCover)
 insight.repro.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
 insight.repro.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+unique(insight.repro.shrub.precip$Prev_year_precip_scaled) # -0.952, 0.345, 1.641
 
 # Graph, no CI (insight version)
 repro.shrub.precip <- dat.culm %>% 
@@ -932,6 +979,7 @@ unscaled.herb.precip243 <- dat.culm.unscaled %>%
   arrange(Change_HerbCover)
 insight.repro.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
 insight.repro.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
+unique(insight.repro.herb.precip$Prev_year_precip_scaled) # -0.952, 0.345, 1.641
 
 # Graph, no CI (insight version)
 repro.herb.precip <- dat.culm %>% 
@@ -1144,6 +1192,7 @@ unscaled.shrub.precip243 <- dat.plot.unscaled %>%
   arrange(Change_ShrubCover)
 insight.bgden.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
 insight.bgden.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+unique(insight.bgden.shrub.precip$Prev_year_precip_scaled) # -0.957, 0.326, 1.609
 
 # Graph, no CI (insight version)
 bgden.shrub.precip <- dat.plot %>% 
@@ -1486,6 +1535,7 @@ unscaled.herb.precip243 <- dat.plot.unscaled %>%
   arrange(Change_HerbCover)
 insight.bgden.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
 insight.bgden.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
+unique(insight.bgden.herb.precip$Prev_year_precip_scaled) # -0.957, 0.326, 1.609
 
 # Graph, no CI (insight version)
 bgden.herb.precip <- dat.plot %>% 
@@ -1970,6 +2020,7 @@ unscaled.shrub.precip243 <- dat.plot.unscaled %>%
   arrange(Change_ShrubCover)
 insight.bgcov.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
 insight.bgcov.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+unique(insight.bgcov.shrub.precip$Prev_year_precip_scaled) # -0.957, 0.326, 1.609
 
 # Graph, no CI (insight version)
 bgcov.shrub.precip <- dat.plot %>% 
@@ -2040,6 +2091,7 @@ unscaled.herb.precip243 <- dat.plot.unscaled %>%
   arrange(Change_HerbCover)
 insight.bgcov.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
 insight.bgcov.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
+unique(insight.bgcov.herb.precip$Prev_year_precip_scaled) # -0.957, 0.326, 1.609
 
 # Graph, no CI (insight version)
 bgcov.herb.precip <- dat.plot %>% 
@@ -2489,6 +2541,7 @@ unscaled.bgden.precip243 <- dat.survival.unscaled %>%
   arrange(BGDensity)
 insight.survival.bgden.precip$BGDensity <- unscaled.bgden.precip243$BGDensity
 insight.survival.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
+unique(insight.survival.bgden.precip$Prev_year_precip_scaled) # -1.036, 1.240, 3.515
 
 # Graph, no CI (insight version)
 survival.bgden.precip <- dat.survival %>% 
@@ -2547,6 +2600,7 @@ unscaled.shrub.precip243 <- dat.survival.unscaled %>%
   arrange(ShrubCover)
 insight.survival.shrub.precip$ShrubCover <- unscaled.shrub.precip243$ShrubCover
 insight.survival.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+unique(insight.survival.shrub.precip$Prev_year_precip_scaled) # -1.036, 1.240, 3.515
 
 # Graph, no CI (insight version)
 survival.shrub.precip <- dat.survival %>% 
@@ -2606,6 +2660,7 @@ unscaled.herb.precip243 <- dat.survival.unscaled %>%
   arrange(HerbCover)
 insight.survival.herb.precip$HerbCover <- unscaled.herb.precip243$HerbCover
 insight.survival.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
+unique(insight.survival.herb.precip$Prev_year_precip_scaled) # -1.036, 1.240, 3.515
 
 # Graph, CI (insight version)
 survival.herb.precip <- dat.survival %>% 
