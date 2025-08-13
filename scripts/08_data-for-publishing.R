@@ -1,5 +1,5 @@
 # Created: 2025-08-01
-# Updated: 2025-08-12
+# Updated: 2025-08-13
 
 # Purpose: Create data for publishing.
 
@@ -53,3 +53,22 @@ write_csv(plot.change,
           file = "data/publish/plot-data.csv")
 write_csv(dat.survival,
           file = "data/publish/survival-data.csv")
+
+
+
+# Calculate number of observations ----------------------------------------
+
+# Number of culm observations
+dat %>% 
+  filter(Aspect != "flat") %>% 
+  nrow() # 2089
+
+# Number of plot-level observations
+dat %>% 
+  filter(Aspect != "flat") %>% 
+  select(Year, Site, Transect, Plot) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  nrow() # 207
+
+# Number of survival observations
+nrow(dat.survival) # 138
