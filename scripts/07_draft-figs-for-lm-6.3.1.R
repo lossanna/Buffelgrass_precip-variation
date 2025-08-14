@@ -1,15 +1,17 @@
 # Created: 2025-08-12
-# Updated: 2025-08-13
+# Updated: 2025-08-14
 
 # Purpose: Create graphs for linear models v6.3.1. Overlay model predictions on top of original data
 #   using ggeffects and insight packages.
 
 # This version differs from 05.5.R in that it uses linear models v6.3.1, from 06.9.R,
 #   and figures are saved to a new folder (figures/draft-figures-1.1/). 
-# The figures are basically the same, but they do technically differ, because the estimates of v6.3.1
-#   and v6.3 are not the same. 
+# Most of the figures are basically the same, but they do technically differ, because the estimates 
+#   of v6.3.1 and v6.3 are not the same. 
 # Also does not include all of the ggeffects versions for single variable graphs since I now can do 
 #   that with insight (only includes insight version when both versions were basically the same).
+# But there are new precip interaction graphs with a middle line that is basically the mean precip
+#   for easier interpretation and comparison to single explanatory variable estimates.
 
 
 # insight: https://easystats.github.io/modelbased/articles/visualisation_matrix.html#visualising-an-interaction-between-two-numeric-variables-three-way-interaction
@@ -128,7 +130,7 @@ dat.survival.unscaled <- dat.survival.raw %>%
   select(Prev_year_precip, PlotSlope, BGDensity, ShrubCover, HerbCover)
 
 
-# Test different precip levels (culm models) ------------------------------
+# Test different precip levels --------------------------------------------
 
 # Am trying to generate a datagrid with a precip level that is closest to 0 (the mean),
 #   so I can then have the highest, mean, and lowest graphed. Change_HerbCover is just used as
@@ -136,6 +138,12 @@ dat.survival.unscaled <- dat.survival.raw %>%
 # I can then just remove the other unwanted levels to still just have three lines on the graph.
 # (There is probably a smarter way to go about this than checking every level, but that's what
 #   I'm going to do lol.)
+
+
+## Culm models ------------------------------------------------------------
+
+# Results: I checked 3-30 precip levels, and the closest that came to 0 was 0.003,
+#   which was generated at 20 precip levels.
 
 # 3 precip levels
 x <- dat.culm.ex %>% 
@@ -334,8 +342,206 @@ x <- dat.culm.ex %>%
 unique(x$Prev_year_precip_scaled) # 0.032
 
 
-# Results: I checked 3-30 precip levels, and the closest that came to 0 was 0.003,
-#   which was generated at 20 precip levels.
+## Density & cover models -------------------------------------------------
+
+# Results: I checked 3-30 precip levels, and the closest that came to 0 was 0.005,
+#   which was generated first at 9 precip levels.
+
+# 3 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.326
+
+# 4 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 4, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.102
+
+# 5 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 5, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.316
+
+# 6 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 6, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.069
+
+# 7 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 7, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.102
+
+# 8 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 8, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.143
+
+# 9 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.005
+
+# 10 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 10, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.102
+
+# 11 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 11, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.069
+
+# 12 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.024
+
+# 13 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 13, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.102
+
+# 14 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 14, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.03
+
+# 15 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 15, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.041
+
+# 16 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 16, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.069
+
+# 17 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 17, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.005
+
+# 18 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 18, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.051
+
+# 19 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 19, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.041
+
+# 20 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.012
+
+# 21 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 21, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) #-0.059
+
+# 22 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 22, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.021
+
+# 23 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 23, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.024
+
+# 24 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 24, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.047
+
+# 25 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 25, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.005
+
+# 26 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 26, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled)# -0.033
+
+# 27 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 27, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.03
+
+# 28 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 28, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.007
+
+# 29 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 29, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.041
+
+# 30 precip levels
+x <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 30, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.016
 
 
 
@@ -580,7 +786,7 @@ unscaled.bgden.precip3200000 <- dat.culm.unscaled %>%
 insight.total.bgden.precip2$Change_BGDensity <- unscaled.bgden.precip3200000$Change_BGDensity
 insight.total.bgden.precip2$Prev_year_precip <- unscaled.bgden.precip3200000$Prev_year_precip
 unique(insight.total.bgden.precip2$Prev_year_precip_scaled)
-insight.total.bgden.precip2.graph <- insight.total.bgden.precip2 %>% 
+insight.total.bgden.precip2 <- insight.total.bgden.precip2 %>% 
   filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
 
 # Graph, no CI, average precip (insight version)
@@ -588,7 +794,7 @@ total.bgden.precip2 <- dat.culm %>%
   ggplot(aes(x = Change_BGDensity, y = Change_Total_Live_Culms,
              color = Prev_year_precip)) +
   geom_point() +
-  geom_line(data = insight.total.bgden.precip2.graph,
+  geom_line(data = insight.total.bgden.precip2,
             aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
@@ -689,7 +895,7 @@ unscaled.shrub.precip3200000 <- dat.culm.unscaled %>%
 insight.total.shrub.precip2$Change_ShrubCover <- unscaled.shrub.precip3200000$Change_ShrubCover
 insight.total.shrub.precip2$Prev_year_precip <- unscaled.shrub.precip3200000$Prev_year_precip
 unique(insight.total.shrub.precip2$Prev_year_precip_scaled)
-insight.total.shrub.precip2.graph <- insight.total.shrub.precip2 %>% 
+insight.total.shrub.precip2 <- insight.total.shrub.precip2 %>% 
   filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
 
 # Graph, no CI, average precip (insight version)
@@ -697,7 +903,7 @@ total.shrub.precip2 <- dat.culm %>%
   ggplot(aes(x = Change_ShrubCover, y = Change_Total_Live_Culms,
              color = Prev_year_precip)) +
   geom_point() +
-  geom_line(data = insight.total.shrub.precip2.graph,
+  geom_line(data = insight.total.shrub.precip2,
             aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
@@ -798,7 +1004,7 @@ unscaled.herb.precip3200000 <- dat.culm.unscaled %>%
 insight.total.herb.precip2$Change_HerbCover <- unscaled.herb.precip3200000$Change_HerbCover
 insight.total.herb.precip2$Prev_year_precip <- unscaled.herb.precip3200000$Prev_year_precip
 unique(insight.total.herb.precip2$Prev_year_precip_scaled)
-insight.total.herb.precip2.graph <- insight.total.herb.precip2 %>% 
+insight.total.herb.precip2 <- insight.total.herb.precip2 %>% 
   filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
 
 # Graph, no CI, average precip (insight version)
@@ -806,7 +1012,7 @@ total.herb.precip2 <- dat.culm %>%
   ggplot(aes(x = Change_HerbCover, y = Change_Total_Live_Culms,
              color = Prev_year_precip)) +
   geom_point() +
-  geom_line(data = insight.total.herb.precip2.graph,
+  geom_line(data = insight.total.herb.precip2,
             aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
@@ -1225,6 +1431,46 @@ repro.bgden.precip.ci <- repro.pred.bgden.precip %>%
 repro.bgden.precip.ci
 
 
+### With mean precip line -------------------------------------------------
+
+# Generate prediction and add unscaled variable - 20 precip levels to get mean
+insight.repro.bgden.precip2 <- dat.culm.ex %>% 
+  get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
+  arrange(Change_BGDensity_scaled)
+insight.repro.bgden.precip2$Predicted <- get_predicted(repro_best.model, insight.repro.bgden.precip2)
+unscaled.bgden.precip3200000 <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 20, numerics = "all") %>% 
+  arrange(Change_BGDensity)
+insight.repro.bgden.precip2$Change_BGDensity <- unscaled.bgden.precip3200000$Change_BGDensity
+insight.repro.bgden.precip2$Prev_year_precip <- unscaled.bgden.precip3200000$Prev_year_precip
+unique(insight.repro.bgden.precip2$Prev_year_precip_scaled)
+insight.repro.bgden.precip2 <- insight.repro.bgden.precip2 %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
+
+# Graph, no CI, average precip (insight version)
+repro.bgden.precip2 <- dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_Reproductive_culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.repro.bgden.precip2,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
+       title = "Change in repro culm count vs. plot density change")
+repro.bgden.precip2
+
+
 
 ## Repro: Precip * shrub (NS) ---------------------------------------------
 
@@ -1292,6 +1538,46 @@ repro.shrub.precip.ci <- repro.pred.shrub.precip %>%
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-88, 120))
 repro.shrub.precip.ci
+
+
+### With mean precip line -------------------------------------------------
+
+# Generate prediction and add unscaled variable - 20 precip levels to get mean
+insight.repro.shrub.precip2 <- dat.culm.ex %>% 
+  get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
+  arrange(Change_ShrubCover_scaled)
+insight.repro.shrub.precip2$Predicted <- get_predicted(repro_best.model, insight.repro.shrub.precip2)
+unscaled.shrub.precip3200000 <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 20, numerics = "all") %>% 
+  arrange(Change_ShrubCover)
+insight.repro.shrub.precip2$Change_ShrubCover <- unscaled.shrub.precip3200000$Change_ShrubCover
+insight.repro.shrub.precip2$Prev_year_precip <- unscaled.shrub.precip3200000$Prev_year_precip
+unique(insight.repro.shrub.precip2$Prev_year_precip_scaled)
+insight.repro.shrub.precip2 <- insight.repro.shrub.precip2 %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
+
+# Graph, no CI, average precip (insight version)
+repro.shrub.precip2 <- dat.culm %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_Reproductive_culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.repro.shrub.precip2,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in repro culm count vs. shrub cover change")
+repro.shrub.precip2
 
 
 
@@ -1362,6 +1648,46 @@ repro.herb.precip.ci <- repro.pred.herb.precip %>%
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-88, 120))
 repro.herb.precip.ci
+
+
+### With mean precip line -------------------------------------------------
+
+# Generate prediction and add unscaled variable - 20 precip levels to get mean
+insight.repro.herb.precip2 <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+insight.repro.herb.precip2$Predicted <- get_predicted(repro_best.model, insight.repro.herb.precip2)
+unscaled.herb.precip3200000 <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 20, numerics = "all") %>% 
+  arrange(Change_HerbCover)
+insight.repro.herb.precip2$Change_HerbCover <- unscaled.herb.precip3200000$Change_HerbCover
+insight.repro.herb.precip2$Prev_year_precip <- unscaled.herb.precip3200000$Prev_year_precip
+unique(insight.repro.herb.precip2$Prev_year_precip_scaled)
+insight.repro.herb.precip2 <- insight.repro.herb.precip2 %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
+
+# Graph, no CI, average precip (insight version)
+repro.herb.precip2 <- dat.culm %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_Reproductive_culms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.repro.herb.precip2,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Reproductive culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in repro culm count vs. herb cover change")
+repro.herb.precip2
 
 
 
@@ -1575,6 +1901,47 @@ bgden.shrub.precip.ci <- bgden.pred.shrub.precip %>%
   scale_y_continuous(limits = c(-24, 32),
                      breaks = c(-20, 0, 20)) 
 bgden.shrub.precip.ci # insight slightly lower (compare where lines cross y-axis)
+
+
+
+### With mean precip line -------------------------------------------------
+
+# Generate prediction and add unscaled variable - 9 levels to get mean
+insight.bgden.shrub.precip2 <- dat.plot.ex %>% 
+  get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover_scaled)
+insight.bgden.shrub.precip2$Predicted <- get_predicted(bgden_best.model, insight.bgden.shrub.precip2)
+unscaled.shrub.precip6561 <- dat.plot.unscaled %>% 
+  get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover)
+insight.bgden.shrub.precip2$Change_ShrubCover <- unscaled.shrub.precip6561$Change_ShrubCover
+insight.bgden.shrub.precip2$Prev_year_precip <- unscaled.shrub.precip6561$Prev_year_precip
+unique(insight.bgden.shrub.precip2$Prev_year_precip_scaled) 
+insight.bgden.shrub.precip2 <- insight.bgden.shrub.precip2 %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.957, 0.005, 1.609))
+
+# Graph, no CI, average precip (insight version)
+bgden.shrub.precip2 <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.bgden.shrub.precip2,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in buffelgrass density vs. shrub cover change")
+bgden.shrub.precip2
 
 
 
@@ -1919,6 +2286,45 @@ bgden.herb.precip.ci <- bgden.pred.herb.precip %>%
                      breaks = c(-20, 0, 20)) 
 bgden.herb.precip.ci # insight slightly lower (compare where lines cross y-axis)
 
+
+### With mean precip line -------------------------------------------------
+
+# Generate prediction and add unscaled variable - 9 levels to get mean
+insight.bgden.herb.precip2 <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+insight.bgden.herb.precip2$Predicted <- get_predicted(bgden_model3, insight.bgden.herb.precip2)
+unscaled.herb.precip6561 <- dat.plot.unscaled %>% 
+  get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
+  arrange(Change_HerbCover)
+insight.bgden.herb.precip2$Change_HerbCover <- unscaled.herb.precip6561$Change_HerbCover
+insight.bgden.herb.precip2$Prev_year_precip <- unscaled.herb.precip6561$Prev_year_precip
+unique(insight.bgden.herb.precip2$Prev_year_precip_scaled) 
+insight.bgden.herb.precip2 <- insight.bgden.herb.precip2 %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.957, 0.005, 1.609))
+
+# Graph, no CI, average precip (insight version)
+bgden.herb.precip2 <- dat.plot %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.bgden.herb.precip2,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in buffelgrass density vs. herb cover change")
+bgden.herb.precip2
 
 
 
@@ -2405,6 +2811,46 @@ bgcov.shrub.precip.ci <- bgcov.pred.shrub.precip %>%
 bgcov.shrub.precip.ci # insight again lower (seems kind of like a lot; driest switches from increase in cover to decrease)
 
 
+### With mean precip line -------------------------------------------------
+
+# Generate prediction and add unscaled variable - 9 levels to get mean
+insight.bgcov.shrub.precip2 <- dat.plot.ex %>% 
+  get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover_scaled)
+insight.bgcov.shrub.precip2$Predicted <- get_predicted(bgcov_best.model, insight.bgcov.shrub.precip2)
+unscaled.shrub.precip6561 <- dat.plot.unscaled %>% 
+  get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover)
+insight.bgcov.shrub.precip2$Change_ShrubCover <- unscaled.shrub.precip6561$Change_ShrubCover
+insight.bgcov.shrub.precip2$Prev_year_precip <- unscaled.shrub.precip6561$Prev_year_precip
+unique(insight.bgcov.shrub.precip2$Prev_year_precip_scaled) 
+insight.bgcov.shrub.precip2 <- insight.bgcov.shrub.precip2 %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.957, 0.005, 1.609))
+
+# Graph, no CI, average precip (insight version)
+bgcov.shrub.precip2 <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGCover,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.bgcov.shrub.precip2,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Cover (%)"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in buffelgrass cover vs. shrub cover change")
+bgcov.shrub.precip2
+
+
 
 ## BG cover: Precip * herb (NS) -------------------------------------------
 
@@ -2475,6 +2921,45 @@ bgcov.herb.precip.ci <- bgcov.pred.herb.precip %>%
                      breaks = c(-50, -25, 0, 25))
 bgcov.herb.precip.ci # insight again lower (and driest switches again)
 
+
+### With mean precip line -------------------------------------------------
+
+# Generate prediction and add unscaled variable - 9 levels to get mean
+insight.bgcov.herb.precip2 <- dat.plot.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+insight.bgcov.herb.precip2$Predicted <- get_predicted(bgcov_best.model, insight.bgcov.herb.precip2)
+unscaled.herb.precip6561 <- dat.plot.unscaled %>% 
+  get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
+  arrange(Change_HerbCover)
+insight.bgcov.herb.precip2$Change_HerbCover <- unscaled.herb.precip6561$Change_HerbCover
+insight.bgcov.herb.precip2$Prev_year_precip <- unscaled.herb.precip6561$Prev_year_precip
+unique(insight.bgcov.herb.precip2$Prev_year_precip_scaled) 
+insight.bgcov.herb.precip2 <- insight.bgcov.herb.precip2 %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.957, 0.005, 1.609))
+
+# Graph, no CI, average precip (insight version)
+bgcov.herb.precip2 <- dat.plot %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_BGCover,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.bgcov.herb.precip2,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Cover (%)"),
+       x = expression(Delta ~ "Native grass & forb cover (%)"),
+       title = "Change in buffelgrass cover vs. herb cover change")
+bgcov.herb.precip2
 
 
 
@@ -3180,6 +3665,11 @@ tiff("figures/2025-08_draft-figures-1.1/Repro-change_prediction_BG-density-chang
      units = "in", height = 4, width = 6, res = 150)
 repro.bgden.precip.ci
 dev.off()
+# Repro change interaction of precip*BG density (with mean precip)
+tiff("figures/2025-08_draft-figures-1.1/Repro-change_prediction_BG-density-change-and-precip-interaction_avg.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.bgden.precip2
+dev.off()
 
 # Repro change interaction of precip*shrub
 tiff("figures/2025-08_draft-figures-1.1/Repro-change_prediction_shrub-cover-change-and-precip-interaction.tiff",
@@ -3191,6 +3681,11 @@ tiff("figures/2025-08_draft-figures-1.1/Repro-change_prediction_shrub-cover-chan
      units = "in", height = 4, width = 6, res = 150)
 repro.shrub.precip.ci
 dev.off()
+# Repro change interaction of precip*shrub (with mean precip)
+tiff("figures/2025-08_draft-figures-1.1/Repro-change_prediction_shrub-cover-change-and-precip-interaction_avg.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.shrub.precip2
+dev.off()
 
 # Repro change interaction of precip*herb
 tiff("figures/2025-08_draft-figures-1.1/Repro-change_prediction_herb-cover-change-and-precip-interaction.tiff",
@@ -3201,6 +3696,11 @@ dev.off()
 tiff("figures/2025-08_draft-figures-1.1/Repro-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.herb.precip.ci
+dev.off()
+# Repro change interaction of precip*herb (with mean precip)
+tiff("figures/2025-08_draft-figures-1.1/Repro-change_prediction_herb-cover-change-and-precip-interaction_avg.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.herb.precip2
 dev.off()
 
 
@@ -3260,7 +3760,16 @@ tiff("figures/2025-08_draft-figures-1.1/BG-density-change_prediction_shrub-cover
      units = "in", height = 7, width = 6, res = 150)
 bgden.shrub.precip.ci
 dev.off()
-
+# BG density change interaction of precip*shrub (with mean precip)
+tiff("figures/2025-08_draft-figures-1.1/BG-density-change_prediction_shrub-cover-change-and-precip-interaction_avg.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgden.shrub.precip2
+dev.off()
+# BG density change interaction of precip*shrub (with mean precip, long)
+tiff("figures/2025-08_draft-figures-1.1/BG-density-change_prediction_shrub-cover-change-and-precip-interaction_avg_long.tiff",
+     units = "in", height = 7, width = 6, res = 150)
+bgden.shrub.precip2
+dev.off()
 
 # BG density change interaction of precip*herb
 tiff("figures/2025-08_draft-figures-1.1/BG-density-change_prediction_herb-cover-change-and-precip-interaction.tiff",
@@ -3272,7 +3781,11 @@ tiff("figures/2025-08_draft-figures-1.1/BG-density-change_prediction_herb-cover-
      units = "in", height = 4, width = 6, res = 150)
 bgden.herb.precip.ci
 dev.off()
-
+# BG density change interaction of precip*herb (wiht mean precip)
+tiff("figures/2025-08_draft-figures-1.1/BG-density-change_prediction_herb-cover-change-and-precip-interaction_avg.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgden.herb.precip2
+dev.off()
 
 
 ## BG cover change --------------------------------------------------------
@@ -3320,6 +3833,11 @@ tiff("figures/2025-08_draft-figures-1.1/BG-cover-change_prediction_shrub-cover-c
      units = "in", height = 4, width = 6, res = 150)
 bgcov.shrub.precip.ci
 dev.off()
+# BG cover change interaction of precip*shrub (with mean precip)
+tiff("figures/2025-08_draft-figures-1.1/BG-cover-change_prediction_shrub-cover-change-and-precip-interaction_avg.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgcov.shrub.precip2
+dev.off()
 
 # BG cover change interaction of precip*herb
 tiff("figures/2025-08_draft-figures-1.1/BG-cover-change_prediction_herb-cover-change-and-precip-interaction.tiff",
@@ -3330,6 +3848,11 @@ dev.off()
 tiff("figures/2025-08_draft-figures-1.1/BG-cover-change_prediction_herb-cover-change-and-precip-interaction_CI-scaled.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.herb.precip.ci
+dev.off()
+# BG cover change interaction of precip*herb (with mean precip)
+tiff("figures/2025-08_draft-figures-1.1/BG-cover-change_prediction_herb-cover-change-and-precip-interaction_avg.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgcov.herb.precip2
 dev.off()
 
 
@@ -3448,5 +3971,5 @@ ggarrange(bgden.precip, bgcov.precip, survival.precip.gg,
 dev.off()
 
 
-save.image("RData/07_draft-figs-for-lm-6.3.1.RData")
 
+save.image("RData/07_draft-figs-for-lm-6.3.1.RData")
