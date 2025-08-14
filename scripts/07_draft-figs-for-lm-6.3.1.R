@@ -128,6 +128,215 @@ dat.survival.unscaled <- dat.survival.raw %>%
   select(Prev_year_precip, PlotSlope, BGDensity, ShrubCover, HerbCover)
 
 
+# Test different precip levels --------------------------------------------
+
+# Am trying to generate a datagrid with a precip level that is closest to 0 (the mean),
+#   so I can then have the highest, mean, and lowest graphed.
+# I can then just remove the other unwanted levels to still just have three lines on the graph.
+# (There is probably a smarter way to go about this than checking every level, but that's what
+#   I'm going to do lol.)
+
+# 3 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.345
+
+# 4 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 4, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.088
+
+# 5 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 5, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.304
+
+# 6 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 6, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.085
+
+# 7 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 7, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.088
+
+# 8 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 8, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.159
+
+# 9 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.02
+
+# 10 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 10, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.088
+
+# 11 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 11, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.085
+
+# 12 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.009
+
+# 13 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 13, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.088
+
+# 14 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 14, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.045
+
+# 15 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 15, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.026
+
+# 16 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 16, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.085
+
+# 17 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 17, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.02
+
+# 18 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 18, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.037
+
+# 19 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 19, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.056
+
+# 20 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.003
+
+# 21 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 21, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) #-0.044
+
+# 22 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 22, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.036
+
+# 23 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 23, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.009
+
+# 24 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 24, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.05
+
+# 25 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 25, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.02
+
+# 26 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 26, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled)# -0.019
+
+# 27 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 27, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.045
+
+# 28 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 28, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.008
+
+# 29 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 29, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # -0.026
+
+# 30 precip levels
+x <- dat.culm.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 30, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.032
+
+
+# Results: I checked 3-30 precip levels, and the closest that came to 0 was 0.003,
+#   which was generated at 20 precip levels.
+
+
 
 # Total culm change -------------------------------------------------------
 
@@ -969,7 +1178,7 @@ repro.shrub.precip.ci
 
 # Generate prediction and add unscaled variable
 insight.repro.herb.precip <- dat.culm.ex %>% 
-  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 3) %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
 insight.repro.herb.precip$Predicted <- get_predicted(repro_best.model, insight.repro.herb.precip)
@@ -1032,7 +1241,6 @@ repro.herb.precip.ci <- repro.pred.herb.precip %>%
        fill = "Previous year \nprecip (scaled)") +
   scale_y_continuous(limits = c(-88, 120))
 repro.herb.precip.ci
-
 
 
 
