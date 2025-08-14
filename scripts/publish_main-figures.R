@@ -4,7 +4,7 @@
 # Purpose: Create main figures for publishing (both low and high quality versions).
 
 # See 07_draft-figs-for-lm-6.3.1.R for more details. Published figures will be insight
-#   version only, and not include CI.
+#   version only, not include CI, and precip interaction graphs will have mean precip line.
 
 library(tidyverse)
 library(insight)
@@ -279,15 +279,17 @@ survival.precip
 # Generate prediction and add unscaled variable
 insight.bgden.shrub.precip <- dat.plot.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
-  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled)
 insight.bgden.shrub.precip$Predicted <- get_predicted(bgden_best.model, insight.bgden.shrub.precip)
-unscaled.shrub.precip3200000 <- dat.plot.unscaled %>% 
+unscaled.shrub.precip6561 <- dat.plot.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
-  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
   arrange(Change_ShrubCover)
-insight.bgden.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip3200000$Change_ShrubCover
-insight.bgden.shrub.precip$Prev_year_precip <- unscaled.shrub.precip3200000$Prev_year_precip
+insight.bgden.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip6561$Change_ShrubCover
+insight.bgden.shrub.precip$Prev_year_precip <- unscaled.shrub.precip6561$Prev_year_precip
+insight.bgden.shrub.precip <- insight.bgden.shrub.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.957, 0.005, 1.609))
 
 # Graph, no CI (insight version)
 bgden.shrub.precip <- dat.plot %>% 
