@@ -1,5 +1,5 @@
 # Created: 2025-08-13
-# Updated: 2025-08-13
+# Updated: 2025-08-14
 
 # Purpose: Create main figures for publishing (both low and high quality versions).
 
@@ -74,20 +74,23 @@ dat.survival.unscaled <- survival.dat %>%
   select(Prev_year_precip, PlotSlope, BGDensity, ShrubCover, HerbCover)
 
 
+
 # Figure 1: Total culm, precip * shrub ------------------------------------
 
-# Generate prediction and add unscaled variable
+# Generate prediction and add unscaled variable - 20 precip levels to get close to mean precip
 insight.total.shrub.precip <- dat.culm.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
-  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled)
 insight.total.shrub.precip$Predicted <- get_predicted(total_best.model, insight.total.shrub.precip)
-unscaled.shrub.precip243 <- dat.culm.unscaled %>% 
+unscaled.shrub.precip3200000 <- dat.culm.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
-  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  get_datagrid("Prev_year_precip", length = 20, numerics = "all") %>% 
   arrange(Change_ShrubCover)
-insight.total.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
-insight.total.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+insight.total.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip3200000$Change_ShrubCover
+insight.total.shrub.precip$Prev_year_precip <- unscaled.shrub.precip3200000$Prev_year_precip
+insight.total.shrub.precip <- insight.total.shrub.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
 
 # Graph, no CI (insight version)
 total.shrub.precip <- dat.culm %>% 
@@ -115,16 +118,18 @@ total.shrub.precip
 
 # Generate prediction and add unscaled variable
 insight.total.herb.precip <- dat.culm.ex %>% 
-  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 3) %>% 
-  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
 insight.total.herb.precip$Predicted <- get_predicted(total_best.model, insight.total.herb.precip)
-unscaled.herb.precip243 <- dat.culm.unscaled %>% 
+unscaled.herb.precip3200000 <- dat.culm.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
-  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  get_datagrid("Prev_year_precip", length = 20, numerics = "all") %>% 
   arrange(Change_HerbCover)
-insight.total.herb.precip$Change_HerbCover <- unscaled.herb.precip243$Change_HerbCover
-insight.total.herb.precip$Prev_year_precip <- unscaled.herb.precip243$Prev_year_precip
+insight.total.herb.precip$Change_HerbCover <- unscaled.herb.precip3200000$Change_HerbCover
+insight.total.herb.precip$Prev_year_precip <- unscaled.herb.precip3200000$Prev_year_precip
+insight.total.herb.precip <- insight.total.herb.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
 
 # Graph, no CI (insight version)
 total.herb.precip <- dat.culm %>% 
@@ -153,15 +158,17 @@ total.herb.precip
 # Generate prediction and add unscaled variable
 insight.total.bgden.precip <- dat.culm.ex %>% 
   get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
-  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
   arrange(Change_BGDensity_scaled)
 insight.total.bgden.precip$Predicted <- get_predicted(total_best.model, insight.total.bgden.precip)
-unscaled.bgden.precip243 <- dat.culm.unscaled %>% 
+unscaled.bgden.precip3200000 <- dat.culm.unscaled %>% 
   get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 10) %>% 
-  get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
+  get_datagrid("Prev_year_precip", length = 20, numerics = "all") %>% 
   arrange(Change_BGDensity)
-insight.total.bgden.precip$Change_BGDensity <- unscaled.bgden.precip243$Change_BGDensity
-insight.total.bgden.precip$Prev_year_precip <- unscaled.bgden.precip243$Prev_year_precip
+insight.total.bgden.precip$Change_BGDensity <- unscaled.bgden.precip3200000$Change_BGDensity
+insight.total.bgden.precip$Prev_year_precip <- unscaled.bgden.precip3200000$Prev_year_precip
+insight.total.bgden.precip <- insight.total.bgden.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
 
 # Graph, no CI (insight version)
 total.bgden.precip <- dat.culm %>% 
@@ -275,12 +282,12 @@ insight.bgden.shrub.precip <- dat.plot.ex %>%
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled)
 insight.bgden.shrub.precip$Predicted <- get_predicted(bgden_best.model, insight.bgden.shrub.precip)
-unscaled.shrub.precip243 <- dat.plot.unscaled %>% 
+unscaled.shrub.precip3200000 <- dat.plot.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover)
-insight.bgden.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip243$Change_ShrubCover
-insight.bgden.shrub.precip$Prev_year_precip <- unscaled.shrub.precip243$Prev_year_precip
+insight.bgden.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip3200000$Change_ShrubCover
+insight.bgden.shrub.precip$Prev_year_precip <- unscaled.shrub.precip3200000$Prev_year_precip
 
 # Graph, no CI (insight version)
 bgden.shrub.precip <- dat.plot %>% 
