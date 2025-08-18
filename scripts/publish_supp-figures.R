@@ -1,5 +1,5 @@
 # Created: 2025-08-14
-# Updated: 2025-08-14
+# Updated: 2025-08-18
 
 # Purpose: Create supplemental figures for publishing (both low and high quality versions).
 
@@ -98,7 +98,7 @@ repro.shrub.precip <- dat.culm %>%
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = insight.repro.shrub.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.3) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -138,7 +138,7 @@ repro.herb.precip <- dat.culm %>%
              color = Prev_year_precip)) +
   geom_point() +
   geom_line(data = insight.repro.herb.precip,
-            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.3) +
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
   theme_bw() +
   scale_color_viridis(option = "viridis", direction = -1,
                       name = "Previous year \nprecip (mm)") +
@@ -152,3 +152,80 @@ repro.herb.precip <- dat.culm %>%
        x = expression(Delta ~ "Native grass & forb cover (%)")) 
 repro.herb.precip
 
+
+
+# Figure S3: BG cover, precip * shrub -------------------------------------
+
+# Generate prediction and add unscaled variable 
+insight.bgcov.shrub.precip <- dat.plot.ex %>% 
+  get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover_scaled)
+insight.bgcov.shrub.precip$Predicted <- get_predicted(bgcov_best.model, insight.bgcov.shrub.precip)
+unscaled.shrub.precip6561 <- dat.plot.unscaled %>% 
+  get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover)
+insight.bgcov.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip6561$Change_ShrubCover
+insight.bgcov.shrub.precip$Prev_year_precip <- unscaled.shrub.precip6561$Prev_year_precip
+insight.bgcov.shrub.precip <- insight.bgcov.shrub.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.957, 0.005, 1.609))
+
+# Graph, no CI, average precip (insight version)
+bgcov.shrub.precip <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGCover,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.bgcov.shrub.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Cover (%)"),
+       x = expression(Delta ~ "Native shrub cover (%)"),
+       title = "Change in buffelgrass cover vs. shrub cover change")
+bgcov.shrub.precip
+
+
+
+
+# Write out figures -------------------------------------------------------
+
+# Figure S1
+tiff("figures/publish-figures/FigureS1_150dpi.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.shrub.precip
+dev.off()
+tiff("figures/publish-figures/FigureS1_600dpi.tiff",
+     units = "in", height = 4, width = 6, res = 600)
+repro.shrub.precip
+dev.off()
+
+# Figure S2
+tiff("figures/publish-figures/FigureS2_150dpi.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+repro.herb.precip
+dev.off()
+tiff("figures/publish-figures/FigureS2_600dpi.tiff",
+     units = "in", height = 4, width = 6, res = 600)
+repro.herb.precip
+dev.off()
+
+# Figure S3
+tiff("figures/publish-figures/FigureS3_150dpi.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+bgcov.shrub.precip
+dev.off()
+tiff("figures/publish-figures/FigureS3_600dpi.tiff",
+     units = "in", height = 4, width = 6, res = 600)
+bgcov.shrub.precip
+dev.off()
+
+
+save.image("RData/publish_supp-figures.RData")
