@@ -3520,6 +3520,24 @@ survival.herb.precip.ci # insight version higher than ggeffects (looks pretty di
 
 
 
+# Shrub and herb vs. precip (linear regression) ---------------------------
+
+# Shrub vs. precip
+plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+# Herb vs. precip
+plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw()
+
+
+
 
 # Write out draft figures -------------------------------------------------
 
