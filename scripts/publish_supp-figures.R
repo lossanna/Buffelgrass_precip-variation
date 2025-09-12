@@ -1,5 +1,5 @@
 # Created: 2025-08-14
-# Updated: 2025-08-18
+# Updated: 2025-09-12
 
 # Purpose: Create supplemental figures for publishing (both low and high quality versions).
 
@@ -187,9 +187,8 @@ bgcov.shrub.precip <- dat.plot %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  labs(y = expression(Delta ~ "Cover (%)"),
-       x = expression(Delta ~ "Native shrub cover (%)"),
-       title = "Change in buffelgrass cover vs. shrub cover change")
+  labs(y = expression(Delta ~ "Buffelgrass cover (%)"),
+       x = expression(Delta ~ "Native shrub cover (%)"))
 bgcov.shrub.precip
 
 
