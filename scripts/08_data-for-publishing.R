@@ -72,3 +72,10 @@ dat %>%
 
 # Number of survival observations
 nrow(dat.survival) # 138
+
+
+# Number of individual plants tracked
+length(unique(culm.change$Plant_ID)) # 771
+
+# Number of plots
+length(unique(plot.change$Plot)) # 79
