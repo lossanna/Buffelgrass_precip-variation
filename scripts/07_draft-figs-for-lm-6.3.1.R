@@ -1,5 +1,5 @@
 # Created: 2025-08-12
-# Updated: 2025-08-14
+# Updated: 2025-09-15
 
 # Purpose: Create graphs for linear models v6.3.1. Overlay model predictions on top of original data
 #   using ggeffects and insight packages.
@@ -67,6 +67,7 @@ library(ggpubr)
 
 load("RData/06.9_data-and-best-models-6.3.1.RData")
 dat.survival.raw <- dat.survival
+dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
 
 
 # Data wrangling ----------------------------------------------------------
@@ -3523,18 +3524,43 @@ survival.herb.precip.ci # insight version higher than ggeffects (looks pretty di
 # Shrub and herb vs. precip (linear regression) ---------------------------
 
 # Shrub vs. precip
-plot.change %>% 
-  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = ShrubCover)) +
   geom_point() +
   geom_smooth(method = "lm") +
   theme_bw()
 
+# Shrub cover change vs. precip
+shrub.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native shrub cover (%)"),
+       x = "Previous year precipitation (mm)",
+       title = "Change in shrub cover vs. precip")
+shrub.change.precip
+
+
 # Herb vs. precip
-plot.change %>% 
-  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+dat %>% 
+  ggplot(aes(x = Prev_year_precip, y = HerbCover)) +
   geom_point() +
   geom_smooth(method = "lm") +
   theme_bw()
+
+# Herb cover change vs. precip
+herb.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native grass & forb cover (%)"),
+       x = "Previous year precipitation (mm)",
+       title = "Change in herb cover vs. precip")
+herb.change.precip
 
 
 
@@ -3986,6 +4012,22 @@ tiff("figures/2025-08_draft-figures-1.1/Precip-combined_density-cover-survival_C
 ggarrange(bgden.precip, bgcov.precip, survival.precip.gg,
           ncol = 2, nrow = 2,
           labels = c("(A)", "(B)", "(C)"))
+dev.off()
+
+
+
+## Shrub & herb cover change vs. precip -----------------------------------
+
+# Shrub
+tiff("figures/2025-08_draft-figures-1.1/Shrub-precip.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+shrub.change.precip
+dev.off()
+
+# Herb
+tiff("figures/2025-08_draft-figures-1.1/Herb-precip.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+herb.change.precip
 dev.off()
 
 
