@@ -1,5 +1,5 @@
 # Created: 2025-08-01
-# Updated: 2025-08-13
+# Updated: 2025-09-15
 
 # Purpose: Create data for publishing.
 
@@ -17,6 +17,14 @@ prism.dat.raw <- read_csv("data/cleaned/02_monitoring-info-with-PRISM-data_clean
 prism.dat <- prism.dat.raw %>% 
   select(Site, Latitude, Longitude, Elevation_ft, MAP, MAT) %>% 
   distinct(.keep_all = TRUE)
+
+# Actual values
+dat.publish <- dat %>% 
+  select(Year, Site, Transect, Plot, Plant_ID, Aspect, PlotSlope, Prev_year_precip,
+         Reproductive_culms, Total_Live_Culms, BGDensity, BGCover, ShrubCover, HerbCover) %>% 
+  filter(Aspect != "flat") %>% 
+  rename(ReproductiveCulms = Reproductive_culms,
+         TotalCulms = Total_Live_Culms)
 
 # Culm change
 culm.change <- culm.change.raw %>% 
@@ -47,6 +55,8 @@ dat.survival <- dat %>%
 
 write_csv(prism.dat,
           file = "data/publish/site-info.csv")
+write_csv(dat.publish,
+          file = "data/publish/all-data.csv")
 write_csv(culm.change,
           file = "data/publish/culm-data.csv")
 write_csv(plot.change,
