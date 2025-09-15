@@ -7,7 +7,7 @@ library(tidyverse)
 
 # Load data ---------------------------------------------------------------
 
-dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
+dat.raw <- read_csv("data/cleaned/04_demography-data_clean.csv")
 culm.change.raw <- read_csv("data/cleaned/04_change-in-culm-density-cover_clean.csv")
 prism.dat.raw <- read_csv("data/cleaned/02_monitoring-info-with-PRISM-data_clean.csv")
 
@@ -19,7 +19,7 @@ prism.dat <- prism.dat.raw %>%
   distinct(.keep_all = TRUE)
 
 # Actual values
-dat.publish <- dat %>% 
+dat <- dat.raw %>% 
   select(Year, Site, Transect, Plot, Plant_ID, Aspect, PlotSlope, Prev_year_precip,
          Reproductive_culms, Total_Live_Culms, BGDensity, BGCover, ShrubCover, HerbCover) %>% 
   filter(Aspect != "flat") %>% 
@@ -51,11 +51,38 @@ dat.survival <- dat %>%
   rename(Survival_perc = survival_perc)
 
 
+# Check IDs ---------------------------------------------------------------
+
+# Number of individual plants tracked - all
+length(unique(dat$Plant_ID)) # 841
+
+# Number of individual plants tracked - year-to-year change
+length(unique(culm.change$Plant_ID)) # 771
+
+# Plots not included in year-to-year change
+unique(setdiff(dat$Plant_ID, culm.change$Plant_ID))
+plant.missing <- dat %>% 
+  filter(Plant_ID %in% c(unique(setdiff(dat$Plant_ID, culm.change$Plant_ID))))
+
+# Number of plots - all
+length(unique(dat$Plot)) # 79
+
+# Number of plots - year-to-year change
+length(unique(culm.change$Plot)) # 79
+
+# Note that some plants were not included in year-to-year change, but all plots were
+#   represented in both
+
+# Remove plants not included in year-to-year change from dat
+dat <- dat %>% 
+  filter(!Plant_ID %in% c(unique(setdiff(dat$Plant_ID, culm.change$Plant_ID))))
+
+
 # Write to csv ------------------------------------------------------------
 
 write_csv(prism.dat,
           file = "data/publish/site-info.csv")
-write_csv(dat.publish,
+write_csv(dat,
           file = "data/publish/all-data.csv")
 write_csv(culm.change,
           file = "data/publish/culm-data.csv")
@@ -63,29 +90,3 @@ write_csv(plot.change,
           file = "data/publish/plot-data.csv")
 write_csv(dat.survival,
           file = "data/publish/survival-data.csv")
-
-
-
-# Calculate number of observations ----------------------------------------
-
-# Number of culm observations
-dat %>% 
-  filter(Aspect != "flat") %>% 
-  nrow() # 2089
-
-# Number of plot-level observations
-dat %>% 
-  filter(Aspect != "flat") %>% 
-  select(Year, Site, Transect, Plot) %>% 
-  distinct(.keep_all = TRUE) %>% 
-  nrow() # 207
-
-# Number of survival observations
-nrow(dat.survival) # 138
-
-
-# Number of individual plants tracked
-length(unique(culm.change$Plant_ID)) # 771
-
-# Number of plots
-length(unique(plot.change$Plot)) # 79
