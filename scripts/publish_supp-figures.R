@@ -154,7 +154,35 @@ repro.herb.precip
 
 
 
-# Figure S3: BG cover, precip * shrub -------------------------------------
+# Figure S3: Shrub/herb cover vs. precip ----------------------------------
+
+# Shrub cover change vs. precip
+shrub.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native shrub cover (%)"),
+       x = "Previous year precipitation (mm)") +
+  theme(plot.margin = margin(10, 10, 10, 20))
+shrub.change.precip
+
+# Herb cover change vs. precip
+herb.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native grass & forb cover (%)"),
+       x = "Previous year precipitation (mm)") +
+  theme(plot.margin = margin(10, 10, 10, 20))
+herb.change.precip
+
+
+
+# Figure S4: BG cover, precip * shrub -------------------------------------
 
 # Generate prediction and add unscaled variable 
 insight.bgcov.shrub.precip <- dat.plot.ex %>% 
@@ -218,10 +246,24 @@ dev.off()
 
 # Figure S3
 tiff("figures/publish-figures/FigureS3_150dpi.tiff",
+     units = "in", height = 3.5, width = 9, res = 150)
+ggarrange(shrub.change.precip, herb.change.precip,
+          ncol = 2, nrow = 1,
+          labels = c("(A)", "(B)"))
+dev.off()
+tiff("figures/publish-figures/FigureS3_600dpi.tiff",
+     units = "in", height = 3.5, width = 9, res = 600)
+ggarrange(shrub.change.precip, herb.change.precip,
+          ncol = 2, nrow = 1,
+          labels = c("(A)", "(B)"))
+dev.off()
+
+# Figure S4
+tiff("figures/publish-figures/FigureS4_150dpi.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.shrub.precip
 dev.off()
-tiff("figures/publish-figures/FigureS3_600dpi.tiff",
+tiff("figures/publish-figures/FigureS4_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 bgcov.shrub.precip
 dev.off()
