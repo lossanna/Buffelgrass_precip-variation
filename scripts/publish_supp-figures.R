@@ -1,5 +1,5 @@
 # Created: 2025-08-14
-# Updated: 2025-09-15
+# Updated: 2025-09-16
 
 # Purpose: Create supplemental figures for publishing (both low and high quality versions).
 
@@ -268,5 +268,12 @@ tiff("figures/publish-figures/FigureS4_600dpi.tiff",
 bgcov.shrub.precip
 dev.off()
 
+
+# Save --------------------------------------------------------------------
+
+# Graphs only
+save(repro.shrub.precip, repro.herb.precip, shrub.change.precip, herb.change.precip,
+     bgcov.shrub.precip,
+     file = "RData/publish_figsS1-S4.RData")
 
 save.image("RData/publish_supp-figures.RData")

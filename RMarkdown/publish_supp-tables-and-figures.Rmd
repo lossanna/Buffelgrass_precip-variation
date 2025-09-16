@@ -8,13 +8,16 @@ date: "`r Sys.Date()`"
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
 library(kableExtra)
+library(ggplot2)
+library(ggpubr)
 load("../RData/publish_actual-summary.RData")
+load("../RData/publish_figsS1-S4.RData")
 ```
 
 Includes all supplemental tables and figures to accompany "Precipitation moderates the effect of native shrubs on invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
-
-# Table S1. Actual values averaged by year
+# Tables
+## Table S1. Actual values averaged by year
 Actual values of variables measured, averaged across all plots for each year (to contextualize year-to-year change values used in analyses). Precipitation measured in mm, buffelgrass density measured in individuals per m^2^, and cover measured in percent.
 ```{r Table S1}
 actual.summary.year2 %>% 
@@ -25,7 +28,7 @@ actual.summary.year2 %>%
 ```
 
 
-# Table S2. Total culms model 
+## Table S2. Total culms model 
 Model-averaged coefficients of the buffelgrass culm count model calculated from two top models (response variable: year-to-year change in total number of culms). Marginal R^2^ = 0.144–0.147; conditional  
 R^2^ = 0.386–0.391.
 ```{r Table S2}
@@ -40,7 +43,7 @@ total_avg %>%
 ```
 
 
-# Table S3. Reproductive culms model 
+## Table S3. Reproductive culms model 
 Model-averaged coefficients of the buffelgrass reproductive culm count model calculated from five top models (response variable: year-to-year change in number of reproductive culms). Marginal R^2^ = 0.147–0.155; conditional R^2^ = 0.318–0.333.
 ```{r Table S3}
 repro_avg <- read.table("repro_avg.txt", sep = "\t")
@@ -54,7 +57,7 @@ repro_avg %>%
 ```
 
 
-# Table S4. Plot density model
+## Table S4. Plot density model
 Model-averaged coefficients of the buffelgrass plot density model calculated from five top models (response variable: year-to-year change in plot density [individuals per m^2^]). Marginal R^2^ = 0.360–0.389; conditional R^2^ = 0.423–0.458.
 ```{r Table S4}
 bgden_avg <- read.table("bgden_avg.txt", sep = "\t")
@@ -69,7 +72,7 @@ bgden_avg %>%
 
 
 \newpage
-# Table S5. Plot cover model
+## Table S5. Plot cover model
 Model-averaged coefficients of the buffelgrass plot cover model calculated from six top models (response variable: year-to-year-change in plot cover [%]). Marginal R^2^ = 0.243–0.246; conditional R^2^ = 0.284–0.289.
 ```{r Table S5}
 bgcov_avg <- read.table("bgcov_avg.txt", sep = "\t")
@@ -83,7 +86,7 @@ bgcov_avg %>%
 ```
 
 
-# Table S6. Seedling survival model
+## Table S6. Seedling survival model
 Model-averaged coefficients of the buffelgrass seedling survival model calculated from 15 top models (response variable: seedling survival [%]). Marginal R^2^ = 0.666–0.695; conditional R^2^ = 0.779–0.800.
 ```{r Table S6}
 survival_avg <- read.table("survival_avg.txt", sep = "\t")
@@ -96,3 +99,32 @@ survival_avg %>%
   kable_styling(latex_options = c("striped", "hold_position")) 
 ```
 
+
+# Figures
+## Figure S1
+```{r Fig S1}
+repro.shrub.precip
+```
+**Figure S1.** Effects of year-to-year change in native shrub cover on year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in reproductive buffelgrass culm count.
+
+## Figure S2
+```{r Fig S2}
+repro.herb.precip
+```
+**Figure S2.** Effects of year-to-year change in native herbaceous (grass and forb) cover on year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in herb cover while horizontal line indicates no change in reproductive buffelgrass culm count.
+
+\newpage
+## Figure S3
+```{r Fig S3, message=FALSE}
+ggarrange(shrub.change.precip, herb.change.precip,
+          ncol = 2, nrow = 1,
+          labels = c("(A)", "(B)"))
+```
+**Figure S3.** Simple linear regression of (A) change in native shrub cover and (B) change in native herbaceous cover as a function of the previous year’s precipitation, pooling all sampling locations and times.
+
+\newpage
+## Figure S4
+```{r Fig S4}
+bgcov.shrub.precip
+```
+**Figure S4.** Effects of year-to-year change in native shrub cover on year-to-year change in buffelgrass plot cover, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in buffelgrass cover.
