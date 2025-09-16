@@ -1,0 +1,14 @@
+Coefficient	Estimate	Std. Error	Adjusted SE	z value	Pr(>|z|)    
+Intercept	11.9587	3.7727	3.7764	3.167	0.00154** 
+Aspect, N	-6.9282	6.6088	6.6152	1.047	0.29495    
+Aspect, S	-9.2787	5.0959	5.1009	1.819	0.06890  
+Aspect, SW	14.1600	6.6084	6.6149	2.141	0.03230*  
+Aspect, W	-3.2396	5.0709	5.0759	0.638	0.52332    
+Change in BG density	-2.5706	0.8613	0.8621	2.982	0.00286** 
+Change in herb cover	2.7259	0.6647	0.6653	4.097	4.18e-05***
+Change in shrub cover	1.3680	0.6467	0.6473	2.113	0.03458 *  
+Plot slope	1.4751	0.9336	0.9345	1.578	0.11447    
+Previous year precipitation	-0.8645	0.8951	0.8960	0.965	0.33463    
+Change in BG density * Previous year precip	-1.4539	1.1143	1.1151	1.304	0.19231    
+Change in herb cover * Previous year precip	-0.4236	0.6304	0.6308	0.672	0.50188    
+Change in shrub cover * Previous year precip	-0.1940	0.4939	0.4943	0.392	0.69476

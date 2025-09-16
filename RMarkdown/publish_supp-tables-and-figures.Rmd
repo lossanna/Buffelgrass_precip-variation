@@ -8,13 +8,13 @@ date: "`r Sys.Date()`"
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
 library(kableExtra)
-load("../RData/publish_model-averages.RData")
 load("../RData/publish_actual-summary.RData")
 ```
 
 Includes all supplemental tables and figures to accompany "Precipitation moderates the effect of native shrubs on invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
-# **Table S1**. Actual values
+
+# Table S1. Actual values averaged by year
 Actual values of variables measured, averaged across all plots for each year (to contextualize year-to-year change values used in analyses). Precipitation measured in mm, buffelgrass density measured in individuals per m^2^, and cover measured in percent.
 ```{r Table S1}
 actual.summary.year2 %>% 
@@ -25,11 +25,74 @@ actual.summary.year2 %>%
 ```
 
 
-# **Table S2**. Total culms model
-Model-averaged coefficients of the buffelgrass culm count model calculated from two top models (response variable: year-to-year change in total number of culms). Marginal R^2^ = 0.144–0.147; conditional R^2^
-= 0.386–0.391.
+# Table S2. Total culms model 
+Model-averaged coefficients of the buffelgrass culm count model calculated from two top models (response variable: year-to-year change in total number of culms). Marginal R^2^ = 0.144–0.147; conditional  
+R^2^ = 0.386–0.391.
 ```{r Table S2}
-summary(total_avg)
+total_avg <- read.table("total_avg.txt", sep = "\t")
+colnames(total_avg) <- total_avg[1,]
+total_avg <- total_avg[-1,]
+row.names(total_avg) <- NULL
+
+total_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
 ```
 
+
+# Table S3. Reproductive culms model 
+Model-averaged coefficients of the buffelgrass reproductive culm count model calculated from five top models (response variable: year-to-year change in number of reproductive culms). Marginal R^2^ = 0.147–0.155; conditional R^2^ = 0.318–0.333.
+```{r Table S3}
+repro_avg <- read.table("repro_avg.txt", sep = "\t")
+colnames(repro_avg) <- repro_avg[1,]
+repro_avg <- repro_avg[-1,]
+row.names(repro_avg) <- NULL
+
+repro_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+
+# Table S4. Plot density model
+Model-averaged coefficients of the buffelgrass plot density model calculated from five top models (response variable: year-to-year change in plot density [individuals per m^2^]). Marginal R^2^ = 0.360–0.389; conditional R^2^ = 0.423–0.458.
+```{r Table S4}
+bgden_avg <- read.table("bgden_avg.txt", sep = "\t")
+colnames(bgden_avg) <- bgden_avg[1,]
+bgden_avg <- bgden_avg[-1,]
+row.names(bgden_avg) <- NULL
+
+bgden_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+
+\newpage
+# Table S5. Plot cover model
+Model-averaged coefficients of the buffelgrass plot cover model calculated from six top models (response variable: year-to-year-change in plot cover [%]). Marginal R^2^ = 0.243–0.246; conditional R^2^ = 0.284–0.289.
+```{r Table S5}
+bgcov_avg <- read.table("bgcov_avg.txt", sep = "\t")
+colnames(bgcov_avg) <- bgcov_avg[1,]
+bgcov_avg <- bgcov_avg[-1,]
+row.names(bgcov_avg) <- NULL
+
+bgcov_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+
+# Table S6. Seedling survival model
+Model-averaged coefficients of the buffelgrass seedling survival model calculated from 15 top models (response variable: seedling survival [%]). Marginal R^2^ = 0.666–0.695; conditional R^2^ = 0.779–0.800.
+```{r Table S6}
+survival_avg <- read.table("survival_avg.txt", sep = "\t")
+colnames(survival_avg) <- survival_avg[1,]
+survival_avg <- survival_avg[-1,]
+row.names(survival_avg) <- NULL
+
+survival_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
 
