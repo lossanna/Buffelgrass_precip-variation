@@ -1,0 +1,35 @@
+---
+title: "Supplemental tables and figures"
+output: pdf_document
+date: "`r Sys.Date()`"
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(kableExtra)
+load("../RData/publish_model-averages.RData")
+load("../RData/publish_actual-summary.RData")
+```
+
+Includes all supplemental tables and figures to accompany "Precipitation moderates the effect of native shrubs on invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
+
+# **Table S1**. Actual values
+Actual values of variables measured, averaged across all plots for each year (to contextualize year-to-year change values used in analyses). Precipitation measured in mm, buffelgrass density measured in individuals per m^2^, and cover measured in percent.
+```{r Table S1}
+actual.summary.year2 %>% 
+  kbl(booktabs = TRUE, align = "c",
+      col.names = c("Year", "Precipitation", "Total culms", "Repro culms", "Density", "Cover", "Shrub cover", "Herb cover")) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) %>% 
+  add_header_above(c(" " = 2, "Buffelgrass" = 4, "Native vegetation" = 2))
+```
+
+
+# **Table S2**. Total culms model
+Model-averaged coefficients of the buffelgrass culm count model calculated from two top models (response variable: year-to-year change in total number of culms). Marginal R^2^ = 0.144–0.147; conditional R^2^
+= 0.386–0.391.
+```{r Table S2}
+summary(total_avg)
+```
+
+

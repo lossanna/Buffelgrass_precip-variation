@@ -85,3 +85,11 @@ summary(dat$BGDensity)
 summary(dat$BGCover)
 summary(dat$ShrubCover)
 summary(dat$HerbCover)
+
+
+
+# Save --------------------------------------------------------------------
+
+# For supplemental
+save(actual.summary.year2,
+     file = "RData/publish_actual-summary.RData")

@@ -1,5 +1,5 @@
 # Created: 2025-08-12
-# Updated: 2025-08-12
+# Updated: 2025-09-15
 
 # Purpose: Write script for finalized published model results.
 
@@ -384,5 +384,8 @@ save(culm.change, plot.change, survival.dat,
      survival_best.model, survival_model5, survival_model6,
      file = "RData/publish_data-and-best-models.RData")
 
+# Needed for supp tables
+save(total_avg, repro_avg, bgden_avg, bgcov_avg, survival_avg,
+     file = "RData/publish_model-averages.RData")
 
 save.image("RData/publish_linear-models.RData")
