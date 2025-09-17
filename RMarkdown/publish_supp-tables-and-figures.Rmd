@@ -1,7 +1,6 @@
 ---
 title: "Supplemental tables and figures"
 output: pdf_document
-date: "`r Sys.Date()`"
 ---
 
 ```{r setup, include=FALSE, message=FALSE}
@@ -15,6 +14,10 @@ load("../RData/publish_figsS1-S4.RData")
 ```
 
 Includes all supplemental tables and figures to accompany "Precipitation moderates the effect of native shrubs on invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
+
+Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
+Last updated: 2025-09-16
+
 
 # Tables
 ## Table S1. Actual values averaged by year
