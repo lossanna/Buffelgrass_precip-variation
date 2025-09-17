@@ -1,5 +1,5 @@
 # Created: 2025-08-12
-# Updated: 2025-09-15
+# Updated: 2025-09-17
 
 # Purpose: Create graphs for linear models v6.3.1. Overlay model predictions on top of original data
 #   using ggeffects and insight packages.
@@ -43,17 +43,21 @@
 
 
 # insight vs. ggeffects:
-#   Both packages are developed by the same team so their predictions should be similar. This is the case for
+# 1. Both packages are developed by the same team so their predictions should be similar. This is the case for
 #     the total & repro culm change models, but for the density & cover change models, the differences are greater,
 #     with the insight version usually being lower. This might be because the culm counts have a larger range so the 
 #     differences look smaller (although maybe not?). I am unsure what is going on.
 #   But insight is meant to supersede ggeffects, so I will go with insight versions. They also seem to fit the
 #     data a bit better.
-#   For precip interaction plots, insight is also usually higher than ggeffects. I think this is because
+# 2. For precip interaction plots, insight is also usually higher than ggeffects. I think this is because
 #     the three precip levels differ. For insight, they are -0.952, 0.345, 1.641 (culm), 
 #     -0.957, 0.326, 1.609 (density/cover), or -1.036, 1.240, 3.515 (survival) but for ggeffects they are all -1, 0, 1.
-#     Survival precip levels are in particuar pretty different from ggeffects -1/0/1.
+#     Survival precip levels are in particular pretty different from ggeffects -1/0/1.
 #   Insight version of precip level fits the data better.
+# 3. Realizing this difference, I then made precip interaction graphs where I used specific datagrids to get
+#     closest as I could to 0 (mean precip experienced), and then used the driest and wettest precip
+#     experienced for yellow and purple lines. The insight precip levels are: -0.952, 0.003, 1.641 (culm),
+#     and -0.957, 0.005, 1.609 (density/cover); survival interaction plots not redone because they were NS.
 
 
 library(tidyverse)
@@ -139,6 +143,12 @@ dat.survival.unscaled <- dat.survival.raw %>%
 # I can then just remove the other unwanted levels to still just have three lines on the graph.
 # (There is probably a smarter way to go about this than checking every level, but that's what
 #   I'm going to do lol.)
+
+# Precip range for culm
+range(dat.culm.ex$Prev_year_precip_scaled) # -0.952, 1.641
+
+# Precip range for plot
+range(dat.plot.ex$Prev_year_precip_scaled) # -0.957, 1.609
 
 
 ## Culm models ------------------------------------------------------------
