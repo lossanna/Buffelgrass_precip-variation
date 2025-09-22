@@ -1,5 +1,5 @@
 # Created: 2025-08-12
-# Updated: 2025-08-12
+# Updated: 2025-09-22
 
 # Purpose: Compile version 6.3 linear models with Change_Reproductive_culms, Change_Total_Live_Culms, 
 #  Change_BGDensity, Change_BGCover, and survival_transf as response variable.
@@ -18,6 +18,8 @@
 #   2. Centering and scaling happened for plot-level data specifically, rather than using
 #        what had been centered and scaled from the culm change data.
 #   3. Centering and scaling happened for survival data after replicate culm-level rows were removed.
+
+# Also includes simple linear regression for shrub/herb vs. precip and total/density vs. cover.
 
 
 library(tidyverse)
@@ -43,7 +45,8 @@ culm.change.flat.rm <- culm.change.raw %>%
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          Change_BGDensity_scaled = scale(Change_BGDensity, scale = TRUE)[, 1],
          Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
-         Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1])
+         Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1],
+         Change_BGCover_scaled = scale(Change_BGCover, scale = TRUE)[, 1])
 
 # Separate out plot-level data
 plot.change <- culm.change.raw %>% 
@@ -54,7 +57,8 @@ plot.change <- culm.change.raw %>%
   mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
-         Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1])
+         Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1],
+         Change_BGCover_scaled = scale(Change_BGCover, scale = TRUE)[, 1])
 
 
 # Prepare survival data
@@ -397,6 +401,30 @@ survival_pred.plot <- survival_pred %>%
   scale_x_continuous(labels = scales::percent) +
   scale_y_continuous(labels = scales::percent)
 survival_pred.plot
+
+
+
+# Simple linear regression ------------------------------------------------
+
+# Shrub vs. precip
+shrub.precip <- lmer(Change_ShrubCover ~ Prev_year_precip_scaled + (1 | Transect), data = plot.change)
+summary(shrub.precip)
+r2(shrub.precip)
+
+# Herb vs. precip
+herb.precip <- lmer(Change_HerbCover ~ Prev_year_precip_scaled + (1 | Transect), data = plot.change)
+summary(herb.precip)
+r2(herb.precip)
+
+# Total culm vs. plot cover
+total.cover <- lmer(Change_Total_Live_Culms ~ Change_BGCover_scaled + (1 | Transect), data = culm.change.flat.rm)
+summary(total.cover)
+r2(total.cover)
+
+# Plot density vs. plot cover
+density.cover <- lmer(Change_BGDensity ~ Change_BGCover_scaled + (1 | Transect), data = plot.change)
+summary(density.cover)
+r2(density.cover)
 
 
 
