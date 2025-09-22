@@ -1,5 +1,5 @@
 # Created: 2025-08-12
-# Updated: 2025-09-17
+# Updated: 2025-09-22
 
 # Purpose: Create graphs for linear models v6.3.1. Overlay model predictions on top of original data
 #   using ggeffects and insight packages.
@@ -3574,6 +3574,48 @@ herb.change.precip
 
 
 
+# Cover simple linear regression ------------------------------------------
+
+# Total vs. cover
+total.repro <- culm.change.flat.rm %>% 
+  ggplot(aes(x = Change_Reproductive_culms, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Reproductive culm count"),
+       title = "Change in total culm count vs. change in repro culm count")
+total.repro
+
+# Total vs. cover
+total.cover <- culm.change.flat.rm %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Total culm count"),
+       x = expression(Delta ~ "Cover (%)"),
+       title = "Change in total culm count vs. change in plot cover")
+total.cover
+
+# Density vs. cover
+density.cover <- plot.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(x = expression(Delta ~ "Cover (%)"),
+       y = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
+       title = "Change in plot density vs. change in plot cover")
+density.cover
+
+
 
 # Write out draft figures -------------------------------------------------
 
@@ -4040,6 +4082,20 @@ tiff("figures/2025-08_draft-figures-1.1/Herb-precip.tiff",
 herb.change.precip
 dev.off()
 
+
+## Relationships with cover -----------------------------------------------
+
+# Total culm change vs. cover change
+tiff("figures/2025-08_draft-figures-1.1/Total-cover.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+total.cover
+dev.off()
+
+# Density change vs. cover change
+tiff("figures/2025-08_draft-figures-1.1/Density-cover.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+density.cover
+dev.off()
 
 
 save.image("RData/07_draft-figs-for-lm-6.3.1.RData")
