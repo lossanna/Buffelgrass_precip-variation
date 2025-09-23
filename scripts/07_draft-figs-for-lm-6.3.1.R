@@ -3576,7 +3576,7 @@ herb.change.precip
 
 # Cover simple linear regression ------------------------------------------
 
-# Total vs. cover
+# Total vs. repro
 total.repro <- culm.change.flat.rm %>% 
   ggplot(aes(x = Change_Reproductive_culms, y = Change_Total_Live_Culms)) +
   geom_point() +

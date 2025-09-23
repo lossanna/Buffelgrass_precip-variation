@@ -1,5 +1,5 @@
 # Created: 2025-08-14
-# Updated: 2025-09-16
+# Updated: 2025-09-23
 
 # Purpose: Create supplemental figures for publishing (both low and high quality versions).
 
@@ -220,6 +220,34 @@ bgcov.shrub.precip <- dat.plot %>%
 bgcov.shrub.precip
 
 
+# Figure S5: Density vs. cover --------------------------------------------
+
+density.cover <- plot.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(x = expression(Delta ~ "Buffelgrass cover (%)"),
+       y = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
+density.cover
+
+
+
+# Figure S6: Total vs. cover ----------------------------------------------
+
+total.cover <- culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_TotalCulms)) +
+  geom_point() +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Buffelgrass total culm count"),
+       x = expression(Delta ~ "Buffelgrass cover (%)"))
+total.cover
+
 
 
 # Write out figures -------------------------------------------------------
@@ -268,12 +296,32 @@ tiff("figures/publish-figures/FigureS4_600dpi.tiff",
 bgcov.shrub.precip
 dev.off()
 
+# Figure S5
+tiff("figures/publish-figures/FigureS5_150dpi.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+density.cover
+dev.off()
+tiff("figures/publish-figures/FigureS5_600dpi.tiff",
+     units = "in", height = 4, width = 5, res = 600)
+density.cover
+dev.off()
+
+# Figure S6
+tiff("figures/publish-figures/FigureS6_150dpi.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+total.cover
+dev.off()
+tiff("figures/publish-figures/FigureS6_600dpi.tiff",
+     units = "in", height = 4, width = 5, res = 600)
+total.cover
+dev.off()
+
 
 # Save --------------------------------------------------------------------
 
 # Graphs only
 save(repro.shrub.precip, repro.herb.precip, shrub.change.precip, herb.change.precip,
-     bgcov.shrub.precip,
-     file = "RData/publish_figsS1-S4.RData")
+     bgcov.shrub.precip, density.cover, total.cover,
+     file = "RData/publish_figsS1-S6.RData")
 
 save.image("RData/publish_supp-figures.RData")
