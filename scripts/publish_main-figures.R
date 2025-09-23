@@ -1,5 +1,5 @@
 # Created: 2025-08-13
-# Updated: 2025-08-14
+# Updated: 2025-09-23
 
 # Purpose: Create main figures for publishing (both low and high quality versions).
 
@@ -346,8 +346,8 @@ total.bgden.precip
 dev.off()
 
 # Figure 4
-tiff("figures/publish-figures/Figure4_150dpi.tiff",
-     units = "in", height = 6, width = 8, res = 150)
+tiff("figures/publish-figures/Figure4_165dpi.tiff",
+     units = "in", height = 6, width = 8, res = 165)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
           labels = c("(A)", "(B)", "(C)"))
