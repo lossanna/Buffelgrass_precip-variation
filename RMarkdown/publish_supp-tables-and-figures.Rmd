@@ -10,13 +10,13 @@ library(kableExtra)
 library(ggplot2)
 library(ggpubr)
 load("../RData/publish_actual-summary.RData")
-load("../RData/publish_figsS1-S4.RData")
+load("../RData/publish_figsS1-S6.RData")
 ```
 
 Includes all supplemental tables and figures to accompany "Precipitation moderates the effect of native shrubs on invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
-Last updated: 2025-09-16
+Last updated: 2025-09-23
 
 
 # Tables
@@ -123,7 +123,7 @@ ggarrange(shrub.change.precip, herb.change.precip,
           ncol = 2, nrow = 1,
           labels = c("(A)", "(B)"))
 ```
-**Figure S3.** Simple linear regression of (A) change in native shrub cover and (B) change in native herbaceous cover as a function of the previous year’s precipitation, pooling all sampling locations and times.
+**Figure S3.** Simple linear regression of (A) year-to-year change in native shrub cover and (B) year-to-year change in native herbaceous cover as a function of the previous year’s precipitation, pooling all sampling locations and times. Horizontal red dashed lines indicate no change in shrub or herbaceous cover.
 
 \newpage
 ## Figure S4
@@ -131,3 +131,17 @@ ggarrange(shrub.change.precip, herb.change.precip,
 bgcov.shrub.precip
 ```
 **Figure S4.** Effects of year-to-year change in native shrub cover on year-to-year change in buffelgrass plot cover, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in buffelgrass cover.
+
+\newpage
+## Figure S5
+```{r Fig S5, message=FALSE}
+density.cover
+```
+**Figure S5.** Simple linear regression of year-to-year change in buffelgrass plot density as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass density.
+
+\newpage
+## Figure S6
+```{r Fig S6, message=FALSE}
+total.cover
+```
+**Figure S6.** Simple linear regression of year-to-year change in buffelgrass total culm count as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass total culm count.
