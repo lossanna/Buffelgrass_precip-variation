@@ -1,13 +1,14 @@
 # Created: 2025-08-14
-# Updated: 2025-09-23
+# Updated: 2025-09-24
 
 # Purpose: Create supplemental figures for publishing (both low and high quality versions).
 
-# See 07_draft-figs-for-lm-6.3.1.R for more details. Published figures will be insight
+# See 07_draft-figs-for-lm-6.3.1.R for more details. Published figures will be insight/modelbased
 #   version only, not include CI, and precip interaction graphs will have mean precip line.
 
 library(tidyverse)
 library(insight)
+library(modelbased)
 library(viridis)
 library(ggpubr)
 
@@ -182,7 +183,97 @@ herb.change.precip
 
 
 
-# Figure S4: BG cover, precip * shrub -------------------------------------
+# Figure S4: Repro vs. Aspect ---------------------------------------------
+
+# Generate prediction & CI
+mb.repro.aspect <- estimate_means(repro_best.model, "Aspect") %>% 
+  rename(Change_ReproductiveCulms = Mean)
+
+#   Graph (insight version)
+repro.aspect <- dat.culm %>% 
+  ggplot(aes(x = Aspect, y = Change_ReproductiveCulms)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  geom_pointrange(data = mb.repro.aspect,
+                  aes(ymin = CI_low, ymax = CI_high),
+                  color = "purple3",
+                  linewidth = 1.3) +
+  geom_point(data = mb.repro.aspect,
+             aes(x = Aspect, y = Change_ReproductiveCulms),
+             color = "purple3",
+             size = 3,
+             shape = 15) +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Buffelgrass reproductive culm count"),
+       x = "Aspect") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+repro.aspect
+
+
+
+# Figure S5: Density vs. Aspect -------------------------------------------
+
+# Generate prediction & CI
+mb.bgden.aspect <- estimate_means(bgden_best.model, "Aspect") %>% 
+  rename(Change_BGDensity = Mean)
+
+#   Graph (insight version)
+bgden.aspect <- dat.plot %>% 
+  ggplot(aes(x = Aspect, y = Change_BGDensity)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  geom_pointrange(data = mb.bgden.aspect,
+                  aes(ymin = CI_low, ymax = CI_high),
+                  color = "purple3",
+                  linewidth = 1.3) +
+  geom_point(data = mb.bgden.aspect,
+             aes(x = Aspect, y = Change_BGDensity),
+             color = "purple3",
+             size = 3,
+             shape = 15) +
+  theme_bw() +
+  labs(y = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")),
+       x = "Aspect") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+bgden.aspect
+
+
+
+# Figure S6: Cover vs. Aspect ---------------------------------------------
+
+# Generate prediction & CI
+mb.bgcov.aspect <- estimate_means(bgcov_best.model, "Aspect") %>% 
+  rename(Change_BGCover = Mean)
+
+#   Graph (insight version)
+bgcov.aspect <- dat.plot %>% 
+  ggplot(aes(x = Aspect, y = Change_BGCover)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  geom_pointrange(data = mb.bgcov.aspect,
+                  aes(ymin = CI_low, ymax = CI_high),
+                  color = "purple3",
+                  linewidth = 1.3) +
+  geom_point(data = mb.bgcov.aspect,
+             aes(x = Aspect, y = Change_BGCover),
+             color = "purple3",
+             size = 3,
+             shape = 15) +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Buffelgrass cover (%)"),
+       x = "Aspect") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+bgcov.aspect
+
+
+
+# Figure S7: BG cover, precip * shrub -------------------------------------
 
 # Generate prediction and add unscaled variable 
 insight.bgcov.shrub.precip <- dat.plot.ex %>% 
@@ -220,7 +311,7 @@ bgcov.shrub.precip <- dat.plot %>%
 bgcov.shrub.precip
 
 
-# Figure S5: Density vs. cover --------------------------------------------
+# Figure S8: Density vs. cover --------------------------------------------
 
 density.cover <- plot.change %>% 
   ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
@@ -235,7 +326,7 @@ density.cover
 
 
 
-# Figure S6: Total vs. cover ----------------------------------------------
+# Figure S9: Total vs. cover ----------------------------------------------
 
 total.cover <- culm.change %>% 
   ggplot(aes(x = Change_BGCover, y = Change_TotalCulms)) +
@@ -253,32 +344,18 @@ total.cover
 # Write out figures -------------------------------------------------------
 
 # Figure S1
-tiff("figures/publish-figures/FigureS1_150dpi.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-repro.shrub.precip
-dev.off()
 tiff("figures/publish-figures/FigureS1_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 repro.shrub.precip
 dev.off()
 
 # Figure S2
-tiff("figures/publish-figures/FigureS2_150dpi.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-repro.herb.precip
-dev.off()
 tiff("figures/publish-figures/FigureS2_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 repro.herb.precip
 dev.off()
 
 # Figure S3
-tiff("figures/publish-figures/FigureS3_150dpi.tiff",
-     units = "in", height = 3.5, width = 9, res = 150)
-ggarrange(shrub.change.precip, herb.change.precip,
-          ncol = 2, nrow = 1,
-          labels = c("(A)", "(B)"))
-dev.off()
 tiff("figures/publish-figures/FigureS3_600dpi.tiff",
      units = "in", height = 3.5, width = 9, res = 600)
 ggarrange(shrub.change.precip, herb.change.precip,
@@ -287,41 +364,49 @@ ggarrange(shrub.change.precip, herb.change.precip,
 dev.off()
 
 # Figure S4
-tiff("figures/publish-figures/FigureS4_150dpi.tiff",
-     units = "in", height = 4, width = 6, res = 150)
-bgcov.shrub.precip
-dev.off()
 tiff("figures/publish-figures/FigureS4_600dpi.tiff",
+     units = "in", height = 4, width = 5, res = 600)
+repro.aspect
+dev.off()
+
+# Figure S5
+tiff("figures/publish-figures/FigureS5_600dpi.tiff",
+     units = "in", height = 4, width = 5, res = 600)
+bgden.aspect
+dev.off()
+
+# Figure S4
+tiff("figures/publish-figures/FigureS6_600dpi.tiff",
+     units = "in", height = 4, width = 5, res = 600)
+bgcov.aspect
+dev.off()
+
+# Figure S7
+tiff("figures/publish-figures/FigureS7_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 bgcov.shrub.precip
 dev.off()
 
-# Figure S5
-tiff("figures/publish-figures/FigureS5_150dpi.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-density.cover
-dev.off()
-tiff("figures/publish-figures/FigureS5_600dpi.tiff",
+# Figure S8
+tiff("figures/publish-figures/FigureS8_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 density.cover
 dev.off()
 
-# Figure S6
-tiff("figures/publish-figures/FigureS6_150dpi.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-total.cover
-dev.off()
-tiff("figures/publish-figures/FigureS6_600dpi.tiff",
+# Figure S9
+tiff("figures/publish-figures/FigureS9_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 total.cover
 dev.off()
+
 
 
 # Save --------------------------------------------------------------------
 
 # Graphs only
 save(repro.shrub.precip, repro.herb.precip, shrub.change.precip, herb.change.precip,
+     repro.aspect, bgden.aspect, bgcov.aspect,
      bgcov.shrub.precip, density.cover, total.cover,
-     file = "RData/publish_figsS1-S6.RData")
+     file = "RData/publish_figsS1-S9.RData")
 
 save.image("RData/publish_supp-figures.RData")
