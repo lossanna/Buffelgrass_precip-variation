@@ -1,5 +1,5 @@
 # Created: 2025-09-15
-# Updated: 2025-09-15
+# Updated: 2025-09-24
 
 # Purpose: Compile table of basic plot statistics:
 # - Number of observations,
@@ -33,6 +33,9 @@ length(unique(dat$Plant_ID)) # 771
 
 # Number of plots
 length(unique(dat$Plot)) # 79
+
+# Number of transects
+length(unique(dat$Transect)) # 27
 
 
 # Construct table ---------------------------------------------------------
