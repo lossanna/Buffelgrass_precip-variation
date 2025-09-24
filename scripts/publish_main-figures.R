@@ -151,6 +151,9 @@ total.herb.precip <- dat.culm %>%
        x = expression(Delta ~ "Native grass & forb cover (%)"))
 total.herb.precip
 
+# To see estimates of each line at ~-20% herb cover
+insight.total.herb.precip <- insight.total.herb.precip %>% 
+  distinct(.keep_all = TRUE)
 
 
 # Figure 3: Total culm, precip * density ----------------------------------
