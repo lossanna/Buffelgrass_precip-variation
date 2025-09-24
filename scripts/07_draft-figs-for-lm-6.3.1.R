@@ -16,6 +16,7 @@
 
 # insight: https://easystats.github.io/modelbased/articles/visualisation_matrix.html#visualising-an-interaction-between-two-numeric-variables-three-way-interaction
 # ggeffects: https://strengejacke.github.io/ggeffects/
+# modelbased: https://easystats.github.io/modelbased/articles/plotting.html#one-predictor---categorical 
 
 # Note: get_predicted() from insight and predict_response() from ggeffects do not work with model averaged 
 #   coefficients; needs actual model object.
@@ -59,6 +60,11 @@
 #     experienced for yellow and purple lines. The insight precip levels are: -0.952, 0.003, 1.641 (culm),
 #     and -0.957, 0.005, 1.609 (density/cover); survival interaction plots not redone because they were NS.
 
+
+# Aspect graphs:
+#   ggeffects and modelbased produce identical graphs for plotting Aspect with original data and model prediction overlaid.
+#     For simplicity, I wanted to check out the modelbased version, because then I can stay solely within the easystats
+#     universe for publishing code (it doesn't really matter, but technically ggeffects is deprecated).
 
 library(tidyverse)
 library(insight)
@@ -1157,13 +1163,43 @@ total.herb
 
 ## Repro: Aspect ----------------------------------------------------------
 
+# modelbased version (identical to ggeffects)
+#   Generate prediction & CI
+mb.repro.aspect <- estimate_means(repro_best.model, "Aspect") %>% 
+  rename(Change_Reproductive_culms = Mean)
+
+#   Graph (insight version)
+repro.aspect <- dat.culm %>% 
+  ggplot(aes(x = Aspect, y = Change_Reproductive_culms)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  geom_pointrange(data = mb.repro.aspect,
+                  aes(ymin = CI_low, ymax = CI_high),
+                  color = "purple3",
+                  linewidth = 1.3) +
+  geom_point(data = mb.repro.aspect,
+             aes(x = Aspect, y = Change_Reproductive_culms),
+             color = "purple3",
+             size = 3,
+             shape = 15) +
+  theme_bw() +
+  labs(title = "Change in repro culm count by aspect",
+       y = expression(Delta ~ "Reproductive culm count"),
+       x = NULL) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  theme(axis.text.x = element_text(color = "black"))
+repro.aspect
+
+
 # ggeffects version
 #   Generate prediction & CI
 gg.repro.aspect <- predict_response(repro_best.model, terms = "Aspect") %>% 
   rename(Aspect = x,
          Change_Reproductive_culms = predicted)
 
-# Graph (ggeffects version)
+#   Graph (ggeffects version)
 repro.aspect.gg <- dat.culm %>% 
   ggplot(aes(x = Aspect, y = Change_Reproductive_culms)) +
   geom_boxplot() +

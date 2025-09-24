@@ -156,6 +156,7 @@ insight.total.herb.precip <- insight.total.herb.precip %>%
   distinct(.keep_all = TRUE)
 
 
+
 # Figure 3: Total culm, precip * density ----------------------------------
 
 # Generate prediction and add unscaled variable
