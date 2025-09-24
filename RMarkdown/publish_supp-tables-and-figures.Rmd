@@ -7,7 +7,6 @@ output: pdf_document
 knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
 library(kableExtra)
-library(ggplot2)
 library(ggpubr)
 load("../RData/publish_actual-summary.RData")
 load("../RData/publish_figsS1-S9.RData")
@@ -16,7 +15,7 @@ load("../RData/publish_figsS1-S9.RData")
 Includes all supplemental tables and figures to accompany "Precipitation moderates the effect of native shrubs on invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
-Last updated: 2025-09-23
+Last updated: 2025-09-24
 
 
 # Tables

@@ -161,7 +161,7 @@ repro.herb.precip
 shrub.change.precip <- plot.change %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_bw() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
   labs(y = expression(Delta ~ "Native shrub cover (%)"),
@@ -173,7 +173,7 @@ shrub.change.precip
 herb.change.precip <- plot.change %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_bw() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
   labs(y = expression(Delta ~ "Native grass & forb cover (%)"),
@@ -219,7 +219,7 @@ mb.bgden.aspect <- estimate_means(bgden_best.model, "Aspect") %>%
 bgden.aspect <- dat.plot %>% 
   ggplot(aes(x = Aspect, y = Change_BGDensity)) +
   geom_boxplot(outlier.shape = NA) +
-  geom_jitter(alpha = 0.3) +
+  geom_jitter(alpha = 0.4) +
   geom_point(data = mb.bgden.aspect,
              aes(x = Aspect, y = Change_BGDensity),
              color = "purple3",
@@ -245,7 +245,7 @@ mb.bgcov.aspect <- estimate_means(bgcov_best.model, "Aspect") %>%
 bgcov.aspect <- dat.plot %>% 
   ggplot(aes(x = Aspect, y = Change_BGCover)) +
   geom_boxplot(outlier.shape = NA) +
-  geom_jitter(alpha = 0.3) +
+  geom_jitter(alpha = 0.4) +
   geom_point(data = mb.bgcov.aspect,
              aes(x = Aspect, y = Change_BGCover),
              color = "purple3",
@@ -304,7 +304,7 @@ bgcov.shrub.precip
 density.cover <- plot.change %>% 
   ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_bw() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
   geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
@@ -319,7 +319,7 @@ density.cover
 total.cover <- culm.change %>% 
   ggplot(aes(x = Change_BGCover, y = Change_TotalCulms)) +
   geom_point() +
-  geom_smooth(method = "lm") +
+  geom_smooth(method = "lm", se = FALSE) +
   theme_bw() +
   geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
   geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
