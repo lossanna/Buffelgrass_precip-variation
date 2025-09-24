@@ -10,7 +10,7 @@ library(kableExtra)
 library(ggplot2)
 library(ggpubr)
 load("../RData/publish_actual-summary.RData")
-load("../RData/publish_figsS1-S6.RData")
+load("../RData/publish_figsS1-S9.RData")
 ```
 
 Includes all supplemental tables and figures to accompany "Precipitation moderates the effect of native shrubs on invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
@@ -108,13 +108,14 @@ survival_avg %>%
 ```{r Fig S1}
 repro.shrub.precip
 ```
-**Figure S1.** Effects of year-to-year change in native shrub cover on year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in reproductive buffelgrass culm count.
+**Figure S1.** Effects of year-to-year change in native shrub cover on year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in the number of reproductive buffelgrass culms.
 
+\newpage
 ## Figure S2
 ```{r Fig S2}
 repro.herb.precip
 ```
-**Figure S2.** Effects of year-to-year change in native herbaceous (grass and forb) cover on year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in herb cover while horizontal line indicates no change in reproductive buffelgrass culm count.
+**Figure S2.** Effects of year-to-year change in native herbaceous (grass and forb) cover on year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in herb cover while horizontal line indicates no change in the number of reproductive buffelgrass culms. 
 
 \newpage
 ## Figure S3
@@ -128,20 +129,43 @@ ggarrange(shrub.change.precip, herb.change.precip,
 \newpage
 ## Figure S4
 ```{r Fig S4}
-bgcov.shrub.precip
+repro.aspect
 ```
-**Figure S4.** Effects of year-to-year change in native shrub cover on year-to-year change in buffelgrass plot cover, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in buffelgrass cover.
+**Fig. S4.** Effects of aspect on year-to-year change in buffelgrass reproductive culm count. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in the number of reproductive buffelgrass culms. 
 
 \newpage
 ## Figure S5
-```{r Fig S5, message=FALSE}
-density.cover
+```{r Fig S5}
+bgden.aspect
 ```
-**Figure S5.** Simple linear regression of year-to-year change in buffelgrass plot density as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass density.
+**Fig. S5.** Effects of aspect on year-to-year change in buffelgrass plot density. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass density.
+
 
 \newpage
 ## Figure S6
-```{r Fig S6, message=FALSE}
+```{r Fig S6}
+bgcov.aspect
+```
+**Fig. S6.** Effects of aspect on year-to-year change in buffelgrass plot cover. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass cover.
+
+
+\newpage
+## Figure S7
+```{r Fig S7}
+bgcov.shrub.precip
+```
+**Figure S7.** Effects of year-to-year change in native shrub cover on year-to-year change in buffelgrass plot cover, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in buffelgrass cover.
+
+\newpage
+## Figure S8
+```{r Fig S8, message=FALSE}
+density.cover
+```
+**Figure S8.** Simple linear regression of year-to-year change in buffelgrass plot density as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass density.
+
+\newpage
+## Figure S9
+```{r Fig S9, message=FALSE}
 total.cover
 ```
-**Figure S6.** Simple linear regression of year-to-year change in buffelgrass total culm count as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass total culm count.
+**Figure S9.** Simple linear regression of year-to-year change in buffelgrass total culm count as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass total culm count.

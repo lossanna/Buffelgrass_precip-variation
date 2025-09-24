@@ -192,16 +192,12 @@ mb.repro.aspect <- estimate_means(repro_best.model, "Aspect") %>%
 #   Graph (insight version)
 repro.aspect <- dat.culm %>% 
   ggplot(aes(x = Aspect, y = Change_ReproductiveCulms)) +
-  geom_boxplot() +
+  geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha = 0.3) +
-  geom_pointrange(data = mb.repro.aspect,
-                  aes(ymin = CI_low, ymax = CI_high),
-                  color = "purple3",
-                  linewidth = 1.3) +
   geom_point(data = mb.repro.aspect,
              aes(x = Aspect, y = Change_ReproductiveCulms),
              color = "purple3",
-             size = 3,
+             size = 2.5,
              shape = 15) +
   theme_bw() +
   labs(y = expression(Delta ~ "Buffelgrass reproductive culm count"),
@@ -222,16 +218,12 @@ mb.bgden.aspect <- estimate_means(bgden_best.model, "Aspect") %>%
 #   Graph (insight version)
 bgden.aspect <- dat.plot %>% 
   ggplot(aes(x = Aspect, y = Change_BGDensity)) +
-  geom_boxplot() +
+  geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha = 0.3) +
-  geom_pointrange(data = mb.bgden.aspect,
-                  aes(ymin = CI_low, ymax = CI_high),
-                  color = "purple3",
-                  linewidth = 1.3) +
   geom_point(data = mb.bgden.aspect,
              aes(x = Aspect, y = Change_BGDensity),
              color = "purple3",
-             size = 3,
+             size = 2.5,
              shape = 15) +
   theme_bw() +
   labs(y = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")),
@@ -252,16 +244,12 @@ mb.bgcov.aspect <- estimate_means(bgcov_best.model, "Aspect") %>%
 #   Graph (insight version)
 bgcov.aspect <- dat.plot %>% 
   ggplot(aes(x = Aspect, y = Change_BGCover)) +
-  geom_boxplot() +
+  geom_boxplot(outlier.shape = NA) +
   geom_jitter(alpha = 0.3) +
-  geom_pointrange(data = mb.bgcov.aspect,
-                  aes(ymin = CI_low, ymax = CI_high),
-                  color = "purple3",
-                  linewidth = 1.3) +
   geom_point(data = mb.bgcov.aspect,
              aes(x = Aspect, y = Change_BGCover),
              color = "purple3",
-             size = 3,
+             size = 2.5,
              shape = 15) +
   theme_bw() +
   labs(y = expression(Delta ~ "Buffelgrass cover (%)"),
