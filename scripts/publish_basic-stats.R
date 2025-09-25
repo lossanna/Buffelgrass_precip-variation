@@ -38,6 +38,13 @@ length(unique(dat$Plot)) # 79
 length(unique(dat$Transect)) # 27
 
 
+# Aspects per site --------------------------------------------------------
+
+dat %>% 
+  select(Site, Aspect) %>% 
+  distinct(.keep_all = TRUE)
+
+
 # Construct table ---------------------------------------------------------
 
 actual.summary.site.year <- dat %>% 
