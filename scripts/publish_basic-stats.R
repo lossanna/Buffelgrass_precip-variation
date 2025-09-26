@@ -1,5 +1,5 @@
 # Created: 2025-09-15
-# Updated: 2025-09-24
+# Updated: 2025-09-26
 
 # Purpose: Compile table of basic plot statistics:
 # - Number of observations,
@@ -36,6 +36,22 @@ length(unique(dat$Plot)) # 79
 
 # Number of transects
 length(unique(dat$Transect)) # 27
+
+
+# Plot slope --------------------------------------------------------------
+
+summary(filter(dat, Site == "TumamocHill")$PlotSlope) # 4 to 32
+summary(filter(dat, Site %in% c("KinneyHill", "ApachePeak"))$PlotSlope) # 9 to 28
+summary(filter(dat, Site == "LomaVerde")$PlotSlope) # 12 to 22
+summary(dat$PlotSlope) # mean of 17
+
+
+# Precip (based on NOAA) --------------------------------------------------
+
+# 2020: percent decrease from normal
+#   2020 precip: 4.17
+#   Average: 11.59
+(11.59 - 4.17) / 11.59 # 64%
 
 
 # Aspects per site --------------------------------------------------------
