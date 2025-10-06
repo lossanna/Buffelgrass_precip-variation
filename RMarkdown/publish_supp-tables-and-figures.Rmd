@@ -15,7 +15,7 @@ load("../RData/publish_figsS1-S9.RData")
 Includes all supplemental tables and figures to accompany "Precipitation moderates the effect of native shrubs on invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
-Last updated: 2025-09-24
+Last updated: 2025-10-06
 
 
 # Tables
@@ -107,14 +107,14 @@ survival_avg %>%
 ```{r Fig S1}
 repro.shrub.precip
 ```
-**Figure S1.** Effects of year-to-year change in native shrub cover on year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in the number of reproductive buffelgrass culms.
+**Figure S1.** Relationship between year-to-year change in native shrub cover and year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in the number of reproductive buffelgrass culms.
 
 \newpage
 ## Figure S2
 ```{r Fig S2}
 repro.herb.precip
 ```
-**Figure S2.** Effects of year-to-year change in native herbaceous (grass and forb) cover on year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in herb cover while horizontal line indicates no change in the number of reproductive buffelgrass culms. 
+**Figure S2.** Relationship between year-to-year change in native herbaceous (grass and forb) cover and year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in herb cover while horizontal line indicates no change in the number of reproductive buffelgrass culms. 
 
 \newpage
 ## Figure S3
@@ -153,7 +153,7 @@ bgcov.aspect
 ```{r Fig S7}
 bgcov.shrub.precip
 ```
-**Figure S7.** Effects of year-to-year change in native shrub cover on year-to-year change in buffelgrass plot cover, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in buffelgrass cover.
+**Figure S7.** Relationship between year-to-year change in native shrub cover and year-to-year change in buffelgrass plot cover, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in buffelgrass cover.
 
 \newpage
 ## Figure S8
