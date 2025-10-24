@@ -12,10 +12,10 @@ load("../RData/publish_actual-summary.RData")
 load("../RData/publish_figsS1-S9.RData")
 ```
 
-Supplemental tables and figures to accompany "Precipitation moderates associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
-
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
-Last updated: 2025-10-24
+Last updated: 2025-10-24  
+
+This document includes all the supplemental tables and figures that accompany "Precipitation moderates associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
 
 # Tables

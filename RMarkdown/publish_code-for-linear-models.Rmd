@@ -20,10 +20,10 @@ library(modelbased)
 load("../RData/publish_linear-models.RData")
 ```
 
-Code to produce linear models presented in "Precipitation moderates associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
-
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
-Last updated: 2025-10-24  
+Last updated: 2025-10-24 
+
+This document includes the R code needed to produce the linear models presented in "Precipitation moderates associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
 Models:
 
@@ -101,7 +101,7 @@ total_set <- dredge(total)
 ```
 
 ## Examine best model
-```{r total best}
+```{r total best, message=FALSE}
 # Examine best model
 total_best.model <- get.models(total_set, 1)[[1]]
 summary(total_best.model)
@@ -422,7 +422,7 @@ plotResiduals(res.survival_best.model)
 ```
 
 ## Examine top models
-```{r}
+```{r survival top}
 # Examine models within 2 AICc units of best 
 survival_top <- subset(survival_set, delta <= 2)
 rmarkdown::paged_table(survival_top)
@@ -458,7 +458,7 @@ summary(survival_avg)
 ```
 
 ## Predicted vs. observed graph
-```{r}
+```{r survival pred}
 # Predicted vs. observed graph of best model
 survival_pred <- estimate_expectation(survival_best.model)
 survival_pred$Survival_transf <- survival.dat$Survival_transf
