@@ -442,6 +442,33 @@ total.bgden.precip <- dat.culm %>%
 total.bgden.precip
 
 
+
+# Shrub/herb cover vs. precip ---------------------------------------------
+
+# Shrub cover change vs. precip
+shrub.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point(color = "gray30", alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.5) +
+  theme_bw(base_size = 14) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native shrub cover (%)"),
+       x = "Previous year precip (mm)") 
+shrub.change.precip
+
+# Herb cover change vs. precip
+herb.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point(color = "gray30", alpha = 0.8) +
+  geom_smooth(method = "lm", se = FALSE, linewidth = 1.5) +
+  theme_bw(base_size = 13) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native grass & forb cover (%)"),
+       x = "Previous year precip (mm)") 
+herb.change.precip
+
+
+
 # BG density vs. precip ---------------------------------------------------
 
 # Generate prediction and add unscaled variable 
@@ -456,7 +483,7 @@ insight.bgden.precip$Prev_year_precip <- unscaled.precip100$Prev_year_precip
 # Graph 
 bgden.precip <- dat.plot %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
-  geom_point() +
+  geom_point(color = "gray30", alpha = 0.8) +
   geom_line(data = insight.bgden.precip,
             aes(y = Change_BGDensity), linewidth = 1.3,
             color = "purple3") +
@@ -483,9 +510,9 @@ total.aspect <- dat.culm %>%
   geom_jitter(color = "gray30", alpha = 0.5) +
   geom_point(data = mb.total.aspect,
              aes(x = Aspect, y = Change_TotalCulms),
-             color = "purple3",
-             size = 2.5,
-             shape = 15) +
+             color = "mediumorchid1",
+             size = 4,
+             shape = 17) +
   theme_bw(base_size = 14) +
   labs(y = expression(Delta ~ "Buffelgrass culm count"),
        x = "Aspect") +
@@ -515,7 +542,7 @@ total.slope <- dat.culm %>%
   geom_point(color = "gray30", alpha = 0.5) +
   geom_line(data = insight.total.slope,
             aes(y = Change_TotalCulms), linewidth = 1.5,
-            color = "purple3") +
+            color = "mediumorchid1") +
   theme_bw(base_size = 14) +
   xlab("Plot slope (\u00B0)") +
   labs(y = expression(Delta ~ "Buffelgrass culm count")) +
@@ -523,6 +550,7 @@ total.slope <- dat.culm %>%
              linetype = "dashed",
              color = "red")
 total.slope
+
 
 
 # Write out figures -------------------------------------------------------
@@ -605,6 +633,19 @@ dev.off()
 tiff("figures/SER-SW-2025-figures/Total-culm_BG-density-precip.tiff",
      units = "in", height = 6, width = 6, res = 600)
 total.bgden.precip
+dev.off()
+
+
+# Shrub vs. precip
+tiff("figures/SER-SW-2025-figures/Shrub_precip.tiff",
+     units = "in", height = 3, width = 4, res = 600)
+shrub.change.precip
+dev.off()
+
+# Herb vs. precip
+tiff("figures/SER-SW-2025-figures/Herb_precip.tiff",
+     units = "in", height = 3, width = 4, res = 600)
+herb.change.precip
 dev.off()
 
 
