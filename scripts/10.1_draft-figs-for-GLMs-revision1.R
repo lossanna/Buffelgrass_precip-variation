@@ -1,10 +1,8 @@
 # Created: 2026-01-28
-# Updated: 2026-01-28
+# Updated: 2026-01-29
 
 # Purpose: Graph data to accompany 09.1.R of revision1 GLMs.
 
-# Note: Model-predicted lines cannot be graphed with a zero-inflated Poisson;
-#   insight
 
 library(tidyverse)
 library(insight)
@@ -373,3 +371,6 @@ total.herb.precip <- dat.culm %>%
        x = "Native herb cover (%)",
        title = "Total culm count vs. herb cover")
 total.herb.precip
+
+
+save.image("RData/10.1_draft-figs-for GLMs-revision1.RData")
