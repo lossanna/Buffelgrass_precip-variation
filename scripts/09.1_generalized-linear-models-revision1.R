@@ -1,7 +1,9 @@
 # Created: 2026-01-28
-# Updated: 2026-01-28
+# Updated: 2026-01-29
 
-# Purpose: Check versions of linear models that round 1 reviewers suggested.
+# Purpose: Check versions of linear models that round 1 reviewers suggested. Use
+#   counts (not year-to-year change) as response variable.
+
 
 library(tidyverse)
 library(glmmTMB)
@@ -10,34 +12,29 @@ library(DHARMa)
 library(nlme)
 library(performance)
 library(lme4)
+library(modelbased)
+library(lmerTest)
 
 # Load data ---------------------------------------------------------------
 
-dat <- read_csv("data/cleaned/04_demography-data_clean.csv")
+dat.raw <- read_csv("data/cleaned/04_demography-data_clean.csv")
 
 
 # Data wrangling ----------------------------------------------------------
 
 # Center and scale numeric variables
-dat <- dat %>% 
-  mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
-         Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
-         ShrubCover_scaled = scale(ShrubCover, center = TRUE, scale = TRUE)[, 1],
-         HerbCover_scaled = scale(HerbCover, center = TRUE, scale = TRUE)[, 1],
-         BGDensity_scaled = scale(BGDensity, center = TRUE, scale = TRUE)[, 1]) %>% 
-  filter(Aspect != "flat")
-
-# Separate out plot-level data
-dat.plot <- dat %>%
-  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>%
-  distinct(.keep_all = TRUE)
-
-dat.plot_scaled <- dat.plot %>% 
+dat <- dat.raw %>% 
+  filter(Aspect != "flat") %>% 
   mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          ShrubCover_scaled = scale(ShrubCover, center = TRUE, scale = TRUE)[, 1],
          HerbCover_scaled = scale(HerbCover, center = TRUE, scale = TRUE)[, 1],
          BGDensity_scaled = scale(BGDensity, center = TRUE, scale = TRUE)[, 1])
+
+# Separate out plot-level data
+dat.plot <- dat %>%
+  select(-Plant_ID, -Vegetative_culms, -Reproductive_culms, -Total_Live_Culms, -Longestleaflength_cm) %>%
+  distinct(.keep_all = TRUE)
 
 
 
@@ -232,6 +229,155 @@ plotResiduals(res.zip.total6)
 check_overdispersion(zip.total6) # no overdispersion detected
 check_zeroinflation(zip.total6) # model is underfitting zeros (ratio = 0.64)
 
+#   Predicted vs. observed 
+total6.pred <- estimate_expectation(zip.total6)
+total6.pred$Total_Live_Culms <- dat$Total_Live_Culms
+
+total6.pred.plot <- total6.pred %>% 
+  ggplot(aes(x = Total_Live_Culms, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
+  ggtitle("Total culm model, predicted vs. observed") +
+  xlab("Total live culms [observed]") +
+  theme_bw()
+total6.pred.plot
 
 save(zip.total6,
-     file = "RData/09_zip.total.6.RData")
+     file = "RData/09.1_zip.total.6.RData")
+
+
+
+# Reproductive culms ------------------------------------------------------
+
+## Poisson ----------------------------------------------------------------
+
+# Version 6: Nested Site / Transect / Plant_ID, add precip interactions
+pos.repro6 <- glmmTMB(Reproductive_culms ~ Prev_year_precip_scaled +
+                        Aspect + PlotSlope_scaled + BGDensity_scaled + 
+                        ShrubCover_scaled + HerbCover_scaled +
+                        Prev_year_precip_scaled * BGDensity_scaled +
+                        Prev_year_precip_scaled * ShrubCover_scaled +
+                        Prev_year_precip_scaled * HerbCover_scaled +
+                        (1 | Site / Transect / Plant_ID),
+                      data = dat,
+                      family = genpois)
+summary(pos.repro6)
+r2(pos.repro6)
+res.pos.repro6 <- simulateResiduals(pos.repro6)
+plotQQunif(res.pos.repro6)
+plotResiduals(res.pos.repro6)
+check_overdispersion(pos.repro6) # no overdispersion detected
+check_zeroinflation(pos.repro6) # model is underfitting zeros (ratio = 0.53)
+check_collinearity(pos.repro6)
+
+#   Predicted vs. observed 
+repro6.pred <- estimate_expectation(pos.repro6)
+repro6.pred$Reproductive_culms <- dat$Reproductive_culms
+
+repro6.pred.plot <- repro6.pred %>% 
+  ggplot(aes(x = Reproductive_culms, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
+  ggtitle("Reproductive culm model, predicted vs. observed") +
+  xlab("Reproductive culms [observed]") +
+  theme_bw()
+repro6.pred.plot
+
+save(pos.repro6,
+     file = "RData/09.1_pos.repro.6.RData")
+
+
+## Zero-inflated Poisson --------------------------------------------------
+
+# Version 6: Nested Site / Transect / Plant_ID, add precip interactions
+zip.repro6 <- glmmTMB(Reproductive_culms ~ Prev_year_precip_scaled +
+                        Aspect + PlotSlope_scaled + BGDensity_scaled + 
+                        ShrubCover_scaled + HerbCover_scaled +
+                        Prev_year_precip_scaled * BGDensity_scaled +
+                        Prev_year_precip_scaled * ShrubCover_scaled +
+                        Prev_year_precip_scaled * HerbCover_scaled +
+                        (1 | Site / Transect / Plant_ID),
+                      data = dat,
+                      family = genpois,
+                      ziformula = ~.)
+summary(zip.repro6)
+r2(zip.repro6)
+res.zip.repro6 <- simulateResiduals(zip.repro6)
+plotQQunif(res.zip.repro6) # lol something is very wrong
+plotResiduals(res.zip.repro6)
+check_overdispersion(zip.repro6) # no overdispersion detected
+check_zeroinflation(zip.repro6) # model is overfitting zeros (ratio = 4.36)
+
+
+
+# Buffelgrass density -----------------------------------------------------
+
+## Linear model -----------------------------------------------------------
+
+# Version 1: Nested Site / Transect, add precip interactions
+lm.bgden1 <- lmer(BGDensity ~ Prev_year_precip_scaled + 
+                        Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                        HerbCover_scaled + 
+                        Prev_year_precip_scaled * ShrubCover_scaled +
+                        Prev_year_precip_scaled * HerbCover_scaled +
+                        (1 | Site / Transect),
+                      data = dat.plot)
+summary(lm.bgden1)
+r2(lm.bgden1)
+res.lm.bgden1 <- simulateResiduals(lm.bgden1)
+plotQQunif(res.lm.bgden1) 
+plotResiduals(res.lm.bgden1)
+check_overdispersion(lm.bgden1) # no overdispersion detected
+check_collinearity(lm.bgden1)
+
+#   Predicted vs. observed 
+bgden1.pred <- estimate_expectation(lm.bgden1)
+bgden1.pred$BGDensity <- dat.plot$BGDensity
+
+bgden1.pred.plot <- bgden1.pred %>% 
+  ggplot(aes(x = BGDensity, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
+  ggtitle("Buffelgrass density model, predicted vs. observed") +
+  xlab("Buffelgrass density [observed]") +
+  theme_bw()
+bgden1.pred.plot
+
+
+
+# Buffelgrass cover -------------------------------------------------------
+
+## Linear model -----------------------------------------------------------
+
+# Version 1: Nested Site / Transect, add precip interactions
+lm.bgcov1 <- lmer(BGCover ~ Prev_year_precip_scaled + 
+                    Aspect + PlotSlope_scaled + ShrubCover_scaled +
+                    HerbCover_scaled + 
+                    Prev_year_precip_scaled * ShrubCover_scaled +
+                    Prev_year_precip_scaled * HerbCover_scaled +
+                    (1 | Site / Transect),
+                  data = dat.plot)
+summary(lm.bgcov1)
+r2(lm.bgcov1)
+res.lm.bgcov1 <- simulateResiduals(lm.bgcov1)
+plotQQunif(res.lm.bgcov1) 
+plotResiduals(res.lm.bgcov1)
+check_overdispersion(lm.bgcov1) # no overdispersion detected
+check_collinearity(lm.bgcov1)
+
+#   Predicted vs. observed 
+bgcov1.pred <- estimate_expectation(lm.bgcov1)
+bgcov1.pred$BGCover <- dat.plot$BGCover
+
+bgcov1.pred.plot <- bgcov1.pred %>% 
+  ggplot(aes(x = BGCover, y = Predicted)) +
+  geom_point(alpha = 0.4) +
+  geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
+  ggtitle("Buffelgrass cover model, predicted vs. observed") +
+  xlab("Buffelgrass cover [observed]") +
+  theme_bw()
+bgcov1.pred.plot
+
+
+save.image("RData/09.1_generalized-linear-models-revision1.RData")
+
