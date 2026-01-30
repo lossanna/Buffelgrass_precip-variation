@@ -460,7 +460,7 @@ dev.off()
 
 # Needed for graphs
 save(culm.change.flat.rm, plot.change, dat.survival, 
-     total2, repro2, bgden2, bgcov2, survival2,
+     total2, repro2, bgden2, bgcov2, survival1, survival2,
      file = "RData/09.2_data-and-version2-models-revision1.RData")
 
 
