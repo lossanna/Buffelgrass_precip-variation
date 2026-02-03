@@ -1,7 +1,7 @@
 # Created: 2025-08-14
 # Updated: 2025-09-24
 
-# Purpose: Create supplemental figures for publishing (both low and high quality versions).
+# Purpose: Create supplemental figures for publishing (both low and high quality versions) [initial submission].
 
 # See 07_draft-figs-for-lm-6.3.1.R for more details. Published figures will be insight/modelbased
 #   version only, not include CI, and precip interaction graphs will have mean precip line.

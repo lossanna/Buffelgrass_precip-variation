@@ -1,7 +1,7 @@
 # Created: 2025-08-12
 # Updated: 2025-09-15
 
-# Purpose: Write script for finalized published model results.
+# Purpose: Write script for finalized published model results (initial submission).
 
 # Identical to 06.9_linear-models-6.3.1.R.
 

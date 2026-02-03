@@ -377,7 +377,7 @@ survival2 <- glmmTMB(survival_transf ~ Prev_year_precip_scaled +
                      data = dat.survival,
                      family = beta_family(link = "logit"))
 summary(survival2)
-r2(survival2) # marginal: 0.260; conditional: can't compute
+r2(survival2) # marginal: 0.819; conditional: can't compute
 res.survival2 <- simulateResiduals(survival2)
 plotQQunif(res.survival2)
 plotResiduals(res.survival2) 
