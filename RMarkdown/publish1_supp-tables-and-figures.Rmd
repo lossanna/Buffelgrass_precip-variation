@@ -9,7 +9,7 @@ library(knitr)
 library(kableExtra)
 library(ggpubr)
 load("../RData/publish_actual-summary.RData")
-load("../RData/publish_figsS1-S9.RData")
+load("../RData/publish1_figsS1-S9.RData")
 ```
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  

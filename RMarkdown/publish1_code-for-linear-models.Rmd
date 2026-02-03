@@ -17,7 +17,7 @@ library(DHARMa)
 library(MuMIn)
 library(performance)
 library(modelbased)
-load("../RData/publish_linear-models.RData")
+load("../RData/publish1_linear-models.RData")
 ```
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
