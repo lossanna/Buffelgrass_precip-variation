@@ -120,7 +120,6 @@ repro.shrub.precip
 
 
 
-
 # Figure S2: Repro culms, precip * herb -----------------------------------
 
 # Generate prediction and add unscaled variable 
@@ -191,10 +190,93 @@ herb.change.precip
 
 
 
-# Figure S4: Total & Repro vs. Aspect -------------------------------------
+# Figure S4: Total culm, precip * density ---------------------------------
 
-# Total
-#   Generate prediction & CI
+# Generate prediction and add unscaled variable
+insight.total.bgden.precip <- dat.culm.ex %>% 
+  get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
+  arrange(Change_BGDensity_scaled) %>% 
+  distinct(.keep_all = TRUE)
+insight.total.bgden.precip$Predicted <- get_predicted(total, insight.total.bgden.precip)
+unscaled.bgden.precip <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 20, numerics = "all") %>% 
+  arrange(Change_BGDensity) %>% 
+  distinct(.keep_all = TRUE)
+insight.total.bgden.precip$Change_BGDensity <- unscaled.bgden.precip$Change_BGDensity
+insight.total.bgden.precip$Prev_year_precip <- unscaled.bgden.precip$Prev_year_precip
+unique(insight.total.bgden.precip$Prev_year_precip_scaled)
+insight.total.bgden.precip <- insight.total.bgden.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
+
+# Graph
+total.bgden.precip <- dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_TotalCulms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.total.bgden.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Buffelgrass total culm count"),
+       x = expression(Delta ~ paste("Buffelgrass plot density (individuals / ", m^2, ")")))
+total.bgden.precip
+
+
+
+# Figure S5: Repro culm, precip * density ---------------------------------
+
+# Generate prediction and add unscaled variable - 20 precip levels to get mean
+insight.repro.bgden.precip <- dat.culm.ex %>% 
+  get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 20, numerics = "all") %>% 
+  arrange(Change_BGDensity_scaled) %>% 
+  distinct(.keep_all = TRUE)
+insight.repro.bgden.precip$Predicted <- get_predicted(repro, insight.repro.bgden.precip)
+unscaled.bgden.precip <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 20, numerics = "all") %>% 
+  arrange(Change_BGDensity) %>% 
+  distinct(.keep_all = TRUE)
+insight.repro.bgden.precip$Change_BGDensity <- unscaled.bgden.precip$Change_BGDensity
+insight.repro.bgden.precip$Prev_year_precip <- unscaled.bgden.precip$Prev_year_precip
+unique(insight.repro.bgden.precip$Prev_year_precip_scaled)
+insight.repro.bgden.precip <- insight.repro.bgden.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.952, 0.003, 1.641))
+
+# Graph
+repro.bgden.precip <- dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_ReproductiveCulms,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.repro.bgden.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Buffelgrass reproductive culm count"),
+       x = expression(Delta ~ paste("Buffelgrass plot density (individuals / ", m^2, ")")))
+repro.bgden.precip
+
+
+
+# Figure S6: Total vs. aspect ---------------------------------------------
+
+# Generate prediction & CI
 gg.total.aspect <- predict_response(total, terms = "Aspect") %>% 
   rename(Aspect = x,
          Change_TotalCulms = predicted)
@@ -214,18 +296,19 @@ total.aspect <- dat.culm %>%
        x = "Aspect") +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red") +
-  theme(plot.margin = margin(20, 10, 10, 10))
+             color = "red") 
 total.aspect
 
 
-# Repro
-#   Generate prediction
+
+# Figure S7: Repro vs. aspect ---------------------------------------------
+
+# Generate prediction
 gg.repro.aspect <- predict_response(repro, terms = "Aspect") %>% 
   rename(Aspect = x,
          Change_ReproductiveCulms = predicted)
 
-#   Graph 
+# Graph (ggeffects version)
 repro.aspect <- dat.culm %>% 
   ggplot(aes(x = Aspect, y = Change_ReproductiveCulms)) +
   geom_boxplot(outlier.shape = NA) +
@@ -240,10 +323,133 @@ repro.aspect <- dat.culm %>%
        x = "Aspect") +
   geom_hline(yintercept = 0,
              linetype = "dashed",
-             color = "red") +
-  theme(plot.margin = margin(20, 10, 10, 10))
+             color = "red")
 repro.aspect
 
+
+
+# Figure S8: Density vs. aspect -------------------------------------------
+
+# Generate prediction 
+gg.bgden.aspect <- predict_response(bgden, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_BGDensity = predicted)
+
+# Graph (ggeffects version)
+bgden.aspect <- dat.plot %>% 
+  ggplot(aes(x = Aspect, y = Change_BGDensity)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  geom_point(data = gg.bgden.aspect,
+             aes(x = Aspect, y = Change_BGDensity),
+             color = "purple3",
+             size = 2.5,
+             shape = 15) +
+  theme_bw() +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals / ", m^2, ")")),
+       x = "Aspect") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgden.aspect
+
+
+# Figure S9: Cover vs. aspect ---------------------------------------------
+
+# Generate prediction 
+gg.bgcov.aspect <- predict_response(bgcov, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_BGCover = predicted)
+
+# Graph 
+bgcov.aspect <- dat.plot %>% 
+  ggplot(aes(x = Aspect, y = Change_BGCover)) +
+  geom_boxplot() +
+  geom_jitter(alpha = 0.3) +
+  geom_point(data = gg.bgcov.aspect,
+             aes(x = Aspect, y = Change_BGCover),
+             color = "purple3",
+             size = 2.5,
+             shape = 15) +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Buffelgrass cover (%)"),
+       x = "Aspect") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgcov.aspect
+
+
+
+# Figure S10: Cover, precip * shrub ---------------------------------------
+
+# Generate prediction and add unscaled variable - 9 levels to get mean
+insight.bgcov.shrub.precip <- dat.plot.ex %>% 
+  get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover_scaled) %>% 
+  distinct(.keep_all = TRUE)
+insight.bgcov.shrub.precip$Predicted <- get_predicted(bgcov, insight.bgcov.shrub.precip)
+unscaled.shrub.precip <- dat.plot.unscaled %>% 
+  get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover) %>% 
+  distinct(.keep_all = TRUE)
+insight.bgcov.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip$Change_ShrubCover
+insight.bgcov.shrub.precip$Prev_year_precip <- unscaled.shrub.precip$Prev_year_precip
+unique(insight.bgcov.shrub.precip$Prev_year_precip_scaled) 
+insight.bgcov.shrub.precip <- insight.bgcov.shrub.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.957, 0.005, 1.609))
+
+# Graph
+bgcov.shrub.precip <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGCover,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.bgcov.shrub.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Buffelgrass cover (%)"),
+       x = expression(Delta ~ "Native shrub cover (%)"))
+bgcov.shrub.precip
+
+
+
+# Figure S11: Density vs. cover -------------------------------------------
+
+density.cover <- plot.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(x = expression(Delta ~ "Buffelgrass cover (%)"),
+       y = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
+density.cover
+
+
+
+# Figure S12: Total vs. cover ---------------------------------------------
+
+total.cover <- culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_TotalCulms)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Buffelgrass total culm count"),
+       x = expression(Delta ~ "Buffelgrass cover (%)"))
+total.cover
 
 
 
@@ -271,45 +477,54 @@ dev.off()
 
 # Figure S4
 tiff("figures/publish2-figures/FigureS4_600dpi.tiff",
+     units = "in", height = 4, width = 6, res = 600)
+total.bgden.precip
+dev.off()
+
+# Figure S5
+tiff("figures/publish2-figures/FigureS5_600dpi.tiff",
+     units = "in", height = 4, width = 6, res = 600)
+repro.bgden.precip
+dev.off()
+
+# Figure S6
+tiff("figures/publish2-figures/FigureS6_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 total.aspect
 dev.off()
 
-# Figure S5
-tiff("figures/publish2-figures/FigureS5_600dpi.tiff",
-     units = "in", height = 4, width = 5, res = 600)
-repro.aspect
-dev.off()
-
-
-
-
-# Figure S5
-tiff("figures/publish2-figures/FigureS5_600dpi.tiff",
-     units = "in", height = 4, width = 5, res = 600)
-bgden.aspect
-dev.off()
-
-# Figure S4
-tiff("figures/publish2-figures/FigureS6_600dpi.tiff",
-     units = "in", height = 4, width = 5, res = 600)
-bgcov.aspect
-dev.off()
-
 # Figure S7
 tiff("figures/publish2-figures/FigureS7_600dpi.tiff",
-     units = "in", height = 4, width = 6, res = 600)
-bgcov.shrub.precip
+     units = "in", height = 4, width = 5, res = 600)
+repro.aspect
 dev.off()
 
 # Figure S8
 tiff("figures/publish2-figures/FigureS8_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
-density.cover
+bgden.aspect
 dev.off()
 
 # Figure S9
 tiff("figures/publish2-figures/FigureS9_600dpi.tiff",
+     units = "in", height = 4, width = 5, res = 600)
+bgcov.aspect
+dev.off()
+
+# Figure S10
+tiff("figures/publish2-figures/FigureS10_600dpi.tiff",
+     units = "in", height = 4, width = 6, res = 600)
+bgcov.shrub.precip
+dev.off()
+
+# Figure S11
+tiff("figures/publish2-figures/FigureS11_600dpi.tiff",
+     units = "in", height = 4, width = 5, res = 600)
+density.cover
+dev.off()
+
+# Figure S12
+tiff("figures/publish2-figures/FigureS12_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 total.cover
 dev.off()
@@ -321,10 +536,12 @@ dev.off()
 # Graphs only
 save(repro.shrub.precip, repro.herb.precip, 
      shrub.change.precip, herb.change.precip,
+     total.bgden.precip, repro.bgden.precip,
      total.aspect, repro.aspect, 
      bgden.aspect, bgcov.aspect,
      bgcov.shrub.precip, density.cover, total.cover,
      file = "RData/publish2_figsS1-S9.RData")
+
 
 save.image("RData/publish2_supp-figures.RData")
 
