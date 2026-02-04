@@ -120,7 +120,7 @@ repro.herb.precip
 ```{r Fig S3, message=FALSE}
 ggarrange(shrub.change.precip, herb.change.precip,
           ncol = 2, nrow = 1,
-          labels = c("(A)", "(B)"))
+          labels = c("a", "b"))
 ```
 **Figure S3.** Simple linear regression of (A) year-to-year change in native shrub cover and (B) year-to-year change in native herbaceous cover as a function of the previous year’s precipitation, pooling all sampling locations and times. Horizontal red dashed lines indicate no change in shrub or herbaceous cover.
 

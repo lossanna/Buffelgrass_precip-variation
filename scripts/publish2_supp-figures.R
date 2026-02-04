@@ -472,7 +472,7 @@ tiff("figures/publish2-figures/FigureS3_600dpi.tiff",
      units = "in", height = 3.5, width = 9, res = 600)
 ggarrange(shrub.change.precip, herb.change.precip,
           ncol = 2, nrow = 1,
-          labels = c("(A)", "(B)"))
+          labels = c("(a)", "(b)"))
 dev.off()
 
 # Figure S4
