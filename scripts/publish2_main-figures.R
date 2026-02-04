@@ -304,13 +304,13 @@ total.herb.precip
 dev.off()
 
 # Figure 3
-tiff("figures/publish1-figures/Figure3_165dpi.tiff",
+tiff("figures/publish2-figures/Figure3_165dpi.tiff",
      units = "in", height = 6, width = 8, res = 165)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
           labels = c("(A)", "(B)", "(C)"))
 dev.off()
-tiff("figures/publish1-figures/Figure3_600dpi.tiff",
+tiff("figures/publish2-figures/Figure3_600dpi.tiff",
      units = "in", height = 6, width = 8, res = 600)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
