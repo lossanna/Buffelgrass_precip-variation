@@ -9,7 +9,7 @@ library(knitr)
 library(kableExtra)
 library(ggpubr)
 load("../RData/publish_actual-summary.RData")
-load("../RData/publish2_figsS1-S12.RData")
+load("../RData/publish2.1_figsS1-S12.RData")
 ```
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
@@ -33,7 +33,7 @@ actual.summary.year2 %>%
 ## Table S2. Total culms model 
 Model coefficients of the buffelgrass culm count model (response variable: year-to-year change in total number of culms). Marginal R^2^ = 0.0.119; conditional R^2^ = 0.410.
 ```{r Table S2}
-total_avg <- read.table("total_revision1.txt", sep = "\t")
+total_avg <- read.table("total_revision1.1.txt", sep = "\t")
 colnames(total_avg) <- total_avg[1,]
 total_avg <- total_avg[-1,]
 row.names(total_avg) <- NULL
@@ -47,7 +47,7 @@ total_avg %>%
 ## Table S3. Reproductive culms model 
 Model coefficients of the buffelgrass reproductive culm count model (response variable: year-to-year change in number of reproductive culms). Marginal R^2^ = 0.098; conditional R^2^ = 0.295.
 ```{r Table S3}
-repro_avg <- read.table("repro_avg.txt", sep = "\t")
+repro_avg <- read.table("repro_revision1.1.txt", sep = "\t")
 colnames(repro_avg) <- repro_avg[1,]
 repro_avg <- repro_avg[-1,]
 row.names(repro_avg) <- NULL
@@ -61,7 +61,7 @@ repro_avg %>%
 ## Table S4. Plot density model
 Model coefficients of the buffelgrass plot density model (response variable: year-to-year change in plot density [individuals per m^2^]). Marginal R^2^ = 0.381; conditional R^2^ = 0.427.
 ```{r Table S4}
-bgden_avg <- read.table("bgden_avg.txt", sep = "\t")
+bgden_avg <- read.table("bgden_revision1.1.txt", sep = "\t")
 colnames(bgden_avg) <- bgden_avg[1,]
 bgden_avg <- bgden_avg[-1,]
 row.names(bgden_avg) <- NULL
@@ -76,7 +76,7 @@ bgden_avg %>%
 ## Table S5. Plot cover model
 Model coefficients of the buffelgrass plot cover model (response variable: year-to-year-change in plot cover [%]). Marginal R^2^ = 0.248; conditional R^2^ = 0.295.
 ```{r Table S5}
-bgcov_avg <- read.table("bgcov_avg.txt", sep = "\t")
+bgcov_avg <- read.table("bgcov_revision1.1.txt", sep = "\t")
 colnames(bgcov_avg) <- bgcov_avg[1,]
 bgcov_avg <- bgcov_avg[-1,]
 row.names(bgcov_avg) <- NULL
@@ -90,7 +90,7 @@ bgcov_avg %>%
 ## Table S6. Seedling survival model
 Model coefficients of the buffelgrass seedling survival model (response variable: seedling survival [%]). Marginal R^2^ = 0.819.
 ```{r Table S6}
-survival_avg <- read.table("survival_avg.txt", sep = "\t")
+survival_avg <- read.table("survival_revision1.1.txt", sep = "\t")
 colnames(survival_avg) <- survival_avg[1,]
 survival_avg <- survival_avg[-1,]
 row.names(survival_avg) <- NULL

@@ -30,7 +30,7 @@ library(ggpubr)
 
 # Load data ---------------------------------------------------------------
 
-load("RData/09.2_data-and-version2-models-revision1.RData")
+load("RData/09.2_data-and-version2-models-revision1.1.RData")
 dat.survival.raw <- dat.survival
 
 
@@ -2241,37 +2241,37 @@ density.cover
 
 # Significant
 # Total change vs. Prev_year_precip
-tiff("figures/2026-01_draft-figures/Total-change_prev-year-precip.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.precip
 dev.off()
 
 # Total change by Aspect
-tiff("figures/2026-01_draft-figures/Total-change_aspect.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
 total.aspect
 dev.off()
 
 # Total change vs. Change_BGDensity
-tiff("figures/2026-01_draft-figures/Total-change_BG-density-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_BG-density-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.bgden
 dev.off()
 
 # Total change vs. Change_ShrubCover
-tiff("figures/2026-01_draft-figures/Total-change_shrub-cover-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.shrub
 dev.off()
 
 # Total change interaction of precip*shrub
-tiff("figures/2026-01_draft-figures/Total-change_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.shrub.precip
 dev.off()
 
 # Total change interaction of precip*herb
-tiff("figures/2026-01_draft-figures/Total-change_herb-cover-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_herb-cover-change-and-precip-interaction.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.herb.precip
 dev.off()
@@ -2279,19 +2279,19 @@ dev.off()
 
 # Not significant
 # Total change vs. PlotSlope
-tiff("figures/2026-01_draft-figures/Total-change_plot-slope.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.slope
 dev.off()
 
 # Total change vs. Change_HerbCover 
-tiff("figures/2026-01_draft-figures/Total-change_herb-cover-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 total.herb
 dev.off()
 
 # Total change interaction of precip*BG density
-tiff("figures/2026-01_draft-figures/Total-change_BG-density-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_BG-density-change-and-precip-interaction.tiff",
      units = "in", height = 7, width = 6, res = 150)
 total.bgden.precip
 dev.off()
@@ -2302,25 +2302,25 @@ dev.off()
 
 # Significant
 # Repro change by Aspect
-tiff("figures/2026-01_draft-figures/Repro-change_aspect.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.aspect
 dev.off()
 
 # Repro change vs. Change_BGDensity
-tiff("figures/2026-01_draft-figures/Repro-change_BG-density-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_BG-density-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.bgden
 dev.off()
 
 # Repro change vs. Change_ShrubCover
-tiff("figures/2026-01_draft-figures/Repro-change_shrub-cover-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.shrub
 dev.off()
 
 # Repro change vs. Change_HerbCover
-tiff("figures/2026-01_draft-figures/Repro-change_herb-cover-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.herb
 dev.off()
@@ -2328,31 +2328,31 @@ dev.off()
 
 # Not significant
 # Repro change vs. Prev_year_precip
-tiff("figures/2026-01_draft-figures/Repro-change_prev-year-precip.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.precip
 dev.off()
 
 # Repro change vs. PlotSlope
-tiff("figures/2026-01_draft-figures/Repro-change_plot-slope.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.slope
 dev.off()
 
 # Repro change interaction of precip*BG density
-tiff("figures/2026-01_draft-figures/Repro-change_BG-density-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_BG-density-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.bgden.precip
 dev.off()
 
 # Repro change interaction of precip*shrub
-tiff("figures/2026-01_draft-figures/Repro-change_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.shrub.precip
 dev.off()
 
 # Repro change interaction of precip*herb
-tiff("figures/2026-01_draft-figures/Repro-change_herb-cover-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_herb-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro.herb.precip
 dev.off()
@@ -2362,19 +2362,19 @@ dev.off()
 
 # Significant
 # BG density change vs. Prev_year_precip
-tiff("figures/2026-01_draft-figures/BG-density-change_prev-year-precip.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-density-change_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.precip
 dev.off()
 
 # BG density change by Aspect 
-tiff("figures/2026-01_draft-figures/BG-density-change_aspect.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-density-change_aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.aspect
 dev.off()
 
 # BG density change interaction of precip*shrub 
-tiff("figures/2026-01_draft-figures/BG-density-change_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-density-change_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.shrub.precip
 dev.off()
@@ -2382,25 +2382,25 @@ dev.off()
 
 # Not significant
 # BG density change vs. PlotSlope
-tiff("figures/2026-01_draft-figures/BG-density-change_plot-slope.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-density-change_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.slope
 dev.off()
 
 # BG density change vs. Change_ShrubCover
-tiff("figures/2026-01_draft-figures/BG-density-change_shrub-cover-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-density-change_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.shrub
 dev.off()
 
 # BG density change vs. Change_HerbCover
-tiff("figures/2026-01_draft-figures/BG-density-change_herb-cover-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-density-change_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgden.herb
 dev.off()
 
 # BG density change interaction of precip*herb
-tiff("figures/2026-01_draft-figures/BG-density-change_herb-cover-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-density-change_herb-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.herb.precip
 dev.off()
@@ -2410,19 +2410,19 @@ dev.off()
 
 # Significant
 # BG cover change vs. Prev_year_precip
-tiff("figures/2026-01_draft-figures/BG-cover-change_prev-year-precip.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-cover-change_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.precip
 dev.off()
 
 # BG cover change by Aspect 
-tiff("figures/2026-01_draft-figures/BG-cover-change_aspect.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-cover-change_aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.aspect
 dev.off()
 
 # BG cover change vs. Change_ShrubCover
-tiff("figures/2026-01_draft-figures/BG-cover-change_shrub-cover-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-cover-change_shrub-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.shrub
 dev.off()
@@ -2430,25 +2430,25 @@ dev.off()
 
 # Not significant
 # BG cover change vs. PlotSlope
-tiff("figures/2026-01_draft-figures/BG-cover-change_plot-slope.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-cover-change_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.slope
 dev.off()
 
 # BG cover change vs. Change_HerbCover
-tiff("figures/2026-01_draft-figures/BG-cover-change_herb-cover-change.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-cover-change_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.herb
 dev.off()
 
 # BG cover change interaction of precip*shrub
-tiff("figures/2026-01_draft-figures/BG-cover-change_shrub-cover-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-cover-change_shrub-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.shrub.precip
 dev.off()
 
 # BG cover change interaction of precip*herb
-tiff("figures/2026-01_draft-figures/BG-cover-change_herb-cover-change-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-cover-change_herb-cover-change-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov.herb.precip
 dev.off()
@@ -2459,13 +2459,13 @@ dev.off()
 
 # Significant
 # Survival vs. Prev_year_precip
-tiff("figures/2026-01_draft-figures/Survival_prev-year-precip.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_prev-year-precip.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.precip
 dev.off()
 
 # Survival vs. BGDensity
-tiff("figures/2026-01_draft-figures/Survival_BG-density.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_BG-density.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.bgden
 dev.off()
@@ -2473,37 +2473,37 @@ dev.off()
 
 # Not significant
 # Survival by Aspect 
-tiff("figures/2026-01_draft-figures/Survival_aspect.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_aspect.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.aspect
 dev.off()
 
 # Survival vs. PlotSlope
-tiff("figures/2026-01_draft-figures/Survival_plot-slope.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.slope
 dev.off()
 
 # Survival vs. ShrubCover
-tiff("figures/2026-01_draft-figures/Survival_shrub-cover.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_shrub-cover.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.shrub
 dev.off()
 
 # Survival vs. HerbCover
-tiff("figures/2026-01_draft-figures/Survival_herb-cover.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_herb-cover.tiff",
      units = "in", height = 4, width = 5, res = 150)
 survival.herb
 dev.off()
 
 # Survival interaction of precip*density
-tiff("figures/2026-01_draft-figures/Survival_BG-density-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_BG-density-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.bgden.precip
 dev.off()
 
 # Survival interaction of precip*herb
-tiff("figures/2026-01_draft-figures/Survival_herb-cover-and-precip-interaction.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_herb-cover-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.herb.precip
 dev.off()
@@ -2513,7 +2513,7 @@ dev.off()
 ## Precip plot ------------------------------------------------------------
 
 # Combined precip plot for density, cover, survival, no CI
-tiff("figures/2026-01_draft-figures/Precip-combined_density-cover-survival.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Precip-combined_density-cover-survival.tiff",
      units = "in", height = 7, width = 9, res = 150)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
@@ -2524,6 +2524,6 @@ dev.off()
 
 
 
-save.image("RData/10.2_draft-figs-for-lm-revision1.RData")
+save.image("RData/10.2_draft-figs-for-lm-revision1.1.RData")
 
 

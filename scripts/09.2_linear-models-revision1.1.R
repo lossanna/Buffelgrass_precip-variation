@@ -426,31 +426,31 @@ r2(density.cover)
 # Write out predicted vs. observed graphs ---------------------------------
 
 # Total change
-tiff("figures/2026-01_draft-figures/Total-change_predicted-vs-observed.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Total-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 total2.pred.plot
 dev.off()
 
 # Repro change
-tiff("figures/2026-01_draft-figures/Repro-change_predicted-vs-observed.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Repro-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 repro2.pred.plot
 dev.off()
 
 # BG density change
-tiff("figures/2026-01_draft-figures/BG-density-change_predicted-vs-observed.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-density-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden2.pred.plot
 dev.off()
 
 # BG cover change
-tiff("figures/2026-01_draft-figures/BG-cover-change_predicted-vs-observed.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/BG-cover-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgcov2.pred.plot
 dev.off()
 
 # Survival
-tiff("figures/2026-01_draft-figures/Survival_predicted-vs-observed.tiff",
+tiff("figures/2026-01_draft-figures-revision1.1/Survival_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival2.pred.plot
 dev.off()
@@ -461,7 +461,7 @@ dev.off()
 # Needed for graphs
 save(culm.change.flat.rm, plot.change, dat.survival, 
      total2, repro2, bgden2, bgcov2, survival2,
-     file = "RData/09.2_data-and-version2-models-revision1.RData")
+     file = "RData/09.2_data-and-version2-models-revision1.1.RData")
 
 
-save.image("RData/09.2_linear-models-revision1.RData")
+save.image("RData/09.2_linear-models-revision1.1.RData")
