@@ -1,0 +1,139 @@
+---
+title: "Supplemental tables and figures"
+output: pdf_document
+---
+
+```{r setup, include=FALSE, message=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+library(knitr)
+library(kableExtra)
+library(ggpubr)
+load("../RData/publish_actual-summary.RData")
+load("../RData/publish2_figsS1-S9.RData")
+```
+
+Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
+Last updated: 2026-02-03  
+
+This document includes all the supplemental tables and figures that accompany "Precipitation moderates associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
+
+
+# Tables
+## Table S1. Actual values averaged by year
+Actual values of variables measured, averaged across all plots for each year (to contextualize year-to-year change values used in analyses). Precipitation measured in mm, buffelgrass density measured in individuals per m^2^, and cover measured in percent.
+```{r Table S1}
+actual.summary.year2 %>% 
+  kbl(booktabs = TRUE, align = "c",
+      col.names = c("Year", "Precipitation", "Total culms", "Repro culms", "Density", "Cover", "Shrub cover", "Herb cover")) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) %>% 
+  add_header_above(c(" " = 2, "Buffelgrass" = 4, "Native vegetation" = 2))
+```
+
+
+## Table S2. Total culms model 
+Model coefficients of the buffelgrass culm count model (response variable: year-to-year change in total number of culms). Marginal R^2^ = 0.0.119; conditional R^2^ = 0.410.
+```{r Table S2}
+total_avg <- read.table("total_revision1.txt", sep = "\t")
+colnames(total_avg) <- total_avg[1,]
+total_avg <- total_avg[-1,]
+row.names(total_avg) <- NULL
+
+total_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+
+## Table S3. Reproductive culms model 
+Model coefficients of the buffelgrass reproductive culm count model (response variable: year-to-year change in number of reproductive culms). Marginal R^2^ = 0.098; conditional R^2^ = 0.295.
+```{r Table S3}
+repro_avg <- read.table("repro_avg.txt", sep = "\t")
+colnames(repro_avg) <- repro_avg[1,]
+repro_avg <- repro_avg[-1,]
+row.names(repro_avg) <- NULL
+
+repro_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+
+## Table S4. Plot density model
+Model coefficients of the buffelgrass plot density model (response variable: year-to-year change in plot density [individuals per m^2^]). Marginal R^2^ = 0.381; conditional R^2^ = 0.427.
+```{r Table S4}
+bgden_avg <- read.table("bgden_avg.txt", sep = "\t")
+colnames(bgden_avg) <- bgden_avg[1,]
+bgden_avg <- bgden_avg[-1,]
+row.names(bgden_avg) <- NULL
+
+bgden_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+
+\newpage
+## Table S5. Plot cover model
+Model coefficients of the buffelgrass plot cover model (response variable: year-to-year-change in plot cover [%]). Marginal R^2^ = 0.248; conditional R^2^ = 0.295.
+```{r Table S5}
+bgcov_avg <- read.table("bgcov_avg.txt", sep = "\t")
+colnames(bgcov_avg) <- bgcov_avg[1,]
+bgcov_avg <- bgcov_avg[-1,]
+row.names(bgcov_avg) <- NULL
+
+bgcov_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+
+## Table S6. Seedling survival model
+Model coefficients of the buffelgrass seedling survival model (response variable: seedling survival [%]). Marginal R^2^ = 0.819.
+```{r Table S6}
+survival_avg <- read.table("survival_avg.txt", sep = "\t")
+colnames(survival_avg) <- survival_avg[1,]
+survival_avg <- survival_avg[-1,]
+row.names(survival_avg) <- NULL
+
+survival_avg %>% 
+  kbl(booktabs = TRUE) %>%
+  kable_styling(latex_options = c("striped", "hold_position")) 
+```
+
+
+# Figures
+## Figure S1
+```{r Fig S1}
+repro.shrub.precip
+```
+**Figure S1.** Relationship between year-to-year change in native shrub cover and year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in the number of reproductive buffelgrass culms.
+
+\newpage
+## Figure S2
+```{r Fig S2}
+repro.herb.precip
+```
+**Figure S2.** Relationship between year-to-year change in native herbaceous (grass and forb) cover and year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in herb cover while horizontal line indicates no change in the number of reproductive buffelgrass culms. 
+
+\newpage
+## Figure S3
+```{r Fig S3, message=FALSE}
+ggarrange(shrub.change.precip, herb.change.precip,
+          ncol = 2, nrow = 1,
+          labels = c("(A)", "(B)"))
+```
+**Figure S3.** Simple linear regression of (A) year-to-year change in native shrub cover and (B) year-to-year change in native herbaceous cover as a function of the previous year’s precipitation, pooling all sampling locations and times. Horizontal red dashed lines indicate no change in shrub or herbaceous cover.
+
+\newpage
+## Figure S4
+```{r Fig S4}
+total.aspect
+```
+**Fig. S4.** Effects of aspect on year-to-year change in total buffelgrass culm count. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in the number of buffelgrass culms. 
+
+## Figure S5
+```{r Fig S5}
+repro.aspect
+```
+**Fig. S5.** Effects of aspect on year-to-year change in buffelgrass reproductive culm count. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in the number of reproductive buffelgrass culms. 
+

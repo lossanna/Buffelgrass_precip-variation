@@ -1,0 +1,14 @@
+Coefficient	Estimate	Std. Error	z value	Pr(>|z|) 
+Intercept	-1.60229	0.59357	-2.699	0.006946 **
+Previous year precipitation	1.48659	0.15485	9.600	<2e-16***
+Aspect, N	-0.16101	0.47159	-0.341	0.732783
+Aspect, S	-0.23040	0.29582	-0.779	0.436059
+Aspect, SW	0.17360	0.34498	0.503	0.614824
+Aspect, W	-0.16359	0.27908	-0.586	0.557752
+Plot slope	0.09520	0.10787	0.883	0.377496
+BG density	0.40963	0.12132	3.377	0.000734***
+Shrub cover	-0.10272	0.10029	-1.024	0.305744
+Herb cover	0.20032	0.10796	1.856	0.063515
+BG density * Previous year precip	0.13036	0.11916	1.094	0.273957
+Shrub cover * Previous year precip	-0.08096	0.09154	-0.884	0.376479
+Herb cover * Previous year precip	-0.12406	0.10134	-1.224	0.220885
