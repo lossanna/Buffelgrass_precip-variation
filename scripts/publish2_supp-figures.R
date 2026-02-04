@@ -540,7 +540,7 @@ save(repro.shrub.precip, repro.herb.precip,
      total.aspect, repro.aspect, 
      bgden.aspect, bgcov.aspect,
      bgcov.shrub.precip, density.cover, total.cover,
-     file = "RData/publish2_figsS1-S9.RData")
+     file = "RData/publish2_figsS1-S12.RData")
 
 
 save.image("RData/publish2_supp-figures.RData")
