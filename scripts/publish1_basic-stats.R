@@ -9,10 +9,10 @@ library(tidyverse)
 
 # Load data ---------------------------------------------------------------
 
-dat <- read_csv("data/publish/all-data.csv")
-culm.change <- read_csv("data/publish/culm-data.csv")
-plot.change <- read_csv("data/publish/plot-data.csv")
-survival <- read_csv("data/publish/survival-data.csv")
+dat <- read_csv("data/publish1/all-data.csv")
+culm.change <- read_csv("data/publish1/culm-data.csv")
+plot.change <- read_csv("data/publish1/plot-data.csv")
+survival <- read_csv("data/publish1/survival-data.csv")
 
 # Calculate number of observations ----------------------------------------
 
@@ -118,4 +118,4 @@ summary(dat$HerbCover)
 
 # For supplemental
 save(actual.summary.year2,
-     file = "RData/publish_actual-summary.RData")
+     file = "RData/publish1_actual-summary.RData")

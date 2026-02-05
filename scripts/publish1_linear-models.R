@@ -16,9 +16,9 @@ library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
-culm.change.raw <- read_csv("data/publish/culm-data.csv")
-plot.change.raw <- read_csv("data/publish/plot-data.csv")
-survival.dat.raw <- read_csv("data/publish/survival-data.csv")
+culm.change.raw <- read_csv("data/publish1/culm-data.csv")
+plot.change.raw <- read_csv("data/publish1/plot-data.csv")
+survival.dat.raw <- read_csv("data/publish1/survival-data.csv")
 
 # Data wrangling ----------------------------------------------------------
 
