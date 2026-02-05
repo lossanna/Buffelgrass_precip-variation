@@ -130,7 +130,7 @@ culm.change <- culm.change %>%
 # Write to CSV ------------------------------------------------------------
 
 write_csv(dat,
-          file = "data/cleaned/11_demography-data_clean.csv")
+          file = "data/cleaned/11.1_demography-data_clean.csv")
 
 write_csv(culm.change,
-          file = "data/cleaned/11_change-in-culm-density-cover_clean.csv")
+          file = "data/cleaned/11.1_change-in-culm-density-cover_clean.csv")

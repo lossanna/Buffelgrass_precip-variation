@@ -14,8 +14,8 @@ library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
-dat <- read_csv("data/cleaned/11_demography-data_clean.csv")
-culm.change.raw <- read_csv("data/cleaned/11_change-in-culm-density-cover_clean.csv")
+dat <- read_csv("data/cleaned/11.1_demography-data_clean.csv")
+culm.change.raw <- read_csv("data/cleaned/11.1_change-in-culm-density-cover_clean.csv")
 
 # Data wrangling ----------------------------------------------------------
 
