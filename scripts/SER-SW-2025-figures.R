@@ -10,7 +10,7 @@ library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
-load("RData/publish_data-and-best-models.RData")
+load("RData/publish1_data-and-best-models.RData")
 
 
 # Precip range ------------------------------------------------------------
