@@ -1,7 +1,7 @@
 # Created: 2025-08-01
 # Updated: 2025-09-15
 
-# Purpose: Create data for publishing.
+# Purpose: Create data for publishing (initial submission version).
 
 library(tidyverse)
 
@@ -81,12 +81,12 @@ dat <- dat %>%
 # Write to csv ------------------------------------------------------------
 
 write_csv(prism.dat,
-          file = "data/publish/site-info.csv")
+          file = "data/publish1/site-info.csv")
 write_csv(dat,
-          file = "data/publish/all-data.csv")
+          file = "data/publish1/all-data.csv")
 write_csv(culm.change,
-          file = "data/publish/culm-data.csv")
+          file = "data/publish1/culm-data.csv")
 write_csv(plot.change,
-          file = "data/publish/plot-data.csv")
+          file = "data/publish1/plot-data.csv")
 write_csv(dat.survival,
-          file = "data/publish/survival-data.csv")
+          file = "data/publish1/survival-data.csv")

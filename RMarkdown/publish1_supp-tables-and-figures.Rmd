@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = FALSE)
 library(knitr)
 library(kableExtra)
 library(ggpubr)
-load("../RData/publish_actual-summary.RData")
+load("../RData/publish1_actual-summary.RData")
 load("../RData/publish1_figsS1-S9.RData")
 ```
 
