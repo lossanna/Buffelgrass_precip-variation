@@ -33,7 +33,23 @@ survival.dat <- survival.join %>%
   select(Year, Site, Transect, Plot, Prev_year_precip, PlotSlope, Aspect,
          BGDensity, BGCover, ShrubCover, HerbCover,
          remaining_toothpicks, seedlings_surviving) 
-  
+
+
+# Determine initial conditions
+initial <- dat %>% 
+  filter(StudyYear == 1) %>% 
+  select(Site, Transect, Plot, BGCover, BGDensity, ShrubCover, HerbCover) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  rename(Init_BGDensity = BGDensity,
+         Init_BGCover = BGCover,
+         Init_ShrubCover = ShrubCover,
+         Init_HerbCover = HerbCover)
+
+# Join with survival data
+survival.dat <- survival.dat %>% 
+  left_join(initial)
+
+
 
 # Write to CSV ------------------------------------------------------------
 
