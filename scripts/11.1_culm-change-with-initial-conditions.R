@@ -1,5 +1,5 @@
 # Created: 2026-02-04
-# Updated: 2026-02-04
+# Updated: 2026-02-05
 
 # Purpose: Do some extra data cleaning to see that one Plant_ID was entered wrong (now corrected).
 #   Ultimately create table of culm change data with initial conditions for BG and native veg.
@@ -85,6 +85,11 @@ dat <- dat %>%
   filter(raw.row != row.rm$raw.row) %>% 
   select(-raw.row) %>% 
   bind_rows(plant577.fix)
+
+
+# Remove survival_perc column (see 11.2.R for correct survival data)
+dat <- dat %>% 
+  select(-survival_perc)
 
 
 # Recalculate culm change -------------------------------------------------
