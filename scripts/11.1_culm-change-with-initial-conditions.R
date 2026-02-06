@@ -91,6 +91,9 @@ dat <- dat %>%
 dat <- dat %>% 
   select(-survival_perc)
 
+# Save intermediate
+dat1 <- dat
+
 
 # Recalculate culm change -------------------------------------------------
 
@@ -130,6 +133,92 @@ culm.change <- culm.change %>%
          Init_BGCover = BGCover,
          Init_ShrubCover = ShrubCover,
          Init_HerbCover = HerbCover)
+
+
+
+# Fix NAs -----------------------------------------------------------------
+
+# Look for NAs
+apply(culm.change, 2, anyNA)
+
+# Inspect NAs for initial cols
+init.na <- culm.change %>% 
+  filter(is.na(Init_BGCover))
+
+dat.init.na <- dat %>% 
+  filter(Plant_ID %in% init.na$Plant_ID)
+
+init.init.na <- initial %>% 
+  filter(Plant_ID %in% init.na$Plant_ID)
+
+
+# Fix plant 165 & 169: the plot number for Year 2 is wrong/switched
+#   Create fixed rows for 165 & 169
+plant165.169.fix <- dat.raw %>% 
+  filter(StudyYear == 2, Plant_ID %in% c(165, 169)) %>% 
+  mutate(Plot = c(221, 222))
+
+#   Remove incorrect row and add in fixed one
+dat <- dat1 %>% 
+  mutate(raw.row = 1:nrow(dat1))
+row.rm2 <- dat %>% 
+  filter(StudyYear == 2, Plant_ID %in% c(165, 169))
+dat <- dat %>% 
+  filter(!raw.row %in% row.rm2$raw.row) %>% 
+  select(-raw.row) %>% 
+  bind_rows(plant165.169.fix)
+
+# Save intermediate
+dat2 <- dat
+
+
+# Add initial for plants 561, 577, 693, 774, which occurred in Year 2 (not Year 1)
+init.add <- dat %>% 
+  filter(StudyYear == 2,
+         Plant_ID %in% c(561, 577, 693, 774)) %>% 
+  select(Site, Transect, Plot, Plant_ID, BGCover, BGDensity, ShrubCover, HerbCover)
+
+#   Add to initial
+initial.fixed2 <- initial.fixed %>% 
+  bind_rows(init.add)
+
+
+# Recalculate culm change (again) -----------------------------------------
+
+culm.change <- dat2 %>%
+  arrange(Plant_ID, Year) %>%
+  group_by(Plant_ID) %>%
+  mutate(Change_Reproductive_culms = Reproductive_culms - lag(Reproductive_culms),
+         Change_Total_Live_Culms = Total_Live_Culms - lag(Total_Live_Culms)) %>% 
+  mutate(Change_BGDensity = BGDensity - lag(BGDensity),
+         Change_BGCover = BGCover - lag(BGCover)) %>% 
+  mutate(Change_HerbCover = HerbCover - lag(HerbCover),
+         Change_ShrubCover = ShrubCover - lag(ShrubCover)) %>% 
+  filter(!is.na(Change_Total_Live_Culms))
+
+
+
+# Join initial conditions with culm.change (again) ------------------------
+
+# Create version of culm.change for join
+culm.change.join <- culm.change %>% 
+  select(Year, Site, Transect, Plot, Plant_ID, Prev_year_precip, PlotSlope, Aspect,
+         Change_Total_Live_Culms, Change_Reproductive_culms,
+         Change_BGDensity, Change_BGCover, Change_ShrubCover, Change_HerbCover)
+
+# Join
+culm.change <- culm.change.join %>% 
+  left_join(initial.fixed2)
+
+# Change col names
+culm.change <- culm.change %>% 
+  rename(Init_BGDensity = BGDensity,
+         Init_BGCover = BGCover,
+         Init_ShrubCover = ShrubCover,
+         Init_HerbCover = HerbCover)
+
+# Look for NAs
+apply(culm.change, 2, anyNA)
 
 
 # Write to CSV ------------------------------------------------------------
