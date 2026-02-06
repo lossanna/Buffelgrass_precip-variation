@@ -153,13 +153,31 @@ init.init.na <- initial %>%
   filter(Plant_ID %in% init.na$Plant_ID)
 
 
-# Fix plant 165 & 169: the plot number for Year 2 is wrong/switched
-#   Create fixed rows for 165 & 169
+# Fix plant 165 & 169: the plot number (and info) for Year 2 is wrong/switched
+#   Select plant-level columns to keep
 plant165.169.fix <- dat.raw %>% 
   filter(StudyYear == 2, Plant_ID %in% c(165, 169)) %>% 
-  mutate(Plot = c(221, 222))
+  select(Plant_ID, Reproductive_culms, Total_Live_Culms, Vegetative_culms, Longestleaflength_cm,
+         Notes)
 
-#   Remove incorrect row and add in fixed one
+#   Plot-level info for replacement
+plot221 <- dat.raw %>% 
+  filter(Plot == 221 & Year == 2021) %>% 
+  select(-Plant_ID, -Reproductive_culms, -Total_Live_Culms, -Vegetative_culms, -Longestleaflength_cm,
+         -Notes) %>% 
+  distinct(.keep_all = TRUE)
+plot222 <- dat.raw %>% 
+  filter(Plot == 222 & Year == 2021) %>% 
+  select(-Plant_ID, -Reproductive_culms, -Total_Live_Culms, -Vegetative_culms, -Longestleaflength_cm,
+         -Notes) %>% 
+  distinct(.keep_all = TRUE)
+plot221.222 <- bind_rows(plot221, plot222)
+
+#   Apply replacement
+plant165.169.fix <- plant165.169.fix %>% 
+  bind_cols(plot221.222)
+
+#   Remove incorrect rows and add in fixed ones
 dat <- dat1 %>% 
   mutate(raw.row = 1:nrow(dat1))
 row.rm2 <- dat %>% 
@@ -197,6 +215,11 @@ initial.fixed2 <- dat2 %>%
 count(initial.fixed2, Plant_ID) %>% 
   arrange(desc(n))
 
+initial.fixed2 %>% 
+  select(-Plant_ID) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  count(Plot) %>% 
+  arrange(desc(n))
 
 
 # Recalculate culm change (again) -----------------------------------------
@@ -210,7 +233,8 @@ culm.change <- dat2 %>%
          Change_BGCover = BGCover - lag(BGCover)) %>% 
   mutate(Change_HerbCover = HerbCover - lag(HerbCover),
          Change_ShrubCover = ShrubCover - lag(ShrubCover)) %>% 
-  filter(!is.na(Change_Total_Live_Culms))
+  filter(!is.na(Change_Total_Live_Culms)) %>% 
+  ungroup()
 
 
 
@@ -235,6 +259,23 @@ culm.change <- culm.change %>%
 
 # Look for NAs
 apply(culm.change, 2, anyNA)
+
+# Check for duplicate rows
+culm.change %>% 
+  select(Site, Plot, Init_BGCover, Init_BGDensity, Init_ShrubCover, Init_HerbCover) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  count(Plot) %>% 
+  arrange(desc(n))
+
+# Check for duplicates/conflicting plot-level info
+culm.change %>% 
+  select(-Plant_ID, -Change_Total_Live_Culms, -Change_Reproductive_culms) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  group_by(Year, Plot) %>% 
+  summarise(n = n(),
+            .groups = "keep") %>% 
+  arrange(desc(n))
+
 
 
 # Write to CSV ------------------------------------------------------------
