@@ -167,18 +167,17 @@ row.rm2 <- dat %>%
 dat <- dat %>% 
   filter(!raw.row %in% row.rm2$raw.row) %>% 
   select(-raw.row) %>% 
-  bind_rows(plant165.169.fix)
+  bind_rows(plant165.169.fix) %>% 
+  arrange(Plant_ID) %>% 
+  arrange(Plot) %>% 
+  arrange(Year)
 
 # Remove survival_perc column (see 11.2.R for correct survival data)
 dat <- dat %>% 
   select(-survival_perc)
 
 # Save intermediate
-dat2 <- dat %>% 
-  arrange(Year) %>% 
-  arrange(Plant_ID) %>% 
-  arrange(Plot) %>% 
-  arrange(Site)
+dat2 <- dat
 
 
 # Add initial for plants 561, 693, 774, which first occurred in Year 2 (use plot conditions from Year 1)
