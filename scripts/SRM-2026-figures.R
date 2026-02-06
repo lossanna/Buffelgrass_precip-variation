@@ -1,7 +1,7 @@
 # Ceated: 2026-02-05
-# Updated: 2026-02-05
+# Updated: 2026-02-06
 
-# Purpose: Create figures for SRM 2026 conference presentation.
+# Purpose: Create figures for SRM 2026 conference presentation using revision1.2.
 
 library(tidyverse)
 library(insight)
@@ -224,6 +224,130 @@ shrub.change.precip <- plot.change %>%
 shrub.change.precip
 
 
+# BG density, Precip * shrub ----------------------------------------------
+
+# Generate prediction and add unscaled variable - 9 levels to get mean
+insight.bgden.shrub.precip <- dat.plot.ex %>% 
+  get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover_scaled) %>% 
+  distinct(.keep_all = TRUE)
+insight.bgden.shrub.precip$Predicted <- get_predicted(bgden1, insight.bgden.shrub.precip)
+unscaled.shrub.precip <- dat.plot.unscaled %>% 
+  get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
+  arrange(Change_ShrubCover) %>% 
+  distinct(.keep_all = TRUE)
+insight.bgden.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip$Change_ShrubCover
+insight.bgden.shrub.precip$Prev_year_precip <- unscaled.shrub.precip$Prev_year_precip
+unique(insight.bgden.shrub.precip$Prev_year_precip_scaled) 
+insight.bgden.shrub.precip <- insight.bgden.shrub.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.947, 0.023, 1.640))
+insight.bgden.shrub.precip.avg <- insight.bgden.shrub.precip %>% 
+  filter(Prev_year_precip_scaled == 0.023)
+
+
+# Graph, gray data only
+bgden.shrub1 <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
+  geom_point(color = "gray30", alpha = 0.5) +
+  geom_line(data = insight.bgden.shrub.precip.avg,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5, alpha = 0) +
+  theme_bw(base_size = 14) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals / ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)"))
+bgden.shrub1
+
+
+# Graph, gray data with line
+bgden.shrub <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
+  geom_point(color = "gray30", alpha = 0.5) +
+  geom_line(data = insight.bgden.shrub.precip.avg,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw(base_size = 14) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals / ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)"))
+bgden.shrub
+
+
+# Graph, axes
+bgden.shrub0 <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
+  geom_point(alpha = 0) +
+  theme_bw(base_size = 14) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals / ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)"))
+bgden.shrub0
+
+
+# Graph, data only
+bgden.shrub.precip1 <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
+  geom_point() +
+  theme_bw(base_size = 14) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals / ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)"))
+bgden.shrub.precip1
+
+
+# Graph, data and model prediction
+bgden.shrub.precip <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
+  geom_point() +
+  geom_line(data = insight.bgden.shrub.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw(base_size = 14) +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals / ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)"))
+bgden.shrub.precip
+
+
 
 # Total culm, precip * density --------------------------------------------
 
@@ -265,7 +389,7 @@ total.bgden1 <- dat.culm %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Buffelgrass culm count"),
-       x = expression(Delta ~ paste("Buffelgrass plot density (individuals / ", m^2, ")")))
+       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
 total.bgden1
 
 
@@ -286,7 +410,7 @@ total.bgden <- dat.culm %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Buffelgrass culm count"),
-       x = expression(Delta ~ paste("Buffelgrass plot density (individuals / ", m^2, ")")))
+       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
 total.bgden
 
 
@@ -305,7 +429,7 @@ total.bgden.precip0 <- dat.culm %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Buffelgrass culm count"),
-       x = expression(Delta ~ paste("Buffelgrass plot density (individuals / ", m^2, ")")))
+       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
 total.bgden.precip0
 
 
@@ -324,7 +448,7 @@ total.bgden.precip1 <- dat.culm %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Buffelgrass culm count"),
-       x = expression(Delta ~ paste("Buffelgrass plot density (individuals / ", m^2, ")")))
+       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
 total.bgden.precip1
 
 
@@ -345,7 +469,7 @@ total.bgden.precip <- dat.culm %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Buffelgrass culm count"),
-       x = expression(Delta ~ paste("Buffelgrass plot density (individuals / ", m^2, ")")))
+       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
 total.bgden.precip
 
 
@@ -520,6 +644,33 @@ dev.off()
 tiff("figures/SRM-2026-figures/Shrub_precip.tiff",
      units = "in", height = 3, width = 4, res = 600)
 shrub.change.precip
+dev.off()
+
+
+# Density, precip * shrub
+tiff("figures/SRM-2026-figures/BG-density_shrub_data.tiff",
+     units = "in", height = 6, width = 6, res = 600)
+bgden.shrub1
+dev.off()
+
+tiff("figures/SRM-2026-figures/BG-density_shrub.tiff",
+     units = "in", height = 6, width = 6, res = 600)
+bgden.shrub
+dev.off()
+
+tiff("figures/SRM-2026-figures/BG-density_shrub-precip_axes.tiff",
+     units = "in", height = 6, width = 6, res = 600)
+bgden.shrub0
+dev.off()
+
+tiff("figures/SRM-2026-figures/BG-density_shrub-precip_data.tiff",
+     units = "in", height = 6, width = 6, res = 600)
+bgden.shrub.precip1
+dev.off()
+
+tiff("figures/SRM-2026-figures/BG-density_shrub-precip.tiff",
+     units = "in", height = 6, width = 6, res = 600)
+bgden.shrub.precip
 dev.off()
 
 
