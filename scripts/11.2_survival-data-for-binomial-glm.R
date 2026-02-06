@@ -1,5 +1,5 @@
 # Created: 2026-02-05
-# Updated: 2026-02-05
+# Updated: 2026-02-06
 
 # Purpose: Reformat survival data so it can be analyzed as a binomial GLM.
 
@@ -39,7 +39,17 @@ survival.dat <- survival.join %>%
 initial <- dat %>% 
   filter(StudyYear == 1) %>% 
   select(Site, Transect, Plot, BGCover, BGDensity, ShrubCover, HerbCover) %>% 
-  distinct(.keep_all = TRUE) %>% 
+  distinct(.keep_all = TRUE) 
+
+# Add initial for plants 561, 577, 693, 774, which occurred in Year 2 (not Year 1)
+init.add <- dat %>% 
+  filter(StudyYear == 2,
+         Plant_ID %in% c(561, 577, 693, 774)) %>% 
+  select(Site, Transect, Plot, Plant_ID, BGCover, BGDensity, ShrubCover, HerbCover)
+
+#   Add to initial
+initial.fixed <- initial %>% 
+  bind_rows(init.add) %>% 
   rename(Init_BGDensity = BGDensity,
          Init_BGCover = BGCover,
          Init_ShrubCover = ShrubCover,
@@ -49,6 +59,8 @@ initial <- dat %>%
 survival.dat <- survival.dat %>% 
   left_join(initial)
 
+# Look for NAs
+apply(survival.dat, 2, anyNA)
 
 
 # Write to CSV ------------------------------------------------------------

@@ -1,7 +1,8 @@
 # Created: 2026-02-04
-# Updated: 2026-02-05
+# Updated: 2026-02-06
 
-# Purpose: Do some extra data cleaning to see that one Plant_ID was entered wrong (now corrected).
+# Purpose: Do some extra data cleaning to see that one Plant_ID was entered wrong 
+#   and two instances of incorrect Plot (now corrected).
 #   Ultimately create table of culm change data with initial conditions for BG and native veg.
 
 library(tidyverse)
