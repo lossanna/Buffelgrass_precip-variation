@@ -181,17 +181,23 @@ dat2 <- dat %>%
   arrange(Site)
 
 
-# Add initial for plants 561, 693, 774, which occurred in Year 2 (not Year 1)
-init.add <- dat2 %>% 
-  filter(StudyYear == 2,
-         Plant_ID %in% c(561, 693, 774)) %>% 
-  select(Site, Transect, Plot, Plant_ID, BGCover, BGDensity, ShrubCover, HerbCover)
-
+# Add initial for plants 561, 693, 774, which first occurred in Year 2 (use plot conditions from Year 1)
+init.add <- initial.fixed %>% 
+  filter(Plot %in% c(41, 417, 425)) %>% 
+  select(-Plant_ID) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  mutate(Plant_ID = c(561, 693, 774))
+  
 #   Add to initial (recalculate initial to incorporate plant 165 & 169 changes)
 initial.fixed2 <- dat2 %>% 
   filter(StudyYear == 1) %>% 
   select(Site, Transect, Plot, Plant_ID, BGCover, BGDensity, ShrubCover, HerbCover) %>% 
   bind_rows(init.add)
+
+# Check for duplicate rows
+count(initial.fixed2, Plant_ID) %>% 
+  arrange(desc(n))
+
 
 
 # Recalculate culm change (again) -----------------------------------------
@@ -217,7 +223,7 @@ culm.change.join <- culm.change %>%
          Change_Total_Live_Culms, Change_Reproductive_culms,
          Change_BGDensity, Change_BGCover, Change_ShrubCover, Change_HerbCover)
 
-# Join
+# Join with initial
 culm.change <- culm.change.join %>% 
   left_join(initial.fixed2)
 
