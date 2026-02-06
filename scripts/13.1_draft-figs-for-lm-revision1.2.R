@@ -1,5 +1,5 @@
 # Created: 2026-02-04
-# Updated: 2026-02-05
+# Updated: 2026-02-06
 
 # Purpose: Graph data to accompany 12.1.R of revision1.2 linear models (uses year-to-year-change
 #   as response variable and included initial BG density, shrub, and herb conditions).
@@ -469,6 +469,39 @@ total.aspect <- dat.culm %>%
 total.aspect
 
 
+## Total: Slope -----------------------------------------------------------
+
+# Generate prediction and add unscaled variable
+insight.total.slope <- get_datagrid(dat.culm.ex, by = c("PlotSlope_scaled"),
+                                    length = 100)
+insight.total.slope$Change_Total_Live_Culms <- get_predicted(total1, insight.total.slope)
+insight.total.slope$SE <- get_predicted_ci(total1, data = insight.total.slope)$SE
+insight.total.slope$CI <- insight.total.slope$SE * 1.96
+unscaled.slope <- get_datagrid(dat.culm.unscaled, by = "PlotSlope",
+                               length = 100) %>% 
+  arrange(PlotSlope)
+insight.total.slope$PlotSlope <- unscaled.slope$PlotSlope
+
+# Graph
+total.slope <- dat.culm %>% 
+  ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms)) +
+  geom_point() +
+  geom_line(data = insight.total.slope,
+            aes(y = Change_Total_Live_Culms), linewidth = 1,
+            color = "purple3") +
+  geom_ribbon(data = insight.total.slope,
+              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
+              alpha = 0.2) +
+  theme_bw() +
+  xlab("Plot slope (\u00B0)") +
+  ggtitle("Change in total culm count vs. slope") +
+  labs(y = expression(Delta ~ "Total culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+total.slope
+
+
 ## Total: BG density ------------------------------------------------------
 
 # Generate prediction and add unscaled variable
@@ -701,39 +734,6 @@ total.inbgden <- dat.culm %>%
 total.inbgden
 
 
-## Total: Slope (NS) ------------------------------------------------------
-
-# Generate prediction and add unscaled variable
-insight.total.slope <- get_datagrid(dat.culm.ex, by = c("PlotSlope_scaled"),
-                                    length = 100)
-insight.total.slope$Change_Total_Live_Culms <- get_predicted(total1, insight.total.slope)
-insight.total.slope$SE <- get_predicted_ci(total1, data = insight.total.slope)$SE
-insight.total.slope$CI <- insight.total.slope$SE * 1.96
-unscaled.slope <- get_datagrid(dat.culm.unscaled, by = "PlotSlope",
-                               length = 100) %>% 
-  arrange(PlotSlope)
-insight.total.slope$PlotSlope <- unscaled.slope$PlotSlope
-
-# Graph
-total.slope <- dat.culm %>% 
-  ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms)) +
-  geom_point() +
-  geom_line(data = insight.total.slope,
-            aes(y = Change_Total_Live_Culms), linewidth = 1,
-            color = "purple3") +
-  geom_ribbon(data = insight.total.slope,
-              aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
-              alpha = 0.2) +
-  theme_bw() +
-  xlab("Plot slope (\u00B0)") +
-  ggtitle("Change in total culm count vs. slope") +
-  labs(y = expression(Delta ~ "Total culm count")) +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red")
-total.slope
-
-
 ## Total: Herb (NS) -------------------------------------------------------
 
 # Generate prediction and add unscaled variable
@@ -780,7 +780,7 @@ insight.total.inshrub$SE <- get_predicted_ci(total1, data = insight.total.inshru
 insight.total.inshrub$CI <- insight.total.inshrub$SE * 1.96
 unscaled.inshrub <- get_datagrid(dat.culm.unscaled, by = "Init_ShrubCover",
                                  length = 100) %>% 
-  arrange(Init_ShrubCover) # idk why this is not working
+  arrange(Init_ShrubCover) # idk why this is not working (only has 23 rows?)
 # insight.total.inshrub$Init_ShrubCover <- unscaled.inshrub$Init_ShrubCover
 # 
 # # Graph
@@ -1389,6 +1389,38 @@ bgden.herb.precip <- dat.plot %>%
        x = expression(Delta ~ "Native grass & forb cover (%)"),
        title = "Change in buffelgrass density vs. herb cover change")
 bgden.herb.precip
+
+
+## BG density: Initial density (NS) ---------------------------------------
+
+# Generate prediction and add unscaled variable 
+insight.bgden.inbgden <- get_datagrid(dat.plot.ex, by = c("Init_BGDensity_scaled"),
+                                   length = 100)
+insight.bgden.inbgden$Change_BGDensity <- get_predicted(bgden1, insight.bgden.inbgden)
+insight.bgden.inbgden$SE <- get_predicted_ci(bgden1, data = insight.bgden.inbgden)$SE
+insight.bgden.inbgden$CI <- insight.bgden.inbgden$SE * 1.96
+unscaled.inbgden <- get_datagrid(dat.plot.unscaled, by = "Init_BGDensity",
+                              length = 100) %>% 
+  arrange(Init_BGDensity)
+insight.bgden.inbgden$Init_BGDensity <- unscaled.inbgden$Init_BGDensity
+
+# Graph
+bgden.inbgden <- dat.plot %>% 
+  ggplot(aes(x = Init_BGDensity, y = Change_BGDensity)) +
+  geom_point() +
+  geom_line(data = insight.bgden.inbgden,
+            aes(y = Change_BGDensity), linewidth = 1,
+            color = "purple3") +
+  geom_ribbon(data = insight.bgden.inbgden,
+              aes(ymin = Change_BGDensity - CI, ymax = Change_BGDensity + CI), alpha = 0.2) +
+  theme_bw() +
+  labs(y = expression(paste(Delta ~ "Density (individuals /  ", m^2, ")")),
+       x = expression(paste("Initial density (individuals /  ", m^2, ")")),
+       title = "Change in buffelgrass density vs. initial density") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgden.inbgden
 
 
 
