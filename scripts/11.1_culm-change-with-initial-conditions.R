@@ -87,18 +87,13 @@ dat <- dat %>%
   select(-raw.row) %>% 
   bind_rows(plant577.fix)
 
-
-# Remove survival_perc column (see 11.2.R for correct survival data)
-dat <- dat %>% 
-  select(-survival_perc)
-
 # Save intermediate
 dat1 <- dat
 
 
 # Recalculate culm change -------------------------------------------------
 
-culm.change <- dat %>%
+culm.change <- dat1 %>%
   arrange(Plant_ID, Year) %>%
   group_by(Plant_ID) %>%
   mutate(Change_Reproductive_culms = Reproductive_culms - lag(Reproductive_culms),
@@ -113,10 +108,15 @@ culm.change <- dat %>%
 
 # Join initial conditions with culm.change --------------------------------
 
-# Remove duplicate row from initial caused by 577/579 mistake (mistake does not change
-#   initial data, as that is plot-level)
-initial.fixed <- initial %>% 
-  distinct(.keep_all = TRUE)
+# Recalculate initial conditions with 577 fix
+initial.fixed <- dat1 %>% 
+  filter(StudyYear == 1) %>% 
+  select(Site, Transect, Plot, Plant_ID, BGCover, BGDensity, ShrubCover, HerbCover)
+
+# Check for duplicate rows
+count(initial.fixed, Plant_ID) %>% 
+  arrange(desc(n))
+
 
 # Create version of culm.change for join
 culm.change.join <- culm.change %>% 
@@ -169,18 +169,28 @@ dat <- dat %>%
   select(-raw.row) %>% 
   bind_rows(plant165.169.fix)
 
+# Remove survival_perc column (see 11.2.R for correct survival data)
+dat <- dat %>% 
+  select(-survival_perc)
+
 # Save intermediate
-dat2 <- dat
+dat2 <- dat %>% 
+  arrange(Year) %>% 
+  arrange(Plant_ID) %>% 
+  arrange(Plot) %>% 
+  arrange(Site)
 
 
-# Add initial for plants 561, 577, 693, 774, which occurred in Year 2 (not Year 1)
-init.add <- dat %>% 
+# Add initial for plants 561, 693, 774, which occurred in Year 2 (not Year 1)
+init.add <- dat2 %>% 
   filter(StudyYear == 2,
-         Plant_ID %in% c(561, 577, 693, 774)) %>% 
+         Plant_ID %in% c(561, 693, 774)) %>% 
   select(Site, Transect, Plot, Plant_ID, BGCover, BGDensity, ShrubCover, HerbCover)
 
-#   Add to initial
-initial.fixed2 <- initial.fixed %>% 
+#   Add to initial (recalculate initial to incorporate plant 165 & 169 changes)
+initial.fixed2 <- dat2 %>% 
+  filter(StudyYear == 1) %>% 
+  select(Site, Transect, Plot, Plant_ID, BGCover, BGDensity, ShrubCover, HerbCover) %>% 
   bind_rows(init.add)
 
 
