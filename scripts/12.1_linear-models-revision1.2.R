@@ -31,8 +31,7 @@ culm.change.flat.rm <- culm.change.raw %>%
          Init_BGDensity_scaled = scale(Init_BGDensity, scale = TRUE)[, 1],
          Init_ShrubCover_scaled = scale(Init_ShrubCover, scale = TRUE)[, 1],
          Init_HerbCover_scaled = scale(Init_HerbCover, scale = TRUE)[, 1],
-         Init_BGCover_scaled = scale(Init_BGCover, scale = TRUE)[, 1]) %>% 
-  mutate(Plant_ID = as.character(Plant_ID))
+         Init_BGCover_scaled = scale(Init_BGCover, scale = TRUE)[, 1])
 
 # Center and scale numeric variables for plot-level data
 plot.change <- culm.change.raw %>% 
@@ -47,8 +46,7 @@ plot.change <- culm.change.raw %>%
          Init_BGDensity_scaled = scale(Init_BGDensity, scale = TRUE)[, 1],
          Init_ShrubCover_scaled = scale(Init_ShrubCover, scale = TRUE)[, 1],
          Init_HerbCover_scaled = scale(Init_HerbCover, scale = TRUE)[, 1],
-         Init_BGCover_scaled = scale(Init_BGCover, scale = TRUE)[, 1]) %>% 
-  mutate(Plot = as.character(Plot))
+         Init_BGCover_scaled = scale(Init_BGCover, scale = TRUE)[, 1])
 
 
 # Center and scale numeric variables for survival data
@@ -60,7 +58,6 @@ dat.survival <- survival.dat %>%
          HerbCover_scaled = scale(HerbCover, center = TRUE, scale = TRUE)[, 1],
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          BGDensity_scaled = scale(BGDensity, center = TRUE, scale = TRUE)[, 1]) %>% 
-  mutate(Plot = as.character(Plot)) %>% 
   mutate(survival_prop = seedlings_surviving / remaining_toothpicks)
 
 
