@@ -18,6 +18,8 @@ dat <- read_csv("data/publish2.2/all-data.csv")
 culm.change <- read_csv("data/publish2.2/culm-data.csv")
 plot.change <- read_csv("data/publish2.2/plot-data.csv")
 survival <- read_csv("data/publish2.2/survival-data.csv")
+prism.dat <- read_csv("data/publish2.2/site-info.csv")
+
 
 # Calculate number of observations ----------------------------------------
 
@@ -51,12 +53,20 @@ summary(filter(dat, Site == "LomaVerde")$PlotSlope) # 12 to 22
 summary(dat$PlotSlope) # mean of 17
 
 
-# Precip (based on NOAA) --------------------------------------------------
+# Precip (based on PRISM) -------------------------------------------------
 
-# 2020: percent decrease from normal
-#   2020 precip: 4.17
-#   Average: 11.59
-(11.59 - 4.17) / 11.59 # 64%
+# Overall mean
+range(prism.dat$MAP) # approx. 270 to 360
+
+# Mean by site
+summary(filter(prism.dat, Site == "TumamocHill")$MAP) # 276
+summary(filter(prism.dat, Site %in% c("KinneyHill", "ApachePeak"))$MAP) # 288
+summary(filter(prism.dat, Site == "LomaVerde")$MAP) # 360
+
+# Precip percent deviation
+dat.precip <- dat %>% 
+  select(Year, Site, Transect, Plot, Prev_year_precip, Perc_dev, MAP) %>% 
+  distinct(.keep_all = TRUE) 
 
 
 # Aspects per site --------------------------------------------------------
