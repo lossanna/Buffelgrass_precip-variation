@@ -375,6 +375,83 @@ dat.precip.join <- dat %>%
   select(Date, Year, Site, Transect, Plot, Prev_year_precip, Perc_dev, MAP) %>% 
   distinct(.keep_all = TRUE) 
 
+# Precip: scatterplot 
+dat.precip.join %>% 
+  ggplot(aes(x = Date, y = Prev_year_precip, color = Site)) +
+  geom_point() +
+  theme_bw() +
+  labs(x = NULL,
+       y = "Previous year precip (mm)",
+       title = "Precipitation conditions") +
+  theme(axis.text.x = element_text(color = "black")) +
+  theme(legend.title = element_blank())
+
+summary(dat.precip.join$Prev_year_precip)
+
+#   Percent deviation
+dat.precip.join %>% 
+  ggplot(aes(x = Date, y = Perc_dev, color = Site)) +
+  geom_point() +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = NULL,
+       y = "Percent deviation from normals (%)",
+       title = "Precipitation conditions") +
+  theme(axis.text.x = element_text(color = "black")) +
+  theme(legend.title = element_blank()) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+
+summary(dat.precip.join$Perc_dev)
+
+
+# Create df of average for precip by site
+precip.avg.site <- dat.precip.join %>% 
+  group_by(Year, Site) %>% 
+  summarise(Perc_dev_avg = mean(Perc_dev),
+            Prev_year_precip_avg = mean(Prev_year_precip),
+            .groups = "keep")
+
+map.avg.all <- dat.precip.join %>% 
+  select(Site, Transect, MAP) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  group_by(Site) %>% 
+  summarise(MAP_avg = mean(MAP))
+map.avg.all
+
+# Line graph of averages across sites
+precip.site.all <- precip.avg.site %>% 
+  ggplot(aes(x = Year, y = Prev_year_precip_avg)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~Site) +
+  theme_bw() +
+  labs(x = NULL,
+       y = "Previous year precip (mm)",
+       title = "Precipitation conditions") +
+  theme(axis.text.x = element_text(color = "black")) +
+  geom_hline(data = map.avg.all, 
+             aes(yintercept = MAP_avg), 
+             linetype = "dashed", color = "red")
+precip.site.all
+
+#   Percent deviation
+precip.site.dev.all <- precip.avg.site %>% 
+  ggplot(aes(x = Year, y = Perc_dev_avg)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~Site) +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = NULL,
+       y = "Percent deviation from normals (%)",
+       title = "Precipitation conditions") +
+  theme(axis.text.x = element_text(color = "black")) +
+  geom_hline(yintercept = 0, 
+             linetype = "dashed", color = "red") 
+precip.site.dev.all
+
 
 ## Culm, density, cover change --------------------------------------------
 
@@ -415,15 +492,15 @@ plot.avg.site <- plot.change.join %>%
             Prev_year_precip_avg = mean(Prev_year_precip),
             .groups = "keep")
 
-map.avg <- plot.change.join %>% 
+map.avg.change <- plot.change.join %>% 
   select(Site, Transect, MAP) %>% 
   distinct(.keep_all = TRUE) %>% 
   group_by(Site) %>% 
   summarise(MAP_avg = mean(MAP))
-map.avg
+map.avg.change
 
 # Line graph of averages across sites
-precip.site <- plot.avg.site %>% 
+precip.site.change <- plot.avg.site %>% 
   ggplot(aes(x = Year, y = Prev_year_precip_avg)) +
   geom_point() +
   geom_line() +
@@ -433,10 +510,10 @@ precip.site <- plot.avg.site %>%
        y = "Previous year precip (mm)",
        title = "Precipitation conditions") +
   theme(axis.text.x = element_text(color = "black")) +
-  geom_hline(data = map.avg, 
+  geom_hline(data = map.avg.change, 
              aes(yintercept = MAP_avg), 
              linetype = "dashed", color = "red")
-precip.site
+precip.site.change
 
 #   Percent deviation
 plot.avg.site %>% 
@@ -2859,7 +2936,7 @@ dev.off()
 
 
 
-## Precip plot ------------------------------------------------------------
+## Precip -----------------------------------------------------------------
 
 # Combined precip plot for density, cover, survival, no CI
 tiff("figures/2026-02_draft-figures-revision1.2/Precip-combined_density-cover-survival.tiff",
@@ -2870,8 +2947,17 @@ ggarrange(bgden.precip, bgcov.precip, survival.precip,
 dev.off()
 
 
+# Averages by site
+tiff("figures/2026-02_draft-figures-revision1.2/Precip-by-site.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+precip.site.all
+dev.off()
 
-
+# Percent deviation by site
+tiff("figures/2026-02_draft-figures-revision1.2/Precip-deviation-by-site.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+precip.site.dev.all
+dev.off()
 
 save.image("RData/13.1_draft-figs-for-lm-revision1.2.RData")
 
