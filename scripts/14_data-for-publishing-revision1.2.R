@@ -21,7 +21,7 @@ prism.dat <- prism.dat.raw %>%
 
 # Actual values
 dat <- dat.raw %>% 
-  select(Year, Site, Transect, Plot, Plant_ID, Aspect, PlotSlope, Prev_year_precip, Perc_dev,
+  select(Year, Site, Transect, Plot, Plant_ID, Aspect, PlotSlope, Prev_year_precip, Perc_dev, MAP,
          Total_Live_Culms, Reproductive_culms, BGDensity, BGCover, ShrubCover, HerbCover) %>% 
   filter(Aspect != "flat") %>% 
   rename(ReproductiveCulms = Reproductive_culms,
