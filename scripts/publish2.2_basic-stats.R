@@ -124,3 +124,4 @@ summary(dat$HerbCover)
 # For supplemental
 save(actual.summary.year2,
      file = "RData/publish2.2_actual-summary.RData")
+
