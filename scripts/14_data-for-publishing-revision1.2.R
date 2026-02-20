@@ -1,5 +1,5 @@
 # Created: 2026-02-05
-# Updated: 2026-02-05
+# Updated: 2026-02-20
 
 # Purpose: Create data for publishing, version revision1.2.
 
@@ -21,8 +21,8 @@ prism.dat <- prism.dat.raw %>%
 
 # Actual values
 dat <- dat.raw %>% 
-  select(Year, Site, Transect, Plot, Plant_ID, Aspect, PlotSlope, Prev_year_precip,
-         Reproductive_culms, Total_Live_Culms, BGDensity, BGCover, ShrubCover, HerbCover) %>% 
+  select(Year, Site, Transect, Plot, Plant_ID, Aspect, PlotSlope, Prev_year_precip, Perc_dev,
+         Total_Live_Culms, Reproductive_culms, BGDensity, BGCover, ShrubCover, HerbCover) %>% 
   filter(Aspect != "flat") %>% 
   rename(ReproductiveCulms = Reproductive_culms,
          TotalCulms = Total_Live_Culms)
@@ -30,7 +30,7 @@ dat <- dat.raw %>%
 # Culm change
 culm.change <- culm.change.raw %>% 
   select(Year, Site, Transect, Plot, Plant_ID, Aspect, PlotSlope, Prev_year_precip,
-         Change_Reproductive_culms, Change_Total_Live_Culms, Change_BGDensity, Change_BGCover,
+        Change_Total_Live_Culms, Change_Reproductive_culms, Change_BGDensity, Change_BGCover,
          Change_ShrubCover, Change_HerbCover, Init_BGDensity, Init_BGCover,
          Init_ShrubCover, Init_HerbCover) %>% 
   filter(Aspect != "flat") %>% 
