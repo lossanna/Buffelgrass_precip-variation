@@ -1,5 +1,5 @@
 # Created: 2026-02-04
-# Updated: 2026-02-13
+# Updated: 2026-02-19
 
 # Purpose: Graph data to accompany 12.1.R of revision1.2 linear models (uses year-to-year-change
 #   as response variable and included initial BG density, shrub, and herb conditions).
@@ -2747,18 +2747,18 @@ tiff("figures/2026-02_draft-figures-revision1.2/BG-cover-change_aspect.tiff",
 bgcov.aspect
 dev.off()
 
-# BG cover change vs. Change_ShrubCover
-tiff("figures/2026-02_draft-figures-revision1.2/BG-cover-change_shrub-cover-change.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-bgcov.shrub
-dev.off()
-
 
 # Not significant
 # BG cover change vs. PlotSlope
 tiff("figures/2026-02_draft-figures-revision1.2/BG-cover-change_plot-slope.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.slope
+dev.off()
+
+# BG cover change vs. Change_ShrubCover
+tiff("figures/2026-02_draft-figures-revision1.2/BG-cover-change_shrub-cover-change.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgcov.shrub
 dev.off()
 
 # BG cover change vs. Change_HerbCover
@@ -2779,6 +2779,23 @@ tiff("figures/2026-02_draft-figures-revision1.2/BG-cover-change_herb-cover-chang
 bgcov.herb.precip
 dev.off()
 
+# BG cover change vs. Init_BGDensity
+tiff("figures/2026-02_draft-figures-revision1.2/BG-cover-change_initial-BG-density.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgcov.inbgden
+dev.off()
+
+# BG cover change vs. Init_ShrubCover
+tiff("figures/2026-02_draft-figures-revision1.2/BG-cover-change_initial-shrub-cover.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgcov.inshrub
+dev.off()
+
+# BG cover change vs. Init_HerbCover
+tiff("figures/2026-02_draft-figures-revision1.2/BG-cover-change_initial-herb-cover.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgcov.inherb
+dev.off()
 
 
 ## Survival ---------------------------------------------------------------
@@ -2796,6 +2813,12 @@ tiff("figures/2026-02_draft-figures-revision1.2/Survival_BG-density.tiff",
 survival.bgden
 dev.off()
 
+# Survival vs. ShrubCover
+tiff("figures/2026-02_draft-figures-revision1.2/Survival_shrub-cover.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+survival.shrub
+dev.off()
+
 
 # Not significant
 # Survival by Aspect 
@@ -2810,12 +2833,6 @@ tiff("figures/2026-02_draft-figures-revision1.2/Survival_plot-slope.tiff",
 survival.slope
 dev.off()
 
-# Survival vs. ShrubCover
-tiff("figures/2026-02_draft-figures-revision1.2/Survival_shrub-cover.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-survival.shrub
-dev.off()
-
 # Survival vs. HerbCover
 tiff("figures/2026-02_draft-figures-revision1.2/Survival_herb-cover.tiff",
      units = "in", height = 4, width = 5, res = 150)
@@ -2826,6 +2843,12 @@ dev.off()
 tiff("figures/2026-02_draft-figures-revision1.2/Survival_BG-density-and-precip-interaction.tiff",
      units = "in", height = 4, width = 6, res = 150)
 survival.bgden.precip
+dev.off()
+
+# Survival interaction of precip*shrub
+tiff("figures/2026-02_draft-figures-revision1.2/Survival_shrub-cover-and-precip-interaction.tiff",
+     units = "in", height = 4, width = 6, res = 150)
+survival.shrub.precip
 dev.off()
 
 # Survival interaction of precip*herb
