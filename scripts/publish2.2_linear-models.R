@@ -1,8 +1,9 @@
-# Created: 2026-02-04
-# Updated: 2026-02-06
+# Created: 2026-02-19
+# Updated: 2026-02-19
 
-# Purpose: Rerun models and include initial BG density, shrub cover, and herb cover values
-#   as explanatory variables.
+# Purpose: Write script for finalized published model results (revision1.2).
+
+# Identical to 12.1_linear-models-revision1.2.R.
 
 library(tidyverse)
 library(performance)
@@ -13,15 +14,14 @@ library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
-dat <- read_csv("data/cleaned/11.1_demography-data_clean.csv")
-culm.change.raw <- read_csv("data/cleaned/11.1_change-in-culm-density-cover_clean.csv")
-survival.dat <- read_csv("data/cleaned/11.2_survival-data_clean.csv")
+culm.change.raw <- read_csv("data/publish2.2/culm-data.csv")
+plot.change.raw <- read_csv("data/publish2.2/plot-data.csv")
+survival.dat.raw <- read_csv("data/publish2.2/survival-data.csv")
 
 # Data wrangling ----------------------------------------------------------
 
 # Center and scale numeric variables for culm change data
-culm.change.flat.rm <- culm.change.raw %>% 
-  filter(Aspect != "flat") %>% 
+culm.change <- culm.change.raw %>% 
   mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          Change_BGDensity_scaled = scale(Change_BGDensity, scale = TRUE)[, 1],
@@ -35,9 +35,8 @@ culm.change.flat.rm <- culm.change.raw %>%
 
 # Center and scale numeric variables for plot-level data
 plot.change <- culm.change.raw %>% 
-  select(-Plant_ID, -Change_Reproductive_culms, -Change_Total_Live_Culms) %>% 
+  select(-Plant_ID, -Change_ReproductiveCulms, -Change_TotalCulms) %>% 
   distinct(.keep_all = TRUE) %>% 
-  filter(Aspect != "flat") %>% 
   mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
@@ -50,8 +49,7 @@ plot.change <- culm.change.raw %>%
 
 
 # Center and scale numeric variables for survival data
-dat.survival <- survival.dat %>% 
-  filter(Aspect != "flat") %>% 
+dat.survival <- survival.dat.raw %>% 
   mutate(Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
          PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          ShrubCover_scaled = scale(ShrubCover, center = TRUE, scale = TRUE)[, 1],
@@ -63,8 +61,8 @@ dat.survival <- survival.dat %>%
 
 # Total culm change -------------------------------------------------------
 
-# Version 1: Initial conditions as numeric, nested Site/Transect
-total1 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
+# Initial conditions as numeric, nested Site/Transect
+total <- lmer(Change_TotalCulms ~ Prev_year_precip_scaled +  
                  Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
                  Change_ShrubCover_scaled + Change_HerbCover_scaled +
                  Prev_year_precip_scaled * Change_BGDensity_scaled +
@@ -72,20 +70,20 @@ total1 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +
                  Prev_year_precip_scaled * Change_HerbCover_scaled +
                  Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
                  (1 | Site / Transect),
-               data = culm.change.flat.rm)
-summary(total1)
-r2(total1) # marginal: 0.128; conditional: 0.416
-res.total1 <- simulateResiduals(total1)
-plotQQunif(res.total1)
-plotResiduals(res.total1) 
-check_collinearity(total1)
+               data = culm.change)
+summary(total)
+r2(total) # marginal: 0.128; conditional: 0.416
+res.total <- simulateResiduals(total)
+plotQQunif(res.total)
+plotResiduals(res.total) 
+check_collinearity(total)
 
-#   Predicted vs. observed 
-total1.pred <- estimate_expectation(total1)
-total1.pred$Change_Total_Live_Culms <- culm.change.flat.rm$Change_Total_Live_Culms
+# Predicted vs. observed 
+total.pred <- estimate_expectation(total)
+total.pred$Change_TotalCulms <- culm.change$Change_TotalCulms
 
-total1.pred.plot <- total1.pred %>% 
-  ggplot(aes(x = Change_Total_Live_Culms, y = Predicted)) +
+total.pred.plot <- total.pred %>% 
+  ggplot(aes(x = Change_TotalCulms, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   geom_hline(yintercept = 0,
@@ -97,31 +95,15 @@ total1.pred.plot <- total1.pred %>%
   ggtitle("Total culm change model, predicted vs. observed") +
   xlab(expression(Delta ~ "Total live culms [observed]")) +
   theme_bw()
-total1.pred.plot
+total.pred.plot
 
-
-# Version 2: Initial conditions as numeric, nested Site/Transect/Plant_ID
-total2 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
-                 Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
-                 Change_ShrubCover_scaled + Change_HerbCover_scaled +
-                 Prev_year_precip_scaled * Change_BGDensity_scaled +
-                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
-                 Prev_year_precip_scaled * Change_HerbCover_scaled +
-                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
-                 (1 | Site / Transect / Plant_ID),
-               data = culm.change.flat.rm)
-summary(total2)
-r2(total2) # marginal: 0.130; conditional: 0.461
-res.total2 <- simulateResiduals(total2)
-plotQQunif(res.total2)
-plotResiduals(res.total2) 
 
 
 
 # Reproductive culm change ------------------------------------------------
 
 # Version 1: Initial conditions as numeric, nested Site/Transect
-repro1 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +  
+repro1 <- lmer(Change_ReproductiveCulms ~ Prev_year_precip_scaled +  
                  Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
                  Change_ShrubCover_scaled + Change_HerbCover_scaled +
                  Prev_year_precip_scaled * Change_BGDensity_scaled +
@@ -129,7 +111,7 @@ repro1 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +
                  Prev_year_precip_scaled * Change_HerbCover_scaled +
                  Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
                  (1 | Site / Transect),
-               data = culm.change.flat.rm)
+               data = culm.change)
 summary(repro1)
 r2(repro1) # marginal: 0.100; conditional: 0.305
 res.repro1 <- simulateResiduals(repro1)
@@ -139,10 +121,10 @@ check_collinearity(repro1)
 
 #   Predicted vs. observed 
 repro1.pred <- estimate_expectation(repro1)
-repro1.pred$Change_Reproductive_culms <- culm.change.flat.rm$Change_Reproductive_culms
+repro1.pred$Change_ReproductiveCulms <- culm.change$Change_ReproductiveCulms
 
 repro1.pred.plot <- repro1.pred %>% 
-  ggplot(aes(x = Change_Reproductive_culms, y = Predicted)) +
+  ggplot(aes(x = Change_ReproductiveCulms, y = Predicted)) +
   geom_point(alpha = 0.4) +
   geom_abline(slope = 1, intercept = 0, color = "blue", linewidth = 1) +
   geom_hline(yintercept = 0,
@@ -158,7 +140,7 @@ repro1.pred.plot
 
 
 # Version 2: Initial conditions as numeric, nested Site/Transect/Plant_ID
-repro2 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +  
+repro2 <- lmer(Change_ReproductiveCulms ~ Prev_year_precip_scaled +  
                  Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
                  Change_ShrubCover_scaled + Change_HerbCover_scaled +
                  Prev_year_precip_scaled * Change_BGDensity_scaled +
@@ -166,7 +148,7 @@ repro2 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +
                  Prev_year_precip_scaled * Change_HerbCover_scaled +
                  Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
                  (1 | Site / Transect / Plant_ID),
-               data = culm.change.flat.rm)
+               data = culm.change)
 summary(repro2) # singular fit issues
 r2(repro2) # marginal: 0.125; conditional: can't calculate
 res.repro2 <- simulateResiduals(repro2)
@@ -341,7 +323,7 @@ plotResiduals(res.survival2)
 # Total change
 tiff("figures/2026-02_draft-figures-revision1.2/Total-change_predicted-vs-observed.tiff",
      units = "in", height = 4, width = 6, res = 150)
-total1.pred.plot
+total.pred.plot
 dev.off()
 
 # Repro change
@@ -372,8 +354,8 @@ dev.off()
 # Save --------------------------------------------------------------------
 
 # Needed for graphs
-save(culm.change.flat.rm, plot.change, dat.survival, 
-     total1, repro1, bgden1, bgcov1, survival1,
+save(culm.change, plot.change, dat.survival, 
+     total, repro1, bgden1, bgcov1, survival1,
      file = "RData/12.1_data-and-models-revision1.2.RData")
 
 
