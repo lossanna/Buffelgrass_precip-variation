@@ -1,7 +1,7 @@
 # Created: 2026-02-03
 # Updated: 2026-02-03
 
-# Purpose: Create main figures for publishing (both low and high quality versions) [revision 1].
+# Purpose: Create main figures for publishing (both low and high quality versions) [revision 1.1].
 
 library(tidyverse)
 library(insight)
@@ -10,7 +10,7 @@ library(ggpubr)
 
 # Load data ---------------------------------------------------------------
 
-load("RData/publish2_data-and-models.RData")
+load("RData/publish2.1_data-and-models.RData")
 
 
 # Data wrangling ----------------------------------------------------------
@@ -284,33 +284,33 @@ bgden.shrub.precip
 # Write out figures -------------------------------------------------------
 
 # Figure 1
-tiff("figures/publish2-figures/Figure1_150dpi.tiff",
+tiff("figures/publish2.1-figures/Figure1_150dpi.tiff",
      units = "in", height = 6, width = 6, res = 150)
 total.shrub.precip
 dev.off()
-tiff("figures/publish2-figures/Figure1_600dpi.tiff",
+tiff("figures/publish2.1-figures/Figure1_600dpi.tiff",
      units = "in", height = 6, width = 6, res = 600)
 total.shrub.precip
 dev.off()
 
 # Figure 2
-tiff("figures/publish2-figures/Figure2_150dpi.tiff",
+tiff("figures/publish2.1-figures/Figure2_150dpi.tiff",
      units = "in", height = 6, width = 6, res = 150)
 total.herb.precip
 dev.off()
-tiff("figures/publish2-figures/Figure2_600dpi.tiff",
+tiff("figures/publish2.1-figures/Figure2_600dpi.tiff",
      units = "in", height = 6, width = 6, res = 600)
 total.herb.precip
 dev.off()
 
 # Figure 3
-tiff("figures/publish2-figures/Figure3_165dpi.tiff",
+tiff("figures/publish2.1-figures/Figure3_165dpi.tiff",
      units = "in", height = 6, width = 8, res = 165)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
           labels = c("a", "b", "c"))
 dev.off()
-tiff("figures/publish2-figures/Figure3_600dpi.tiff",
+tiff("figures/publish2.1-figures/Figure3_600dpi.tiff",
      units = "in", height = 6, width = 8, res = 600)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
@@ -318,14 +318,14 @@ ggarrange(bgden.precip, bgcov.precip, survival.precip,
 dev.off()
 
 # Figure 4
-tiff("figures/publish2-figures/Figure4_150dpi.tiff",
+tiff("figures/publish2.1-figures/Figure4_150dpi.tiff",
      units = "in", height = 4, width = 6, res = 150)
 bgden.shrub.precip
 dev.off()
-tiff("figures/publish2-figures/Figure4_600dpi.tiff",
+tiff("figures/publish2.1-figures/Figure4_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 bgden.shrub.precip
 dev.off()
 
 
-save.image("RData/publish2_main-figures.RData")
+save.image("RData/publish2.1_main-figures.RData")

@@ -1,7 +1,7 @@
 # Created: 2026-02-03
 # Updated: 2026-02-03
 
-# Purpose: Write script for finalized published model results (revision 1).
+# Purpose: Write script for finalized published model results (revision 1.1).
 
 # Identical to 09.2_linear-models-revision1.R.
 
@@ -16,9 +16,9 @@ library(modelbased)
 
 # Load data ---------------------------------------------------------------
 
-culm.change.raw <- read_csv("data/publish/culm-data.csv")
-plot.change.raw <- read_csv("data/publish/plot-data.csv")
-survival.dat.raw <- read_csv("data/publish/survival-data.csv")
+culm.change.raw <- read_csv("data/publish1/culm-data.csv")
+plot.change.raw <- read_csv("data/publish1/plot-data.csv")
+survival.dat.raw <- read_csv("data/publish1/survival-data.csv")
 
 # Data wrangling ----------------------------------------------------------
 
@@ -240,7 +240,7 @@ survival.pred.plot
 # Needed for graphs
 save(culm.change, plot.change, survival.dat,
      total, repro, bgden, bgcov, survival, 
-     file = "RData/publish2_data-and-models.RData")
+     file = "RData/publish2.1_data-and-models.RData")
 
 
-save.image("RData/publish2_linear-models.RData")
+save.image("RData/publish2.1_linear-models.RData")

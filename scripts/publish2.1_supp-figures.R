@@ -1,7 +1,7 @@
 # Created: 2026-02-03
 # Updated: 2026-02-03
 
-# Purpose: Create supplemental figures for publishing (both low and high quality versions) [revision 1].
+# Purpose: Create supplemental figures for publishing (both low and high quality versions) [revision 1.1].
 
 # Had to use ggeffects version for Aspect plots because modelbased version isn't working
 #   for some reason (I think it has something to do with the nested random effect?)
@@ -15,7 +15,7 @@ library(ggpubr)
 
 # Load data ---------------------------------------------------------------
 
-load("RData/publish2_data-and-models.RData")
+load("RData/publish2.1_data-and-models.RData")
 
 
 # Data wrangling ----------------------------------------------------------
@@ -456,19 +456,19 @@ total.cover
 # Write out figures -------------------------------------------------------
 
 # Figure S1
-tiff("figures/publish2-figures/FigureS1_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS1_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 repro.shrub.precip
 dev.off()
 
 # Figure S2
-tiff("figures/publish2-figures/FigureS2_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS2_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 repro.herb.precip
 dev.off()
 
 # Figure S3
-tiff("figures/publish2-figures/FigureS3_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS3_600dpi.tiff",
      units = "in", height = 3.5, width = 9, res = 600)
 ggarrange(shrub.change.precip, herb.change.precip,
           ncol = 2, nrow = 1,
@@ -476,55 +476,55 @@ ggarrange(shrub.change.precip, herb.change.precip,
 dev.off()
 
 # Figure S4
-tiff("figures/publish2-figures/FigureS4_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS4_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 total.bgden.precip
 dev.off()
 
 # Figure S5
-tiff("figures/publish2-figures/FigureS5_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS5_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 repro.bgden.precip
 dev.off()
 
 # Figure S6
-tiff("figures/publish2-figures/FigureS6_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS6_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 total.aspect
 dev.off()
 
 # Figure S7
-tiff("figures/publish2-figures/FigureS7_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS7_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 repro.aspect
 dev.off()
 
 # Figure S8
-tiff("figures/publish2-figures/FigureS8_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS8_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 bgden.aspect
 dev.off()
 
 # Figure S9
-tiff("figures/publish2-figures/FigureS9_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS9_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 bgcov.aspect
 dev.off()
 
 # Figure S10
-tiff("figures/publish2-figures/FigureS10_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS10_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 bgcov.shrub.precip
 dev.off()
 
 # Figure S11
-tiff("figures/publish2-figures/FigureS11_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS11_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 density.cover
 dev.off()
 
 # Figure S12
-tiff("figures/publish2-figures/FigureS12_600dpi.tiff",
+tiff("figures/publish2.1-figures/FigureS12_600dpi.tiff",
      units = "in", height = 4, width = 5, res = 600)
 total.cover
 dev.off()
@@ -540,8 +540,8 @@ save(repro.shrub.precip, repro.herb.precip,
      total.aspect, repro.aspect, 
      bgden.aspect, bgcov.aspect,
      bgcov.shrub.precip, density.cover, total.cover,
-     file = "RData/publish2_figsS1-S12.RData")
+     file = "RData/publish2.1_figsS1-S12.RData")
 
 
-save.image("RData/publish2_supp-figures.RData")
+save.image("RData/publish2.1_supp-figures.RData")
 
