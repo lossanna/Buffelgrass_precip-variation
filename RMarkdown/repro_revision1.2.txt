@@ -1,0 +1,17 @@
+Coefficient	Estimate	Std. Error	df	t value	Pr(>|t|)
+Intercept	10.52774	5.02894	4.08865	2.093	0.10292
+Previous year precipitation	-0.78486    0.94613 1122.28311  -0.830  0.40697
+Aspect, N	4.53389	3.93244	16.69928	1.153	0.26517
+Aspect, S	-3.28699	2.87943	17.35433	-1.142	0.26915
+Aspect, SW	10.38755	3.88828	17.31964	2.672	0.01592*
+Aspect, W	1.48971	2.75739	16.36345	0.540	0.59629
+Plot slope	-0.03354	0.79615	70.88934	-0.042	0.96651
+Change in BG density	-2.30663	0.85934	974.17164	-2.684	0.00739**
+Change in shrub cover	1.50990	0.68213	1130.25569	2.213	0.02706*
+Change in herb cover	2.91011	0.68657	1121.36034	4.239	2.43e-05***
+Initial BG density	-1.79555	0.83026	100.41982	-2.163	0.03294*
+Initial shrub cover	-0.42993	0.70080	781.71922	-0.613	0.53974
+Initial herb cover	1.15812	0.82227	148.22307	1.408	0.16109
+Change in BG density * Previous year precip	-1.59968	0.95139	148.25168	-1.681	0.09479
+Change in shrub cover * Previous year precip	-0.76535	0.73938	1047.35479	-1.035	0.30085
+Change in herb cover * Previous year precip	-0.41514	0.66024	520.26126	-0.629	0.52978
