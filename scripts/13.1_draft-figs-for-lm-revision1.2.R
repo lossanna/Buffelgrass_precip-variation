@@ -1,5 +1,5 @@
 # Created: 2026-02-04
-# Updated: 2026-02-19
+# Updated: 2026-03-03
 
 # Purpose: Graph data to accompany 12.1.R of revision1.2 linear models (uses year-to-year-change
 #   as response variable and included initial BG density, shrub, and herb conditions).
@@ -642,13 +642,13 @@ insight.total.slope$PlotSlope <- unscaled.slope$PlotSlope
 # Graph
 total.slope <- dat.culm %>% 
   ggplot(aes(x = PlotSlope, y = Change_Total_Live_Culms)) +
-  geom_point() +
+  geom_point(alpha = 0.5) +
   geom_line(data = insight.total.slope,
             aes(y = Change_Total_Live_Culms), linewidth = 1,
             color = "purple3") +
   geom_ribbon(data = insight.total.slope,
               aes(ymin = Change_Total_Live_Culms - CI, ymax = Change_Total_Live_Culms + CI),
-              alpha = 0.2) +
+              alpha = 0.3) +
   theme_bw() +
   xlab("Plot slope (\u00B0)") +
   ggtitle("Change in total culm count vs. slope") +
