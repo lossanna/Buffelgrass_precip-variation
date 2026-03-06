@@ -250,6 +250,21 @@ survival.pred.plot <- survival.pred %>%
 survival.pred.plot
 
 
+# Simple linear regression ------------------------------------------------
+
+# Shrub vs. precip
+summary(lm(Change_ShrubCover ~ Prev_year_precip, data = plot.change))
+
+# Herb vs. precip
+summary(lm(Change_HerbCover ~ Prev_year_precip, data = plot.change))
+
+# Total vs density
+summary(lm(Change_TotalCulms ~ Change_BGDensity, data = culm.change))
+
+# Total vs cover
+summary(lm(Change_TotalCulms ~ Change_BGCover, data = culm.change))
+
+
 
 # Save --------------------------------------------------------------------
 
