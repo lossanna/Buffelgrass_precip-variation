@@ -9,11 +9,11 @@ library(knitr)
 library(kableExtra)
 library(ggpubr)
 load("../RData/publish2.2_actual-summary.RData")
-load("../RData/publish2.2_figsS1-S12.RData")
+load("../RData/publish2.2_figsS1-S13.RData")
 ```
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
-Last updated: 2026-03-02  
+Last updated: 2026-03-16  
 
 This document includes all the supplemental tables and figures that accompany "Precipitation moderates associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
@@ -30,6 +30,7 @@ actual.summary.year2 %>%
 ```
 
 
+\newpage
 ## Table S2. Total culms model 
 Model coefficients of the buffelgrass culm count model (response variable: year-to-year change in total number of culms). Note that the reference level for Aspect is east (E). Marginal R^2^ = 0.128; conditional R^2^ = 0.416.
 ```{r Table S2}
@@ -44,6 +45,7 @@ total_avg %>%
 ```
 
 
+\newpage
 ## Table S3. Reproductive culms model 
 Model coefficients of the buffelgrass reproductive culm count model (response variable: year-to-year change in number of reproductive culms). Note that the reference level for Aspect is east (E). Marginal R^2^ = 0.100; conditional R^2^ = 0.305.
 ```{r Table S3}
@@ -132,27 +134,18 @@ ggarrange(shrub.change.precip, herb.change.precip,
 
 
 ## Figure S5
-
-
-
-## Figure S4
-```{r Fig S4}
-total.bgden.precip
-```
-**Figure S4.** Relationship between year-to-year change in buffelgrass plot density and year-to-year change in total buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in buffelgrass plot density while horizontal line indicates no change in the number of buffelgrass culms. 
-
-## Figure S5
 ```{r Fig S5}
-repro.herb.precip
+total.inbgden
 ```
-**Figure S5.** Relationship between year-to-year change in buffelgrass plot density and year-to-year change in reproductive buffelgrass culm count, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in buffelgrass plot density while horizontal line indicates no change in the number of reproductive buffelgrass culms. 
+**Figure S5.** Relationship between initial buffelgrass density of the plot and year-to-year change in total buffelgrass culm count. Purple line represents model-predicted values. Horizontal red dashed line indicates no change in the number of buffelgrass culms. 
 
 
 ## Figure S6
 ```{r Fig S6}
-total.aspect
+repro.inbgden
 ```
-**Fig. S6.** Effects of aspect on year-to-year change in total buffelgrass culm count. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in the number of buffelgrass culms. 
+**Figure S6.** Relationship between initial buffelgrass density of the plot and year-to-year change in buffelgrass reproductive culm count. Purple line represents model-predicted values. Horizontal red dashed line indicates no change in the number of reproductive buffelgrass culms. 
+
 
 ## Figure S7
 ```{r Fig S7}
@@ -165,29 +158,38 @@ repro.aspect
 ```{r Fig S8}
 bgden.aspect
 ```
-**Fig. S8.** Effects of aspect on year-to-year change in buffelgrass plot density. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass density.
+**Fig. S8.** Effects of aspect on year-to-year change in buffelgrass density. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass density.
 
 ## Figure S9
 ```{r Fig S9}
 bgcov.aspect
 ```
-**Fig. S9.** Effects of aspect on year-to-year change in buffelgrass plot cover. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass cover.
+**Fig. S9.** Effects of aspect on year-to-year change in buffelgrass cover. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass cover.
+
 
 ## Figure S10
-```{r Fig S10}
-bgcov.shrub.precip
+```{r Fig S10, message=FALSE}
+density.cover
 ```
-**Figure S10.** Relationship between year-to-year change in native shrub cover and year-to-year change in buffelgrass plot cover, moderated by precipitation. Colored lines represent model-predicted values under the wettest precipitation conditions experienced (purple line), the driest conditions (yellow line), and average conditions (green line). Vertical red dashed line indicates no change in shrub cover while horizontal line indicates no change in buffelgrass cover.
+**Figure S10.** Simple linear regression of year-to-year change in buffelgrass plot density as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass density.
+
 
 ## Figure S11
 ```{r Fig S11, message=FALSE}
-density.cover
+total.cover
 ```
-**Figure S11.** Simple linear regression of year-to-year change in buffelgrass plot density as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass density.
+**Figure S11.** Simple linear regression of year-to-year change in buffelgrass total culm count as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass total culm count.
 
 
 ## Figure S12
-```{r Fig S12, message=FALSE}
-total.cover
+```{r Fig S12}
+survival.bgden
 ```
-**Figure S12.** Simple linear regression of year-to-year change in buffelgrass total culm count as a function of year-to-year change in buffelgrass plot cover, pooling all sampling locations and times. Vertical red dashed line indicates no change in buffelgrass cover while horizontal line indicates no change in buffelgrass total culm count.
+**Figure S12.** Relationship between buffelgrass seedling survival and buffelgrass density in the plot. Purple line represents model-predicted values.
+
+
+## Figure S13
+```{r Fig S13}
+survival.shrub
+```
+**Figure S13.** Relationship between buffelgrass seedling survival and native shrub cover in the plot. Purple line represents model-predicted values.

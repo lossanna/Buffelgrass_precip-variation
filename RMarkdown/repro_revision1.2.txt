@@ -1,6 +1,6 @@
 Coefficient	Estimate	Std. Error	df	t value	Pr(>|t|)
 Intercept	10.52774	5.02894	4.08865	2.093	0.10292
-Previous year precipitation	-0.78486    0.94613 1122.28311  -0.830  0.40697
+Previous year precipitation	-0.78486	0.94613	1122.28311	-0.830	0.40697
 Aspect, N	4.53389	3.93244	16.69928	1.153	0.26517
 Aspect, S	-3.28699	2.87943	17.35433	-1.142	0.26915
 Aspect, SW	10.38755	3.88828	17.31964	2.672	0.01592*

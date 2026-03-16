@@ -1,7 +1,10 @@
 # Created: 2026-02-19
-# Updated: 2026-03-02
+# Updated: 2026-03-16
 
 # Purpose: Create supplemental figures for publishing (revision1.2).
+
+# Aspect graphs have to use ggeffects becvause for some reason the modelbased version
+#   doesn't work.
 
 library(tidyverse)
 library(insight)
@@ -286,3 +289,172 @@ repro.inbgden <- dat.culm %>%
              linetype = "dashed",
              color = "red")
 repro.inbgden
+
+
+
+# Figure S7: Repro, aspect ------------------------------------------------
+
+# Generate prediction & CI
+gg.repro.aspect <- predict_response(repro, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_ReproductiveCulms = predicted)
+
+# Graph (ggeffects version)
+repro.aspect <- dat.culm %>% 
+  ggplot(aes(x = Aspect, y = Change_ReproductiveCulms)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(alpha = 0.3) +
+  geom_point(data = gg.repro.aspect,
+             aes(x = Aspect, y = Change_ReproductiveCulms),
+             color = "purple3",
+             size = 2.5,
+             shape = 15) +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Buffelgrass reproductive culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+repro.aspect
+
+
+# Figure S8: Density, aspect ----------------------------------------------
+
+# Generate prediction & CI
+gg.bgden.aspect <- predict_response(bgden, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_BGDensity = predicted)
+
+# Graph 
+bgden.aspect <- dat.plot %>% 
+  ggplot(aes(x = Aspect, y = Change_BGDensity)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(alpha = 0.3) +
+  geom_point(data = gg.bgden.aspect,
+             aes(x = Aspect, y = Change_BGDensity),
+             color = "purple3",
+             size = 2.5,
+             shape = 15) +
+  theme_bw() +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals / ", m^2, ")"))) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgden.aspect
+
+
+
+# Figure S9: Cover, aspect ------------------------------------------------
+
+# Generate prediction & CI
+gg.bgcov.aspect <- predict_response(bgcov, terms = "Aspect") %>% 
+  rename(Aspect = x,
+         Change_BGCover = predicted)
+
+# Graph 
+bgcov.aspect <- dat.plot %>% 
+  ggplot(aes(x = Aspect, y = Change_BGCover)) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(alpha = 0.3) +
+  geom_point(data = gg.bgcov.aspect,
+             aes(x = Aspect, y = Change_BGCover),
+             color = "purple3",
+             size = 2.5,
+             shape = 15) +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Buffelgrass cover (%)")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgcov.aspect
+
+
+# Figure S10: Density vs. cover -------------------------------------------
+
+density.cover <- plot.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(x = expression(Delta ~ "Buffelgrass cover (%)"),
+       y = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
+density.cover
+
+
+
+# Figure S11: Total vs. cover ---------------------------------------------
+
+total.cover <- culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_TotalCulms)) +
+  geom_point(alpha = 0.5) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Total buffelgrass culm count"),
+       x = expression(Delta ~ "Buffelgrass cover (%)"))
+total.cover
+
+
+# Figure S12: Survival, BG density ----------------------------------------
+
+# Generate prediction and add scaled variable
+insight.survival.bgden <- get_datagrid(dat.survival.ex, by = c("BGDensity_scaled"),
+                                       length = 50)
+insight.survival.bgden$survival_prop <- get_predicted(survival, insight.survival.bgden)
+unscaled.bgden <- get_datagrid(dat.survival.unscaled, by = "BGDensity",
+                               length = 50) %>%
+  arrange(BGDensity)
+insight.survival.bgden$BGDensity <- unscaled.bgden$BGDensity
+
+# Graph
+survival.bgden <- dat.survival %>%
+  ggplot(aes(x = BGDensity, y = survival_prop)) +
+  geom_point() +
+  geom_line(data = insight.survival.bgden,
+            aes(y = survival_prop), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(x = expression(paste("Buffelgrass density (individuals / ", m^2, ")")),
+       y = "Proportion of surviving buffelgrass seedlings")
+survival.bgden
+
+
+# Figure S13: Survival, shrub ---------------------------------------------
+
+# Generate prediction and add scaled variable
+insight.survival.shrub <- get_datagrid(dat.survival.ex, by = c("ShrubCover_scaled"),
+                                       length = 50)
+insight.survival.shrub$survival_prop <- get_predicted(survival, insight.survival.shrub) 
+unscaled.shrub <- get_datagrid(dat.survival.unscaled, by = "ShrubCover",
+                               length = 50) %>%
+  arrange(ShrubCover)
+insight.survival.shrub$ShrubCover <- unscaled.shrub$ShrubCover
+
+# Graph
+survival.shrub <- dat.survival %>%
+  ggplot(aes(x = ShrubCover, y = survival_prop)) +
+  geom_point() +
+  geom_line(data = insight.survival.shrub,
+            aes(y = survival_prop), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(x = "Native shrub cover (%)",
+       y = "Proportion of surviving buffelgrass seedlings")
+survival.shrub
+
+
+# Save --------------------------------------------------------------------
+
+# Graphs only
+save(precip.site.all, repro.shrub.precip, repro.herb.precip, 
+     shrub.change.precip, herb.change.precip,
+     total.inbgden, repro.inbgden, repro.aspect,
+     bgden.aspect, bgcov.aspect,
+     density.cover, total.cover,
+     survival.bgden, survival.shrub,
+     file = "RData/publish2.2_figsS1-S13.RData")
+
+
+save.image("RData/publish2.2_supp-figures.RData")
