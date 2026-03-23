@@ -13,7 +13,7 @@ load("../RData/publish2.2_figsS1-S13.RData")
 ```
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
-Last updated: 2026-03-16  
+Last updated: 2026-03-23  
 
 This document includes all the supplemental tables and figures that accompany "Precipitation moderates associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert while local topography has less influence" by Ossanna et al. (2026).
 
@@ -151,20 +151,20 @@ repro.inbgden
 ```{r Fig S7}
 repro.aspect
 ```
-**Fig. S7.** Effects of aspect on year-to-year change in buffelgrass reproductive culm count. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in the number of reproductive buffelgrass culms. 
+**Fig. S7.** Relationship between aspect and year-to-year change in buffelgrass reproductive culm count. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in the number of reproductive buffelgrass culms. 
 
 
 ## Figure S8
 ```{r Fig S8}
 bgden.aspect
 ```
-**Fig. S8.** Effects of aspect on year-to-year change in buffelgrass density. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass density.
+**Fig. S8.** Relationship between aspect and year-to-year change in buffelgrass density. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass density.
 
 ## Figure S9
 ```{r Fig S9}
 bgcov.aspect
 ```
-**Fig. S9.** Effects of aspect on year-to-year change in buffelgrass cover. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass cover.
+**Fig. S9.** Relationship between aspect and year-to-year change in buffelgrass cover. Purple squares represent model-predicted averages. Horizontal red dashed line indicates no change in buffelgrass cover.
 
 
 ## Figure S10
