@@ -1,5 +1,5 @@
 # Created: 2026-02-04
-# Updated: 2026-02-06
+# Updated: 2026-03-23
 
 # Purpose: Rerun models and include initial BG density, shrub cover, and herb cover values
 #   as explanatory variables.
@@ -334,6 +334,22 @@ r2(survival2) # marginal: 0.488; conditional: 0.967
 res.survival2 <- simulateResiduals(survival2)
 plotQQunif(res.survival2)
 plotResiduals(res.survival2) 
+
+
+# Simple linear regression ------------------------------------------------
+
+# Shrub vs. precip
+summary(lm(Change_ShrubCover ~ Prev_year_precip_scaled, data = plot.change))
+
+# Herb vs. precip
+summary(lm(Change_HerbCover ~ Prev_year_precip_scaled, data = plot.change))
+
+# Total vs density
+summary(lm(Change_TotalCulms ~ Change_BGDensity_scaled, data = culm.change))
+
+# Total vs cover
+summary(lm(Change_TotalCulms ~ Change_BGCover_scaled, data = culm.change))
+
 
 
 # Write out predicted vs. observed graphs ---------------------------------

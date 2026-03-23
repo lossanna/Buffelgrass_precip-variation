@@ -1,5 +1,5 @@
 # Created: 2026-02-19
-# Updated: 2026-02-20
+# Updated: 2026-03-23
 
 # Purpose: Write script for finalized published model results (revision1.2).
 
@@ -253,16 +253,16 @@ survival.pred.plot
 # Simple linear regression ------------------------------------------------
 
 # Shrub vs. precip
-summary(lm(Change_ShrubCover ~ Prev_year_precip, data = plot.change))
+summary(lm(Change_ShrubCover ~ Prev_year_precip_scaled, data = plot.change))
 
 # Herb vs. precip
-summary(lm(Change_HerbCover ~ Prev_year_precip, data = plot.change))
+summary(lm(Change_HerbCover ~ Prev_year_precip_scaled, data = plot.change))
 
 # Total vs density
-summary(lm(Change_TotalCulms ~ Change_BGDensity, data = culm.change))
+summary(lm(Change_TotalCulms ~ Change_BGDensity_scaled, data = culm.change))
 
 # Total vs cover
-summary(lm(Change_TotalCulms ~ Change_BGCover, data = culm.change))
+summary(lm(Change_TotalCulms ~ Change_BGCover_scaled, data = culm.change))
 
 
 
