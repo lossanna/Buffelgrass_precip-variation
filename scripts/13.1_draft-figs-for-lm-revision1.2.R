@@ -2959,6 +2959,35 @@ tiff("figures/2026-02_draft-figures-revision1.2/Precip-deviation-by-site.tiff",
 precip.site.dev.all
 dev.off()
 
+
+
+## Simple linear regression -----------------------------------------------
+
+# Shrub vs. precip
+tiff("figures/2026-02_draft-figures-revision1.2/Shrub-change_precip.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+shrub.change.precip
+dev.off()
+
+# Herb vs. precip
+tiff("figures/2026-02_draft-figures-revision1.2/Herb-change_precip.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+herb.change.precip
+dev.off()
+
+# Total culm vs. cover
+tiff("figures/2026-02_draft-figures-revision1.2/Total-change_BG-cover-change.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+total.cover
+dev.off()
+
+# Density vs. cover
+tiff("figures/2026-02_draft-figures-revision1.2/BG-density-change_BG-cover-change.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+density.cover
+dev.off()
+
+
 save.image("RData/13.1_draft-figs-for-lm-revision1.2.RData")
 
 
