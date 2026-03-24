@@ -1,5 +1,5 @@
-# Created: 2026-02-04
-# Updated: 2026-03-03
+# Created: 2026-03-24
+# Updated: 2026-03-24
 
 # Purpose: Graph the slope * shrub interaction from the new test culm model 
 #   from revision v1.3.
