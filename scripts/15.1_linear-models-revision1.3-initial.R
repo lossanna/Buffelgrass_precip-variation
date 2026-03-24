@@ -1,11 +1,14 @@
 # Created: 2026-03-23
-# Updated: 2026-03-23
+# Updated: 2026-03-24
 
-# Purpose: Rerun models and include initial BG density, shrub cover, and herb cover values
-#   as explanatory variables (v1.2). Also add Aspect/Slope * precip interactions.
+# Purpose: Test total culm model with v1.2 additions (initial conditions), plus
+#   try adding Aspect/Slope * precip interactions, and attempt model selection.
 
-# Result: Aspect is too highly correlated with precip and shrub. Version 2 has kind of funky 
-#   residuals compared to v1.2, so I will stick with v1.2.
+# Results: 
+#   Aspect is too highly correlated with precip, shrub, and slope to include interactions. 
+#   Slope * precip creates sort of funky residuals that look worse than revision v1.2.
+#   Aspect probably shouldn't even be used as a predictor at all, given its unequal representation
+#     across sites - Loma Verde is the only site with SW, and it lacks E.
 
 library(tidyverse)
 library(performance)
@@ -13,12 +16,12 @@ library(DHARMa)
 library(lme4)
 library(lmerTest)
 library(modelbased)
+library(MuMIn)
 
 # Load data ---------------------------------------------------------------
 
 dat <- read_csv("data/cleaned/11.1_demography-data_clean.csv")
 culm.change.raw <- read_csv("data/cleaned/11.1_change-in-culm-density-cover_clean.csv")
-survival.dat <- read_csv("data/cleaned/11.2_survival-data_clean.csv")
 
 # Data wrangling ----------------------------------------------------------
 
@@ -36,32 +39,6 @@ culm.change.flat.rm <- culm.change.raw %>%
          Init_HerbCover_scaled = scale(Init_HerbCover, scale = TRUE)[, 1],
          Init_BGCover_scaled = scale(Init_BGCover, scale = TRUE)[, 1])
 
-# Center and scale numeric variables for plot-level data
-plot.change <- culm.change.raw %>% 
-  select(-Plant_ID, -Change_Reproductive_culms, -Change_Total_Live_Culms) %>% 
-  distinct(.keep_all = TRUE) %>% 
-  filter(Aspect != "flat") %>% 
-  mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
-         Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
-         Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
-         Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1],
-         Change_BGCover_scaled = scale(Change_BGCover, scale = TRUE)[, 1],
-         Init_BGDensity_scaled = scale(Init_BGDensity, scale = TRUE)[, 1],
-         Init_ShrubCover_scaled = scale(Init_ShrubCover, scale = TRUE)[, 1],
-         Init_HerbCover_scaled = scale(Init_HerbCover, scale = TRUE)[, 1],
-         Init_BGCover_scaled = scale(Init_BGCover, scale = TRUE)[, 1])
-
-
-# Center and scale numeric variables for survival data
-dat.survival <- survival.dat %>% 
-  filter(Aspect != "flat") %>% 
-  mutate(Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
-         PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
-         ShrubCover_scaled = scale(ShrubCover, center = TRUE, scale = TRUE)[, 1],
-         HerbCover_scaled = scale(HerbCover, center = TRUE, scale = TRUE)[, 1],
-         PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
-         BGDensity_scaled = scale(BGDensity, center = TRUE, scale = TRUE)[, 1]) %>% 
-  mutate(survival_prop = seedlings_surviving / remaining_toothpicks)
 
 
 # Total culm change -------------------------------------------------------
@@ -182,13 +159,43 @@ plotQQunif(res.total6)
 plotResiduals(res.total6) # looks kind of comparable to v1.2, only a little worse
 check_collinearity(total6)
 
+#   Model selection
+options(na.action = "na.fail")
+total6_set <- dredge(total6) # seems to have some convergence issues
+
+#   Examine best model
+total6_best.model <- get.models(total6_set, 1)[[1]]
+res.total6_best.model <- simulateResiduals(total6_best.model)
+plotQQunif(res.total6_best.model)
+plotResiduals(res.total6_best.model) # there is some kind of fitting failure
+
+
+
+# Version 7: Add Slope * shrub/herb interactions, drop Aspect
+total7 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
+                 PlotSlope_scaled + Change_BGDensity_scaled +
+                 Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                 Prev_year_precip_scaled * Change_BGDensity_scaled +
+                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                 Prev_year_precip_scaled * Change_HerbCover_scaled +
+                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
+                 Change_ShrubCover_scaled * PlotSlope_scaled +
+                 Change_HerbCover_scaled * PlotSlope_scaled +
+                 (1 | Site / Transect),
+               data = culm.change.flat.rm)
+summary(total7)
+r2(total7) # marginal: 0.133; conditional: 0.411
+res.total7 <- simulateResiduals(total7)
+plotQQunif(res.total7)
+plotResiduals(res.total7) # kind of janky
+check_collinearity(total7)
+
 
 # Save --------------------------------------------------------------------
 
 # Needed for graphs
-save(culm.change.flat.rm, plot.change, dat.survival, 
-     total6,
-     file = "RData/15_data-and-models-revision1.3.RData")
+save(culm.change.flat.rm, total7,
+     file = "RData/15.1_data-and-model-revision1.3-initial.RData")
 
 
-save.image("RData/15_linear-models-revision1.3.RData")
+save.image("RData/15.1_linear-models-revision1.3-initial.RData")

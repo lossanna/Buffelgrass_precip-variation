@@ -1,20 +1,18 @@
 # Created: 2026-02-04
 # Updated: 2026-03-03
 
-# Purpose:
+# Purpose: Graph the slope * shrub interaction from the new test culm model 
+#   from revision v1.3.
 
 
 library(tidyverse)
 library(insight)
 library(modelbased)
-library(ggeffects)
 library(viridis)
-library(ggpubr)
 
 # Load data ---------------------------------------------------------------
 
-load("RData/15_data-and-models-revision1.3.RData")
-dat.survival.raw <- dat.survival
+load("RData/15.1_data-and-model-revision1.3-initial.RData")
 dat <- read_csv("data/cleaned/11.1_demography-data_clean.csv")
 
 
@@ -33,20 +31,6 @@ dat.culm <- culm.change.flat.rm %>%
          Prev_year_precip, Aspect, PlotSlope, Change_BGDensity, Change_ShrubCover, Change_HerbCover,
          Init_BGDensity, Init_ShrubCover, Init_HerbCover)
 
-#   Plot change - density & cover
-dat.plot <- plot.change %>% 
-  select(Change_BGDensity, Change_BGCover, 
-         Prev_year_precip, Aspect, PlotSlope, Change_ShrubCover, Change_HerbCover,
-         Init_BGDensity, Init_ShrubCover, Init_HerbCover) 
-
-#   Survival  
-dat.survival <- dat.survival.raw %>%
-  select(remaining_toothpicks, seedlings_surviving,
-         Prev_year_precip, Aspect, PlotSlope, BGDensity, ShrubCover, HerbCover,
-         Prev_year_precip_scaled, PlotSlope_scaled, BGDensity_scaled,
-         ShrubCover_scaled, HerbCover_scaled) %>% 
-  mutate(survival_prop = seedlings_surviving / remaining_toothpicks)
-
 
 # 2. Dataset for constructing datagrid with prediction & CI (scaled explanatory variables only)
 #   Culm change - total & repro 
@@ -54,17 +38,6 @@ dat.culm.ex <- culm.change.flat.rm %>%
   select(Prev_year_precip_scaled, Aspect, PlotSlope_scaled, 
          Change_BGDensity_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
          Init_BGDensity_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
-
-#   Plot change - density & cover
-dat.plot.ex <- plot.change %>% 
-  select(Prev_year_precip_scaled,
-         Aspect, PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
-         Init_BGDensity_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
-
-#   Survival  
-dat.survival.ex <- dat.survival.raw %>%
-  select(Prev_year_precip_scaled, Aspect,
-         PlotSlope_scaled, BGDensity_scaled, ShrubCover_scaled, HerbCover_scaled)
 
 
 # 3. Dataset for constructing datagrid with unscaled variables to match graph (unscaled explanatory variables only)
@@ -74,14 +47,6 @@ dat.culm.unscaled <- culm.change.flat.rm %>%
          Change_BGDensity, Change_ShrubCover, Change_HerbCover,
          Init_BGDensity, Init_ShrubCover, Init_HerbCover)
 
-#   Plot change - density & cover
-dat.plot.unscaled <- plot.change %>% 
-  select(Prev_year_precip, Aspect, PlotSlope, Change_ShrubCover, Change_HerbCover,
-         Init_BGDensity, Init_ShrubCover, Init_HerbCover)
-
-#   Survival 
-dat.survival.unscaled <- dat.survival.raw %>%
-  select(Prev_year_precip, Aspect, PlotSlope, BGDensity, ShrubCover, HerbCover)
 
 
 
@@ -187,7 +152,7 @@ insight.total.shrub.slope <- dat.culm.ex %>%
   get_datagrid("PlotSlope_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled) %>% 
   distinct(.keep_all = TRUE)
-insight.total.shrub.slope$Predicted <- get_predicted(total6, insight.total.shrub.slope)
+insight.total.shrub.slope$Predicted <- get_predicted(total7, insight.total.shrub.slope)
 unscaled.shrub.slope <- dat.culm.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "PlotSlope"), length = 3) %>% 
   get_datagrid("PlotSlope", length = 3, numerics = "all") %>% 
