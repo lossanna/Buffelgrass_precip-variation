@@ -345,10 +345,10 @@ summary(lm(Change_ShrubCover ~ Prev_year_precip_scaled, data = plot.change))
 summary(lm(Change_HerbCover ~ Prev_year_precip_scaled, data = plot.change))
 
 # Total vs density
-summary(lm(Change_TotalCulms ~ Change_BGDensity_scaled, data = culm.change))
+summary(lm(Change_Total_Live_Culms ~ Change_BGDensity_scaled, data = culm.change))
 
 # Total vs cover
-summary(lm(Change_TotalCulms ~ Change_BGCover_scaled, data = culm.change))
+summary(lm(Change_Total_Live_Culms ~ Change_BGCover_scaled, data = culm.change))
 
 
 
