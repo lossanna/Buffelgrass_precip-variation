@@ -4,8 +4,8 @@
 # Purpose: Rerun models and include initial BG density, shrub cover, and herb cover values
 #   as explanatory variables (v1.2). Also add Aspect/Slope * precip interactions.
 
-# Result: Aspect is too highly correlated with precip. Version 2 has kind of funky residuals
-#   compared to v1.2, so I will stick with v1.2.
+# Result: Aspect is too highly correlated with precip and shrub. Version 2 has kind of funky 
+#   residuals compared to v1.2, so I will stick with v1.2.
 
 library(tidyverse)
 library(performance)
@@ -86,7 +86,7 @@ plotResiduals(res.total1)
 check_collinearity(total1) # have to drop Aspect * precip due to high VIF
 
 
-# Version 2: Initial conditions as numeric, nested Site/Transect/Plant_ID
+# Version 2: Add Slope * precip interaction
 total2 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
                  Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
                  Change_ShrubCover_scaled + Change_HerbCover_scaled +
@@ -101,5 +101,94 @@ summary(total2)
 r2(total2) # marginal: 0.137; conditional: 0.456
 res.total2 <- simulateResiduals(total2)
 plotQQunif(res.total2)
-plotResiduals(res.total2) 
+plotResiduals(res.total2) # looks pretty janky compared to v1.2
 
+
+# Version 3: Add Aspect/Slope * shrub interaction
+total3 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
+                 Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
+                 Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                 Prev_year_precip_scaled * Change_BGDensity_scaled +
+                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                 Prev_year_precip_scaled * Change_HerbCover_scaled +
+                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
+                 Change_ShrubCover_scaled * Aspect +
+                 Change_ShrubCover_scaled * PlotSlope_scaled +
+                 (1 | Site / Transect),
+               data = culm.change.flat.rm)
+summary(total3)
+r2(total3) # marginal: 0.158; conditional: 0.424
+res.total3 <- simulateResiduals(total3)
+plotQQunif(res.total3)
+plotResiduals(res.total3) 
+check_collinearity(total3) # have to drop Aspect * shrub due to high VIF
+
+
+# Version 4: Add Slope * shrub interaction
+total4 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
+                 Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
+                 Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                 Prev_year_precip_scaled * Change_BGDensity_scaled +
+                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                 Prev_year_precip_scaled * Change_HerbCover_scaled +
+                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
+                 Change_ShrubCover_scaled * PlotSlope_scaled +
+                 (1 | Site / Transect),
+               data = culm.change.flat.rm)
+summary(total4)
+r2(total4) # marginal: 0.133; conditional: 0.411
+res.total4 <- simulateResiduals(total4)
+plotQQunif(res.total4)
+plotResiduals(res.total4) # looks kind of comparable to v1.2, only a little worse
+check_collinearity(total4)
+
+
+# Version 5: Add Slope * precip and Slope * shrub interactions
+total5 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
+                 Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
+                 Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                 Prev_year_precip_scaled * Change_BGDensity_scaled +
+                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                 Prev_year_precip_scaled * Change_HerbCover_scaled +
+                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
+                 Change_ShrubCover_scaled * PlotSlope_scaled +
+                 Prev_year_precip_scaled * PlotSlope_scaled +
+                 (1 | Site / Transect),
+               data = culm.change.flat.rm)
+summary(total5)
+r2(total5) # marginal: 0.137; conditional: 0.409
+res.total5 <- simulateResiduals(total5)
+plotQQunif(res.total5)
+plotResiduals(res.total5) # looks pretty janky compared to v1.2
+check_collinearity(total5)
+
+
+# Version 6: Add Slope * shrub/herb interactions
+total6 <- lmer(Change_Total_Live_Culms ~ Prev_year_precip_scaled +  
+                 Aspect + PlotSlope_scaled + Change_BGDensity_scaled +
+                 Change_ShrubCover_scaled + Change_HerbCover_scaled +
+                 Prev_year_precip_scaled * Change_BGDensity_scaled +
+                 Prev_year_precip_scaled * Change_ShrubCover_scaled +
+                 Prev_year_precip_scaled * Change_HerbCover_scaled +
+                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
+                 Change_ShrubCover_scaled * PlotSlope_scaled +
+                 Change_HerbCover_scaled * PlotSlope_scaled +
+                 (1 | Site / Transect),
+               data = culm.change.flat.rm)
+summary(total6)
+r2(total6) # marginal: 0.133; conditional: 0.411
+res.total6 <- simulateResiduals(total6)
+plotQQunif(res.total6)
+plotResiduals(res.total6) # looks kind of comparable to v1.2, only a little worse
+check_collinearity(total6)
+
+
+# Save --------------------------------------------------------------------
+
+# Needed for graphs
+save(culm.change.flat.rm, plot.change, dat.survival, 
+     total6,
+     file = "RData/15_data-and-models-revision1.3.RData")
+
+
+save.image("RData/15_linear-models-revision1.3.RData")
