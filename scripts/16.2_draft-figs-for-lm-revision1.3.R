@@ -2925,6 +2925,30 @@ survival.herb.slope
 
 # Simple linear regression ------------------------------------------------
 
+# Shrub cover change vs. precip
+shrub.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native shrub cover (%)"),
+       x = "Previous year precipitation (mm)",
+       title = "Change in shrub cover vs. precip")
+shrub.change.precip
+
+# Herb cover change vs. precip
+herb.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm") +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native grass & forb cover (%)"),
+       x = "Previous year precipitation (mm)",
+       title = "Change in herb cover vs. precip")
+herb.change.precip
+
 # Total vs. repro
 total.repro <- culm.change %>% 
   ggplot(aes(x = Change_Reproductive_culms, y = Change_Total_Live_Culms)) +
