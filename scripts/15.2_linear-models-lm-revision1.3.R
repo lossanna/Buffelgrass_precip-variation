@@ -1,5 +1,5 @@
 # Created: 2026-02-04
-# Updated: 2026-03-23
+# Updated: 2026-03-27
 
 # Purpose: Apply v1.2 updates and v1.3 updates (decided in 15.1.R)
 #   v1.2: Include initial BG density, shrub cover, and herb cover values as explanatory variables.
@@ -135,7 +135,7 @@ repro2 <- lmer(Change_Reproductive_culms ~ Prev_year_precip_scaled +
                  (1 | Site / Transect / Plot),
                data = culm.change)
 summary(repro2)
-r2(repro2) # marginal: 0.0.85; conditional: 0.291
+r2(repro2) # marginal: 0.085; conditional: 0.291
 res.repro2 <- simulateResiduals(repro2)
 plotQQunif(res.repro2)
 plotResiduals(res.repro2) 
@@ -312,16 +312,24 @@ survival2.pred.plot
 # Simple linear regression ------------------------------------------------
 
 # Shrub vs. precip
+summary(lm(Change_ShrubCover ~ Prev_year_precip, data = plot.change))
 summary(lm(Change_ShrubCover ~ Prev_year_precip_scaled, data = plot.change))
 
 # Herb vs. precip
+summary(lm(Change_HerbCover ~ Prev_year_precip, data = plot.change))
 summary(lm(Change_HerbCover ~ Prev_year_precip_scaled, data = plot.change))
 
 # Total vs density
+summary(lm(Change_Total_Live_Culms ~ Change_BGDensity, data = culm.change))
 summary(lm(Change_Total_Live_Culms ~ Change_BGDensity_scaled, data = culm.change))
 
 # Total vs cover
+summary(lm(Change_Total_Live_Culms ~ Change_BGCover, data = culm.change))
 summary(lm(Change_Total_Live_Culms ~ Change_BGCover_scaled, data = culm.change))
+
+# Density vs cover
+summary(lm(Change_BGDensity_scaled ~ Change_BGCover, data = culm.change))
+summary(lm(Change_BGDensity_scaled ~ Change_BGCover_scaled, data = culm.change))
 
 
 
