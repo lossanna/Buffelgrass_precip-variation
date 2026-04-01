@@ -66,7 +66,7 @@ dat.plot.ex <- plot.change %>%
 
 #   Survival  
 dat.survival.ex <- dat.survival.raw %>%
-  select(Prev_year_precip_scaled, Aspect,
+  select(Prev_year_precip_scaled,
          PlotSlope_scaled, BGDensity_scaled, ShrubCover_scaled, HerbCover_scaled)
 
 

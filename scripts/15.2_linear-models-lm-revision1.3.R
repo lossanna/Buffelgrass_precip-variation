@@ -328,8 +328,12 @@ summary(lm(Change_Total_Live_Culms ~ Change_BGCover, data = culm.change))
 summary(lm(Change_Total_Live_Culms ~ Change_BGCover_scaled, data = culm.change))
 
 # Density vs cover
-summary(lm(Change_BGDensity_scaled ~ Change_BGCover, data = culm.change))
-summary(lm(Change_BGDensity_scaled ~ Change_BGCover_scaled, data = culm.change))
+summary(lm(Change_BGDensity ~ Change_BGCover, data = culm.change))
+summary(lm(Change_BGDensity ~ Change_BGCover_scaled, data = culm.change))
+
+# Density change vs initial
+summary(lm(Change_BGDensity ~ Init_BGDensity, data = culm.change))
+summary(lm(Change_BGDensity ~ Init_BGDensity_scaled, data = culm.change))
 
 
 
