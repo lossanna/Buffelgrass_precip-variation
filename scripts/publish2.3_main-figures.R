@@ -191,7 +191,6 @@ ggarrange(total.shrub.precip, total.herb.precip,
 
 
 
-
 # Figure 2: Total/repro culm, slope * shrub -------------------------------
 
 ## Total ------------------------------------------------------------------
@@ -287,7 +286,49 @@ ggarrange(total.shrub.slope, repro.shrub.slope,
 
 
 
-# Figure 3: Precip for density, cover, survival ---------------------------
+# Figure 3: Repro culm, precip * density ----------------------------------
+
+# Generate prediction and add unscaled variable - 9 precip levels to get mean
+insight.repro.bgden.precip <- dat.culm.ex %>% 
+  get_datagrid(c("Change_BGDensity_scaled", "Prev_year_precip_scaled"), length = 3) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
+  arrange(Change_BGDensity_scaled) %>% 
+  distinct(.keep_all = TRUE)
+insight.repro.bgden.precip$Predicted <- get_predicted(repro, insight.repro.bgden.precip)
+unscaled.bgden.precip <- dat.culm.unscaled %>% 
+  get_datagrid(c("Change_BGDensity", "Prev_year_precip"), length = 3) %>% 
+  get_datagrid("Prev_year_precip", length = 9, numerics = "all") %>% 
+  arrange(Change_BGDensity) %>% 
+  distinct(.keep_all = TRUE)
+insight.repro.bgden.precip$Change_BGDensity <- unscaled.bgden.precip$Change_BGDensity
+insight.repro.bgden.precip$Prev_year_precip <- unscaled.bgden.precip$Prev_year_precip
+unique(insight.repro.bgden.precip$Prev_year_precip_scaled)
+insight.repro.bgden.precip <- insight.repro.bgden.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.943, 0.033, 1.659))
+
+# Graph
+repro.bgden.precip <- dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_ReproductiveCulms,
+             color = Prev_year_precip)) +
+  geom_point(alpha = 0.7) +
+  geom_line(data = insight.repro.bgden.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(Delta ~ "Buffelgrass reproductive culm count"),
+       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
+repro.bgden.precip
+
+
+
+# Figure 4: Precip for density, cover, survival ---------------------------
 
 # BG density
 #   Generate prediction and add unscaled variable 
@@ -374,7 +415,7 @@ ggarrange(bgden.precip, bgcov.precip, survival.precip,
 
 
 
-# Figure 4: BG density, precip * shrub ------------------------------------
+# Figure 5: BG density, precip * shrub ------------------------------------
 
 # Generate prediction and add unscaled variable - 12 levels to get mean
 insight.bgden.shrub.precip <- dat.bgden.ex %>% 
@@ -422,7 +463,7 @@ bgden.shrub.precip
 
 # Figure 1
 tiff("figures/publish2.3-figures/Figure1_600dpi.tiff",
-     units = "in", height = 6, width = 8, res = 600)
+     units = "in", height = 5, width = 8, res = 600)
 ggarrange(total.shrub.precip, total.herb.precip, 
           ncol = 2, nrow = 1,
           labels = c("(A)", "(B)"),
@@ -431,7 +472,7 @@ dev.off()
 
 # Figure 2
 tiff("figures/publish2.3-figures/Figure2_600dpi.tiff",
-     units = "in", height = 6, width = 8, res = 600)
+     units = "in", height = 5, width = 8, res = 600)
 ggarrange(total.shrub.slope, repro.shrub.slope, 
           ncol = 2, nrow = 1,
           labels = c("(A)", "(B)"),
@@ -440,14 +481,20 @@ dev.off()
 
 # Figure 3
 tiff("figures/publish2.3-figures/Figure3_600dpi.tiff",
+     units = "in", height = 4, width = 6, res = 600)
+repro.bgden.precip
+dev.off()
+
+# Figure 4
+tiff("figures/publish2.3-figures/Figure4_600dpi.tiff",
      units = "in", height = 6, width = 8, res = 600)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
           labels = c("(A)", "(B)", "(C)"))
 dev.off()
 
-# Figure 4
-tiff("figures/publish2.3-figures/Figure4_600dpi.tiff",
+# Figure 5
+tiff("figures/publish2.3-figures/Figure5_600dpi.tiff",
      units = "in", height = 4, width = 6, res = 600)
 bgden.shrub.precip
 dev.off()
