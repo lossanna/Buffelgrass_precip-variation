@@ -173,7 +173,7 @@ bgden.pred.plot <- bgden.pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Plot density change model, predicted vs. observed") +
+  ggtitle("Density change model, predicted vs. observed") +
   xlab(expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ") [observed]"))) +
   theme_bw()
 bgden.pred.plot
@@ -188,13 +188,13 @@ bgcov <- lmer(Change_BGCover ~ Prev_year_precip_scaled +
                  Change_HerbCover_scaled + 
                  Prev_year_precip_scaled * Change_ShrubCover_scaled +
                  Prev_year_precip_scaled * Change_HerbCover_scaled +
-                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
+                 Init_BGCover_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
                  Change_ShrubCover_scaled * PlotSlope_scaled +
                  Change_HerbCover_scaled * PlotSlope_scaled +
                  (1 | Site),
                data = plot.change)
 summary(bgcov)
-r2(bgcov) # marginal: 0.249; conditional: 0.309
+r2(bgcov) # marginal: 0.298; conditional: 0.306
 res.bgcov <- simulateResiduals(bgcov)
 plotQQunif(res.bgcov)
 plotResiduals(res.bgcov) 
@@ -213,7 +213,7 @@ bgcov.pred.plot <- bgcov.pred %>%
   geom_vline(xintercept = 0,
              linetype = "dashed",
              color = "red") +
-  ggtitle("Plot cover change model, predicted vs. observed") +
+  ggtitle("Cover change model, predicted vs. observed") +
   xlab(expression(Delta ~ "Buffelgrass cover (%) [observed]")) +
   theme_bw()
 bgcov.pred.plot

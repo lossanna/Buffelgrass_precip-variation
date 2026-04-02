@@ -1,5 +1,5 @@
 # Created: 2026-03-31
-# Updated: 2026-03-31
+# Updated: 2026-04-02
 
 # Purpose: Create main figures for publishing (revision 1.3).
 
@@ -31,10 +31,16 @@ dat.culm <- culm.change %>%
          Init_BGDensity, Init_ShrubCover, Init_HerbCover)
 
 #   Plot change - density & cover
-dat.plot <- plot.change %>% 
-  select(Change_BGDensity, Change_BGCover, 
+dat.bgden <- plot.change %>% 
+  select(Change_BGDensity,  
          Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
          Init_BGDensity, Init_ShrubCover, Init_HerbCover) 
+
+dat.bgcov <- plot.change %>% 
+  select(Change_BGCover, 
+         Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+         Init_BGCover, Init_ShrubCover, Init_HerbCover) 
+
 
 #   Survival  
 dat.survival <- survival.dat %>%
@@ -52,10 +58,15 @@ dat.culm.ex <- culm.change %>%
          Init_BGDensity_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
 
 #   Plot change - density & cover
-dat.plot.ex <- plot.change %>% 
+dat.bgden.ex <- plot.change %>% 
   select(Prev_year_precip_scaled,
          PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
          Init_BGDensity_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
+
+dat.bgcov.ex <- plot.change %>% 
+  select(Prev_year_precip_scaled,
+         PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
+         Init_BGCover_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
 
 #   Survival  
 dat.survival.ex <- survival.dat %>%
@@ -71,9 +82,13 @@ dat.culm.unscaled <- culm.change %>%
          Init_BGDensity, Init_ShrubCover, Init_HerbCover)
 
 #   Plot change - density & cover
-dat.plot.unscaled <- plot.change %>% 
+dat.bgden.unscaled <- plot.change %>% 
   select(Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
          Init_BGDensity, Init_ShrubCover, Init_HerbCover)
+
+dat.bgcov.unscaled <- plot.change %>% 
+  select(Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+         Init_BGCover, Init_ShrubCover, Init_HerbCover)
 
 #   Survival 
 dat.survival.unscaled <- survival.dat %>%
@@ -276,16 +291,16 @@ ggarrange(total.shrub.slope, repro.shrub.slope,
 
 # BG density
 #   Generate prediction and add unscaled variable 
-insight.bgden.precip <- get_datagrid(dat.plot.ex, by = c("Prev_year_precip_scaled"),
+insight.bgden.precip <- get_datagrid(dat.bgden.ex, by = c("Prev_year_precip_scaled"),
                                      length = 100)
 insight.bgden.precip$Change_BGDensity <- get_predicted(bgden, insight.bgden.precip)
-unscaled.precip <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
+unscaled.precip <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
                                 length = 100) %>% 
   arrange(Prev_year_precip)
 insight.bgden.precip$Prev_year_precip <- unscaled.precip$Prev_year_precip
 
 #   Graph 
-bgden.precip <- dat.plot %>% 
+bgden.precip <- dat.bgden %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgden.precip,
@@ -303,16 +318,16 @@ bgden.precip
 
 # BG cover
 #   Generate prediction and add scaled variable 
-insight.bgcov.precip <- get_datagrid(dat.plot.ex, by = c("Prev_year_precip_scaled"),
+insight.bgcov.precip <- get_datagrid(dat.bgcov.ex, by = c("Prev_year_precip_scaled"),
                                      length = 100)
 insight.bgcov.precip$Change_BGCover <- get_predicted(bgcov, insight.bgcov.precip)
-unscaled.precip <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
+unscaled.precip <- get_datagrid(dat.bgcov.unscaled, by = "Prev_year_precip",
                                 length = 100) %>% 
   arrange(Prev_year_precip)
 insight.bgcov.precip$Prev_year_precip <- unscaled.precip$Prev_year_precip
 
 #   Graph
-bgcov.precip <- dat.plot %>% 
+bgcov.precip <- dat.bgcov %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGCover)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgcov.precip,
@@ -362,13 +377,13 @@ ggarrange(bgden.precip, bgcov.precip, survival.precip,
 # Figure 4: BG density, precip * shrub ------------------------------------
 
 # Generate prediction and add unscaled variable - 12 levels to get mean
-insight.bgden.shrub.precip <- dat.plot.ex %>% 
+insight.bgden.shrub.precip <- dat.bgden.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgden.shrub.precip$Predicted <- get_predicted(bgden, insight.bgden.shrub.precip)
-unscaled.shrub.precip <- dat.plot.unscaled %>% 
+unscaled.shrub.precip <- dat.bgden.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover) %>% 
@@ -380,7 +395,7 @@ insight.bgden.shrub.precip <- insight.bgden.shrub.precip %>%
   filter(Prev_year_precip_scaled %in% c(-0.941, 0.004, 1.657))
 
 # Graph
-bgden.shrub.precip <- dat.plot %>% 
+bgden.shrub.precip <- dat.bgden %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
              color = Prev_year_precip)) +
   geom_point(alpha = 0.7) +

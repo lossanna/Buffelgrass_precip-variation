@@ -1,9 +1,10 @@
 # Created: 2026-02-04
-# Updated: 2026-03-27
+# Updated: 2026-04-02
 
 # Purpose: Apply v1.2 updates and v1.3 updates (decided in 15.1.R)
 #   v1.2: Include initial BG density, shrub cover, and herb cover values as explanatory variables.
-#   v1.3: Remove Aspect, include slope * shrub/herb interactions, correct random effects.
+#   v1.3: Remove Aspect, include slope * shrub/herb interactions, correct random effects,
+#         change Init_BGDensity to Init_BGCover for cover change model.
 
 # Random effects now vary across model to better capture study setup.
 #   Maximum random structure is attempted first; levels with 0 variance are 
@@ -224,7 +225,7 @@ bgcov2 <- lmer(Change_BGCover ~ Prev_year_precip_scaled +
                  Change_HerbCover_scaled + 
                  Prev_year_precip_scaled * Change_ShrubCover_scaled +
                  Prev_year_precip_scaled * Change_HerbCover_scaled +
-                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
+                 Init_BGCover_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
                  Change_ShrubCover_scaled * PlotSlope_scaled +
                  Change_HerbCover_scaled * PlotSlope_scaled +
                  (1 | Site / Transect / Plot),
@@ -238,13 +239,13 @@ bgcov4 <- lmer(Change_BGCover ~ Prev_year_precip_scaled +
                  Change_HerbCover_scaled + 
                  Prev_year_precip_scaled * Change_ShrubCover_scaled +
                  Prev_year_precip_scaled * Change_HerbCover_scaled +
-                 Init_BGDensity_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
+                 Init_BGCover_scaled + Init_ShrubCover_scaled + Init_HerbCover_scaled +
                  Change_ShrubCover_scaled * PlotSlope_scaled +
                  Change_HerbCover_scaled * PlotSlope_scaled +
                  (1 | Site),
                data = plot.change)
 summary(bgcov4)
-r2(bgcov4) # marginal: 0.249; conditional: 0.309
+r2(bgcov4) # marginal: 0.298; conditional: 0.306
 res.bgcov4 <- simulateResiduals(bgcov4)
 plotQQunif(res.bgcov4)
 plotResiduals(res.bgcov4) 

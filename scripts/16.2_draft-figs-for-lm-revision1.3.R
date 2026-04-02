@@ -37,10 +37,15 @@ dat.culm <- culm.change %>%
          Init_BGDensity, Init_ShrubCover, Init_HerbCover)
 
 #   Plot change - density & cover
-dat.plot <- plot.change %>% 
-  select(Change_BGDensity, Change_BGCover, 
+dat.bgden <- plot.change %>% 
+  select(Change_BGDensity,  
          Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
          Init_BGDensity, Init_ShrubCover, Init_HerbCover) 
+
+dat.bgcov <- plot.change %>% 
+  select(Change_BGCover, 
+         Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+         Init_BGCover, Init_ShrubCover, Init_HerbCover) 
 
 #   Survival  
 dat.survival <- dat.survival.raw %>%
@@ -59,10 +64,15 @@ dat.culm.ex <- culm.change %>%
          Init_BGDensity_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
 
 #   Plot change - density & cover
-dat.plot.ex <- plot.change %>% 
+dat.bgden.ex <- plot.change %>% 
   select(Prev_year_precip_scaled,
          PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
          Init_BGDensity_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
+
+dat.bgcov.ex <- plot.change %>% 
+  select(Prev_year_precip_scaled,
+         PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
+         Init_BGCover_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
 
 #   Survival  
 dat.survival.ex <- dat.survival.raw %>%
@@ -78,9 +88,13 @@ dat.culm.unscaled <- culm.change %>%
          Init_BGDensity, Init_ShrubCover, Init_HerbCover)
 
 #   Plot change - density & cover
-dat.plot.unscaled <- plot.change %>% 
+dat.bgden.unscaled <- plot.change %>% 
   select(Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
          Init_BGDensity, Init_ShrubCover, Init_HerbCover)
+
+dat.bgcov.unscaled <- plot.change %>% 
+  select(Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+         Init_BGCover, Init_ShrubCover, Init_HerbCover)
 
 #   Survival 
 dat.survival.unscaled <- dat.survival.raw %>%
@@ -182,14 +196,20 @@ unique(x$Prev_year_precip_scaled) # -0.076
 #   reasonable computation time.
 
 # 3 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
 unique(x$Prev_year_precip_scaled) # 0.358
 
+x <- dat.bgcov.ex %>% 
+  get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 3, numerics = "all") %>% 
+  arrange(Change_HerbCover_scaled)
+unique(x$Prev_year_precip_scaled) # 0.358; dat.bgcov.ex is the same
+
 # 4 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 4, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -197,7 +217,7 @@ x <- dat.plot.ex %>%
 unique(x$Prev_year_precip_scaled) # -0.075
 
 # 5 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 5, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -205,7 +225,7 @@ x <- dat.plot.ex %>%
 unique(x$Prev_year_precip_scaled) # -0.292
 
 # 6 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 6, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -213,7 +233,7 @@ x <- dat.plot.ex %>%
 unique(x$Prev_year_precip_scaled) # 0.098
 
 # 7 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 7, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -221,14 +241,14 @@ x <- dat.plot.ex %>%
 unique(x$Prev_year_precip_scaled) # -0.075
 
 # 8 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 8, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
 unique(x$Prev_year_precip_scaled) # 0.172
 
 # 9 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 9, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -236,7 +256,7 @@ x <- dat.plot.ex %>%
 unique(x$Prev_year_precip_scaled) # 0.033
 
 # 10 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 10, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -244,7 +264,7 @@ x <- dat.plot.ex %>%
 unique(x$Prev_year_precip_scaled) # -0.075
 
 # 11 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 11, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -252,14 +272,14 @@ x <- dat.plot.ex %>%
 unique(x$Prev_year_precip_scaled) # 0.098
 
 # 12 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled)
 unique(x$Prev_year_precip_scaled) # 0.004
 
 # 13 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 13, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -267,7 +287,7 @@ x <- dat.plot.ex %>%
 unique(x$Prev_year_precip_scaled) # -0.075
 
 # 14 precip levels
-x <- dat.plot.ex %>% 
+x <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 14, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
@@ -1804,18 +1824,18 @@ repro.herb.slope
 ## BG density: Precip -----------------------------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgden.precip <- get_datagrid(dat.plot.ex, by = c("Prev_year_precip_scaled"),
+insight.bgden.precip <- get_datagrid(dat.bgden.ex, by = c("Prev_year_precip_scaled"),
                                      length = 100)
 insight.bgden.precip$Change_BGDensity <- get_predicted(bgden3, insight.bgden.precip)
 insight.bgden.precip$SE <- get_predicted_ci(bgden3, data = insight.bgden.precip)$SE
 insight.bgden.precip$CI <- insight.bgden.precip$SE * 1.96
-unscaled.precip <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
+unscaled.precip <- get_datagrid(dat.bgden.unscaled, by = "Prev_year_precip",
                                 length = 100) %>% 
   arrange(Prev_year_precip)
 insight.bgden.precip$Prev_year_precip <- unscaled.precip$Prev_year_precip
 
 # Graph 
-bgden.precip <- dat.plot %>% 
+bgden.precip <- dat.bgden %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGDensity)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgden.precip,
@@ -1836,13 +1856,13 @@ bgden.precip
 ## BG density: Precip * shrub ---------------------------------------------
 
 # Generate prediction and add unscaled variable - 12 levels to get mean
-insight.bgden.shrub.precip <- dat.plot.ex %>% 
+insight.bgden.shrub.precip <- dat.bgden.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgden.shrub.precip$Predicted <- get_predicted(bgden3, insight.bgden.shrub.precip)
-unscaled.shrub.precip <- dat.plot.unscaled %>% 
+unscaled.shrub.precip <- dat.bgden.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover) %>% 
@@ -1854,7 +1874,7 @@ insight.bgden.shrub.precip <- insight.bgden.shrub.precip %>%
   filter(Prev_year_precip_scaled %in% c(-0.941, 0.004, 1.657))
 
 # Graph
-bgden.shrub.precip <- dat.plot %>% 
+bgden.shrub.precip <- dat.bgden %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
              color = Prev_year_precip)) +
   geom_point(alpha = 0.7) +
@@ -1878,18 +1898,18 @@ bgden.shrub.precip
 ## BG density: Slope (NS) -------------------------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgden.slope <- get_datagrid(dat.plot.ex, by = c("PlotSlope_scaled"),
+insight.bgden.slope <- get_datagrid(dat.bgden.ex, by = c("PlotSlope_scaled"),
                                     length = 100)
 insight.bgden.slope$Change_BGDensity <- get_predicted(bgden3, insight.bgden.slope)
 insight.bgden.slope$SE <- get_predicted_ci(bgden3, data = insight.bgden.slope)$SE
 insight.bgden.slope$CI <- insight.bgden.slope$SE * 1.96
-unscaled.slope <- get_datagrid(dat.plot.unscaled, by = "PlotSlope",
+unscaled.slope <- get_datagrid(dat.bgden.unscaled, by = "PlotSlope",
                                length = 100) %>% 
   arrange(PlotSlope)
 insight.bgden.slope$PlotSlope <- unscaled.slope$PlotSlope
 
 # Graph
-bgden.slope <- dat.plot %>% 
+bgden.slope <- dat.bgden %>% 
   ggplot(aes(x = PlotSlope, y = Change_BGDensity)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgden.slope,
@@ -1910,18 +1930,18 @@ bgden.slope
 ## BG density: Shrub (NS) -------------------------------------------------
 
 # Generate prediction and add unscaled variable
-insight.bgden.shrub <- get_datagrid(dat.plot.ex, by = c("Change_ShrubCover_scaled"),
+insight.bgden.shrub <- get_datagrid(dat.bgden.ex, by = c("Change_ShrubCover_scaled"),
                                     length = 100)
 insight.bgden.shrub$Change_BGDensity <- get_predicted(bgden3, insight.bgden.shrub)
 insight.bgden.shrub$SE <- get_predicted_ci(bgden3, data = insight.bgden.shrub)$SE
 insight.bgden.shrub$CI <- insight.bgden.shrub$SE * 1.96
-unscaled.shrub <- get_datagrid(dat.plot.unscaled, by = "Change_ShrubCover",
+unscaled.shrub <- get_datagrid(dat.bgden.unscaled, by = "Change_ShrubCover",
                                length = 100) %>% 
   arrange(Change_ShrubCover)
 insight.bgden.shrub$Change_ShrubCover <- unscaled.shrub$Change_ShrubCover
 
 # Graph
-bgden.shrub <- dat.plot %>% 
+bgden.shrub <- dat.bgden %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgden.shrub,
@@ -1945,18 +1965,18 @@ bgden.shrub
 ## BG density: Herb (NS) --------------------------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgden.herb <- get_datagrid(dat.plot.ex, by = c("Change_HerbCover_scaled"),
+insight.bgden.herb <- get_datagrid(dat.bgden.ex, by = c("Change_HerbCover_scaled"),
                                    length = 100)
 insight.bgden.herb$Change_BGDensity <- get_predicted(bgden3, insight.bgden.herb)
 insight.bgden.herb$SE <- get_predicted_ci(bgden3, data = insight.bgden.herb)$SE
 insight.bgden.herb$CI <- insight.bgden.herb$SE * 1.96
-unscaled.herb <- get_datagrid(dat.plot.unscaled, by = "Change_HerbCover",
+unscaled.herb <- get_datagrid(dat.bgden.unscaled, by = "Change_HerbCover",
                               length = 100) %>% 
   arrange(Change_HerbCover)
 insight.bgden.herb$Change_HerbCover <- unscaled.herb$Change_HerbCover
 
 # Graph
-bgden.herb <- dat.plot %>% 
+bgden.herb <- dat.bgden %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGDensity)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgden.herb,
@@ -1980,18 +2000,18 @@ bgden.herb
 ## BG density: Initial density (NS) ---------------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgden.inbgden <- get_datagrid(dat.plot.ex, by = c("Init_BGDensity_scaled"),
+insight.bgden.inbgden <- get_datagrid(dat.bgden.ex, by = c("Init_BGDensity_scaled"),
                                       length = 100)
 insight.bgden.inbgden$Change_BGDensity <- get_predicted(bgden3, insight.bgden.inbgden)
 insight.bgden.inbgden$SE <- get_predicted_ci(bgden3, data = insight.bgden.inbgden)$SE
 insight.bgden.inbgden$CI <- insight.bgden.inbgden$SE * 1.96
-unscaled.inbgden <- get_datagrid(dat.plot.unscaled, by = "Init_BGDensity",
+unscaled.inbgden <- get_datagrid(dat.bgden.unscaled, by = "Init_BGDensity",
                                  length = 100) %>% 
   arrange(Init_BGDensity)
 insight.bgden.inbgden$Init_BGDensity <- unscaled.inbgden$Init_BGDensity
 
 # Graph
-bgden.inbgden <- dat.plot %>% 
+bgden.inbgden <- dat.bgden %>% 
   ggplot(aes(x = Init_BGDensity, y = Change_BGDensity)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgden.inbgden,
@@ -2012,17 +2032,17 @@ bgden.inbgden
 ## BG density: Initial shrub cover (NS) -----------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgden.inshrub <- get_datagrid(dat.plot.ex, by = c("Init_ShrubCover_scaled"),
+insight.bgden.inshrub <- get_datagrid(dat.bgden.ex, by = c("Init_ShrubCover_scaled"),
                                       length = 10)
 insight.bgden.inshrub$Change_BGDensity <- get_predicted(bgden3, insight.bgden.inshrub)
 insight.bgden.inshrub$SE <- get_predicted_ci(bgden3, data = insight.bgden.inshrub)$SE
 insight.bgden.inshrub$CI <- insight.bgden.inshrub$SE * 1.96
-unscaled.inshrub <- get_datagrid(dat.plot.unscaled, by = "Init_ShrubCover") %>% 
+unscaled.inshrub <- get_datagrid(dat.bgden.unscaled, by = "Init_ShrubCover") %>% 
   arrange(Init_ShrubCover)
 insight.bgden.inshrub$Init_ShrubCover <- unscaled.inshrub$Init_ShrubCover
 
 # Graph
-bgden.inshrub <- dat.plot %>% 
+bgden.inshrub <- dat.bgden %>% 
   ggplot(aes(x = Init_ShrubCover, y = Change_BGDensity)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgden.inshrub,
@@ -2043,18 +2063,18 @@ bgden.inshrub
 ## BG density: Initial herb cover (NS) ------------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgden.inherb <- get_datagrid(dat.plot.ex, by = c("Init_HerbCover_scaled"),
+insight.bgden.inherb <- get_datagrid(dat.bgden.ex, by = c("Init_HerbCover_scaled"),
                                      length = 100)
 insight.bgden.inherb$Change_BGDensity <- get_predicted(bgden3, insight.bgden.inherb)
 insight.bgden.inherb$SE <- get_predicted_ci(bgden3, data = insight.bgden.inherb)$SE
 insight.bgden.inherb$CI <- insight.bgden.inherb$SE * 1.96
-unscaled.inherb <- get_datagrid(dat.plot.unscaled, by = "Init_HerbCover",
+unscaled.inherb <- get_datagrid(dat.bgden.unscaled, by = "Init_HerbCover",
                                 length = 100) %>% 
   arrange(Init_HerbCover)
 insight.bgden.inherb$Init_HerbCover <- unscaled.inherb$Init_HerbCover
 
 # Graph
-bgden.inherb <- dat.plot %>% 
+bgden.inherb <- dat.bgden %>% 
   ggplot(aes(x = Init_HerbCover, y = Change_BGDensity)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgden.inherb,
@@ -2075,13 +2095,13 @@ bgden.inherb
 ## BG density: Precip * herb (NS) -----------------------------------------
 
 # Generate prediction and add unscaled variable - 12 levels to get mean
-insight.bgden.herb.precip <- dat.plot.ex %>% 
+insight.bgden.herb.precip <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgden.herb.precip$Predicted <- get_predicted(bgden3, insight.bgden.herb.precip)
-unscaled.herb.precip <- dat.plot.unscaled %>% 
+unscaled.herb.precip <- dat.bgden.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover) %>% 
@@ -2093,7 +2113,7 @@ insight.bgden.herb.precip <- insight.bgden.herb.precip %>%
   filter(Prev_year_precip_scaled %in% c(-0.941, 0.004, 1.657))
 
 # Graph
-bgden.herb.precip <- dat.plot %>% 
+bgden.herb.precip <- dat.bgden %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGDensity,
              color = Prev_year_precip)) +
   geom_point(alpha = 0.7) +
@@ -2117,13 +2137,13 @@ bgden.herb.precip
 ## BG density: Slope * shrub (NS) -----------------------------------------
 
 # Generate prediction and add unscaled variable - 12 slope levels to get mean
-insight.bgden.shrub.slope <- dat.plot.ex %>% 
+insight.bgden.shrub.slope <- dat.bgden.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "PlotSlope_scaled"), length = 3) %>% 
   get_datagrid("PlotSlope_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgden.shrub.slope$Predicted <- get_predicted(bgden3, insight.bgden.shrub.slope)
-unscaled.shrub.slope <- dat.plot.unscaled %>% 
+unscaled.shrub.slope <- dat.bgden.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "PlotSlope"), length = 3) %>% 
   get_datagrid("PlotSlope", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover) %>% 
@@ -2135,7 +2155,7 @@ insight.bgden.shrub.slope <- insight.bgden.shrub.slope %>%
   filter(PlotSlope_scaled %in% c(-2.245, -0.010, 2.673))
 
 # Graph
-bgden.shrub.slope <- dat.plot %>% 
+bgden.shrub.slope <- dat.bgden %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
              color = PlotSlope)) +
   geom_point(alpha = 0.7) +
@@ -2159,13 +2179,13 @@ bgden.shrub.slope
 ## BG density: Slope * herb (NS) ------------------------------------------
 
 # Generate prediction and add unscaled variable - 12 slope levels to get mean
-insight.bgden.herb.slope <- dat.plot.ex %>% 
+insight.bgden.herb.slope <- dat.bgden.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "PlotSlope_scaled"), length = 3) %>% 
   get_datagrid("PlotSlope_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgden.herb.slope$Predicted <- get_predicted(bgden3, insight.bgden.herb.slope)
-unscaled.herb.slope <- dat.plot.unscaled %>% 
+unscaled.herb.slope <- dat.bgden.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "PlotSlope"), length = 3) %>% 
   get_datagrid("PlotSlope", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover) %>% 
@@ -2177,7 +2197,7 @@ insight.bgden.herb.slope <- insight.bgden.herb.slope %>%
   filter(PlotSlope_scaled %in% c(-2.245, -0.010, 2.673))
 
 # Graph
-bgden.herb.slope <- dat.plot %>% 
+bgden.herb.slope <- dat.bgden %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGDensity,
              color = PlotSlope)) +
   geom_point(alpha = 0.7) +
@@ -2204,18 +2224,18 @@ bgden.herb.slope
 ## BG cover: Precip -------------------------------------------------------
 
 # Generate prediction and add scaled variable 
-insight.bgcov.precip <- get_datagrid(dat.plot.ex, by = c("Prev_year_precip_scaled"),
+insight.bgcov.precip <- get_datagrid(dat.bgcov.ex, by = c("Prev_year_precip_scaled"),
                                      length = 100)
 insight.bgcov.precip$Change_BGCover <- get_predicted(bgcov4, insight.bgcov.precip)
 insight.bgcov.precip$SE <- get_predicted_ci(bgcov4, data = insight.bgcov.precip)$SE
 insight.bgcov.precip$CI <- insight.bgcov.precip$SE * 1.96
-unscaled.precip <- get_datagrid(dat.plot.unscaled, by = "Prev_year_precip",
+unscaled.precip <- get_datagrid(dat.bgcov.unscaled, by = "Prev_year_precip",
                                 length = 100) %>% 
   arrange(Prev_year_precip)
 insight.bgcov.precip$Prev_year_precip <- unscaled.precip$Prev_year_precip
 
 # Graph
-bgcov.precip <- dat.plot %>% 
+bgcov.precip <- dat.bgcov %>% 
   ggplot(aes(x = Prev_year_precip, y = Change_BGCover)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgcov.precip,
@@ -2233,21 +2253,53 @@ bgcov.precip <- dat.plot %>%
 bgcov.precip
 
 
+## BG cover: Initial cover ------------------------------------------------
+
+# Generate prediction and add unscaled variable 
+insight.bgcov.inbgcov <- get_datagrid(dat.bgcov.ex, by = c("Init_BGCover_scaled"),
+                                      length = 10)
+insight.bgcov.inbgcov$Change_BGCover <- get_predicted(bgcov4, insight.bgcov.inbgcov)
+insight.bgcov.inbgcov$SE <- get_predicted_ci(bgcov4, data = insight.bgcov.inbgcov)$SE
+insight.bgcov.inbgcov$CI <- insight.bgcov.inbgcov$SE * 1.96
+unscaled.inbgcov <- get_datagrid(dat.bgcov.unscaled, by = "Init_BGCover",
+                                 length = 10) %>% 
+  arrange(Init_BGCover) # idk why but this only produces 24 rows when asked for 100, so I just have to go with 10, which it can do
+insight.bgcov.inbgcov$Init_BGCover <- unscaled.inbgcov$Init_BGCover
+
+# Graph
+bgcov.inbgcov <- dat.bgcov %>% 
+  ggplot(aes(x = Init_BGCover, y = Change_BGCover)) +
+  geom_point(alpha = 0.7) +
+  geom_line(data = insight.bgcov.inbgcov,
+            aes(y = Change_BGCover), linewidth = 1,
+            color = "purple3") +
+  geom_ribbon(data = insight.bgcov.inbgcov,
+              aes(ymin = Change_BGCover - CI, ymax = Change_BGCover + CI), alpha = 0.2) +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Cover (%)"),
+       x = expression("Initial cover (%)"),
+       title = "Change in buffelgrass cover vs. initial cover") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgcov.inbgcov
+
+
 ## BG cover: Slope (NS) ---------------------------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgcov.slope <- get_datagrid(dat.plot.ex, by = c("PlotSlope_scaled"),
+insight.bgcov.slope <- get_datagrid(dat.bgcov.ex, by = c("PlotSlope_scaled"),
                                     length = 100)
 insight.bgcov.slope$Change_BGCover <- get_predicted(bgcov4, insight.bgcov.slope)
 insight.bgcov.slope$SE <- get_predicted_ci(bgcov4, data = insight.bgcov.slope)$SE
 insight.bgcov.slope$CI <- insight.bgcov.slope$SE * 1.96
-unscaled.slope <- get_datagrid(dat.plot.unscaled, by = "PlotSlope",
+unscaled.slope <- get_datagrid(dat.bgcov.unscaled, by = "PlotSlope",
                                length = 100) %>% 
   arrange(PlotSlope)
 insight.bgcov.slope$PlotSlope <- unscaled.slope$PlotSlope
 
 # Graph
-bgcov.slope <- dat.plot %>% 
+bgcov.slope <- dat.bgcov %>% 
   ggplot(aes(x = PlotSlope, y = Change_BGCover)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgcov.slope,
@@ -2268,18 +2320,18 @@ bgcov.slope
 ## BG cover: Shrub (NS) ---------------------------------------------------
 
 # Generate prediction and add scaled variable 
-insight.bgcov.shrub <- get_datagrid(dat.plot.ex, by = c("Change_ShrubCover_scaled"),
+insight.bgcov.shrub <- get_datagrid(dat.bgcov.ex, by = c("Change_ShrubCover_scaled"),
                                     length = 100)
 insight.bgcov.shrub$Change_BGCover <- get_predicted(bgcov4, insight.bgcov.shrub)
 insight.bgcov.shrub$SE <- get_predicted_ci(bgcov4, data = insight.bgcov.shrub)$SE
 insight.bgcov.shrub$CI <- insight.bgcov.shrub$SE * 1.96
-unscaled.shrub <- get_datagrid(dat.plot.unscaled, by = "Change_ShrubCover",
+unscaled.shrub <- get_datagrid(dat.bgcov.unscaled, by = "Change_ShrubCover",
                                length = 100) %>% 
   arrange(Change_ShrubCover)
 insight.bgcov.shrub$Change_ShrubCover <- unscaled.shrub$Change_ShrubCover
 
 # Graph
-bgcov.shrub <- dat.plot %>% 
+bgcov.shrub <- dat.bgcov %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGCover)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgcov.shrub,
@@ -2303,18 +2355,18 @@ bgcov.shrub
 ## BG cover: Herb (NS) ----------------------------------------------------
 
 # Generate prediction and add scaled variable 
-insight.bgcov.herb <- get_datagrid(dat.plot.ex, by = c("Change_HerbCover_scaled"),
+insight.bgcov.herb <- get_datagrid(dat.bgcov.ex, by = c("Change_HerbCover_scaled"),
                                    length = 100)
 insight.bgcov.herb$Change_BGCover <- get_predicted(bgcov4, insight.bgcov.herb)
 insight.bgcov.herb$SE <- get_predicted_ci(bgcov4, data = insight.bgcov.herb)$SE
 insight.bgcov.herb$CI <- insight.bgcov.herb$SE * 1.96
-unscaled.herb <- get_datagrid(dat.plot.unscaled, by = "Change_HerbCover",
+unscaled.herb <- get_datagrid(dat.bgcov.unscaled, by = "Change_HerbCover",
                               length = 100) %>% 
   arrange(Change_HerbCover)
 insight.bgcov.herb$Change_HerbCover <- unscaled.herb$Change_HerbCover
 
 # Graph
-bgcov.herb <- dat.plot %>% 
+bgcov.herb <- dat.bgcov %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGCover)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgcov.herb,
@@ -2335,52 +2387,20 @@ bgcov.herb <- dat.plot %>%
 bgcov.herb
 
 
-## BG cover: Initial density (NS) -----------------------------------------
-
-# Generate prediction and add unscaled variable 
-insight.bgcov.inbgden <- get_datagrid(dat.plot.ex, by = c("Init_BGDensity_scaled"),
-                                      length = 100)
-insight.bgcov.inbgden$Change_BGCover <- get_predicted(bgcov4, insight.bgcov.inbgden)
-insight.bgcov.inbgden$SE <- get_predicted_ci(bgcov4, data = insight.bgcov.inbgden)$SE
-insight.bgcov.inbgden$CI <- insight.bgcov.inbgden$SE * 1.96
-unscaled.inbgden <- get_datagrid(dat.plot.unscaled, by = "Init_BGDensity",
-                                 length = 100) %>% 
-  arrange(Init_BGDensity)
-insight.bgcov.inbgden$Init_BGDensity <- unscaled.inbgden$Init_BGDensity
-
-# Graph
-bgcov.inbgden <- dat.plot %>% 
-  ggplot(aes(x = Init_BGDensity, y = Change_BGCover)) +
-  geom_point(alpha = 0.7) +
-  geom_line(data = insight.bgcov.inbgden,
-            aes(y = Change_BGCover), linewidth = 1,
-            color = "purple3") +
-  geom_ribbon(data = insight.bgcov.inbgden,
-              aes(ymin = Change_BGCover - CI, ymax = Change_BGCover + CI), alpha = 0.2) +
-  theme_bw() +
-  labs(y = expression(Delta ~ "Cover (%)"),
-       x = expression(paste("Initial density (individuals / ", m^2, ")")),
-       title = "Change in buffelgrass cover vs. initial density") +
-  geom_hline(yintercept = 0,
-             linetype = "dashed",
-             color = "red") 
-bgcov.inbgden
-
-
 ## BG cover: Initial shrub cover (NS) -------------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgcov.inshrub <- get_datagrid(dat.plot.ex, by = c("Init_ShrubCover_scaled"),
+insight.bgcov.inshrub <- get_datagrid(dat.bgcov.ex, by = c("Init_ShrubCover_scaled"),
                                       length = 10)
 insight.bgcov.inshrub$Change_BGCover <- get_predicted(bgcov4, insight.bgcov.inshrub)
 insight.bgcov.inshrub$SE <- get_predicted_ci(bgcov4, data = insight.bgcov.inshrub)$SE
 insight.bgcov.inshrub$CI <- insight.bgcov.inshrub$SE * 1.96
-unscaled.inshrub <- get_datagrid(dat.plot.unscaled, by = "Init_ShrubCover") %>% 
+unscaled.inshrub <- get_datagrid(dat.bgcov.unscaled, by = "Init_ShrubCover") %>% 
   arrange(Init_ShrubCover)
 insight.bgcov.inshrub$Init_ShrubCover <- unscaled.inshrub$Init_ShrubCover
 
 # Graph
-bgcov.inshrub <- dat.plot %>% 
+bgcov.inshrub <- dat.bgcov %>% 
   ggplot(aes(x = Init_ShrubCover, y = Change_BGCover)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgcov.inshrub,
@@ -2401,18 +2421,18 @@ bgcov.inshrub
 ## BG cover: Initial herb cover (NS) --------------------------------------
 
 # Generate prediction and add unscaled variable 
-insight.bgcov.inherb <- get_datagrid(dat.plot.ex, by = c("Init_HerbCover_scaled"),
+insight.bgcov.inherb <- get_datagrid(dat.bgcov.ex, by = c("Init_HerbCover_scaled"),
                                      length = 100)
 insight.bgcov.inherb$Change_BGCover <- get_predicted(bgcov4, insight.bgcov.inherb)
 insight.bgcov.inherb$SE <- get_predicted_ci(bgcov4, data = insight.bgcov.inherb)$SE
 insight.bgcov.inherb$CI <- insight.bgcov.inherb$SE * 1.96
-unscaled.inherb <- get_datagrid(dat.plot.unscaled, by = "Init_HerbCover",
+unscaled.inherb <- get_datagrid(dat.bgcov.unscaled, by = "Init_HerbCover",
                                 length = 100) %>% 
   arrange(Init_HerbCover)
 insight.bgcov.inherb$Init_HerbCover <- unscaled.inherb$Init_HerbCover
 
 # Graph
-bgcov.inherb <- dat.plot %>% 
+bgcov.inherb <- dat.bgcov %>% 
   ggplot(aes(x = Init_HerbCover, y = Change_BGCover)) +
   geom_point(alpha = 0.7) +
   geom_line(data = insight.bgcov.inherb,
@@ -2433,13 +2453,13 @@ bgcov.inherb
 ## BG cover: Precip * shrub (NS) ------------------------------------------
 
 # Generate prediction and add unscaled variable - 12 levels to get mean
-insight.bgcov.shrub.precip <- dat.plot.ex %>% 
+insight.bgcov.shrub.precip <- dat.bgcov.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgcov.shrub.precip$Predicted <- get_predicted(bgcov4, insight.bgcov.shrub.precip)
-unscaled.shrub.precip <- dat.plot.unscaled %>% 
+unscaled.shrub.precip <- dat.bgcov.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover) %>% 
@@ -2451,7 +2471,7 @@ insight.bgcov.shrub.precip <- insight.bgcov.shrub.precip %>%
   filter(Prev_year_precip_scaled %in% c(-0.941, 0.004, 1.657))
 
 # Graph
-bgcov.shrub.precip <- dat.plot %>% 
+bgcov.shrub.precip <- dat.bgcov %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGCover,
              color = Prev_year_precip)) +
   geom_point(alpha = 0.7) +
@@ -2475,13 +2495,13 @@ bgcov.shrub.precip
 ## BG cover: Precip * herb (NS) -------------------------------------------
 
 # Generate prediction and add unscaled variable - 12 levels to get mean
-insight.bgcov.herb.precip <- dat.plot.ex %>% 
+insight.bgcov.herb.precip <- dat.bgcov.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
   get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgcov.herb.precip$Predicted <- get_predicted(bgcov4, insight.bgcov.herb.precip)
-unscaled.herb.precip <- dat.plot.unscaled %>% 
+unscaled.herb.precip <- dat.bgcov.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "Prev_year_precip"), length = 10) %>% 
   get_datagrid("Prev_year_precip", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover) %>% 
@@ -2493,7 +2513,7 @@ insight.bgcov.herb.precip <- insight.bgcov.herb.precip %>%
   filter(Prev_year_precip_scaled %in% c(-0.941, 0.004, 1.657))
 
 # Graph
-bgcov.herb.precip <- dat.plot %>% 
+bgcov.herb.precip <- dat.bgcov %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGCover,
              color = Prev_year_precip)) +
   geom_point(alpha = 0.7) +
@@ -2517,13 +2537,13 @@ bgcov.herb.precip
 ## BG cover: Slope * shrub (NS) -------------------------------------------
 
 # Generate prediction and add unscaled variable - 12 slope levels to get mean
-insight.bgcov.shrub.slope <- dat.plot.ex %>% 
+insight.bgcov.shrub.slope <- dat.bgcov.ex %>% 
   get_datagrid(c("Change_ShrubCover_scaled", "PlotSlope_scaled"), length = 3) %>% 
   get_datagrid("PlotSlope_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgcov.shrub.slope$Predicted <- get_predicted(bgcov4, insight.bgcov.shrub.slope)
-unscaled.shrub.slope <- dat.plot.unscaled %>% 
+unscaled.shrub.slope <- dat.bgcov.unscaled %>% 
   get_datagrid(c("Change_ShrubCover", "PlotSlope"), length = 3) %>% 
   get_datagrid("PlotSlope", length = 12, numerics = "all") %>% 
   arrange(Change_ShrubCover) %>% 
@@ -2535,7 +2555,7 @@ insight.bgcov.shrub.slope <- insight.bgcov.shrub.slope %>%
   filter(PlotSlope_scaled %in% c(-2.245, -0.010, 2.673))
 
 # Graph
-bgcov.shrub.slope <- dat.plot %>% 
+bgcov.shrub.slope <- dat.bgcov %>% 
   ggplot(aes(x = Change_ShrubCover, y = Change_BGCover,
              color = PlotSlope)) +
   geom_point(alpha = 0.7) +
@@ -2559,13 +2579,13 @@ bgcov.shrub.slope
 ## BG cover: Slope * herb (NS) --------------------------------------------
 
 # Generate prediction and add unscaled variable - 12 slope levels to get mean
-insight.bgcov.herb.slope <- dat.plot.ex %>% 
+insight.bgcov.herb.slope <- dat.bgcov.ex %>% 
   get_datagrid(c("Change_HerbCover_scaled", "PlotSlope_scaled"), length = 3) %>% 
   get_datagrid("PlotSlope_scaled", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover_scaled) %>% 
   distinct(.keep_all = TRUE)
 insight.bgcov.herb.slope$Predicted <- get_predicted(bgcov4, insight.bgcov.herb.slope)
-unscaled.herb.slope <- dat.plot.unscaled %>% 
+unscaled.herb.slope <- dat.bgcov.unscaled %>% 
   get_datagrid(c("Change_HerbCover", "PlotSlope"), length = 3) %>% 
   get_datagrid("PlotSlope", length = 12, numerics = "all") %>% 
   arrange(Change_HerbCover) %>% 
@@ -2577,7 +2597,7 @@ insight.bgcov.herb.slope <- insight.bgcov.herb.slope %>%
   filter(PlotSlope_scaled %in% c(-2.245, -0.010, 2.673))
 
 # Graph
-bgcov.herb.slope <- dat.plot %>% 
+bgcov.herb.slope <- dat.bgcov %>% 
   ggplot(aes(x = Change_HerbCover, y = Change_BGCover,
              color = PlotSlope)) +
   geom_point(alpha = 0.7) +
@@ -2989,19 +3009,6 @@ density.cover <- plot.change %>%
 density.cover
 
 
-# Change in BG density vs. initial density
-inbgden.bgden <- plot.change %>% 
-  ggplot(aes(x = Init_BGDensity, y = Change_BGDensity)) +
-  geom_point(alpha = 0.7) +
-  geom_smooth(method = "lm") +
-  theme_bw() +
-  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
-  labs(x = expression(paste("Initial density (individuals / ", m^2, ")")),
-       y = expression(Delta ~ paste("Density (individuals / ", m^2, ")")),
-       title = "Change in BG density vs. initial density")
-inbgden.bgden
-
-
 
 # Write out draft figures -------------------------------------------------
 
@@ -3254,6 +3261,12 @@ tiff("figures/2026-03_draft-figures-revision1.3/BG-cover-change_prev-year-precip
 bgcov.precip
 dev.off()
 
+# BG cover change vs. Init_BGDensity
+tiff("figures/2026-03_draft-figures-revision1.3/BG-cover-change_initial-BG-cover.tiff",
+     units = "in", height = 4, width = 5, res = 150)
+bgcov.inbgcov
+dev.off()
+
 
 # Not significant
 # BG cover change vs. PlotSlope
@@ -3272,12 +3285,6 @@ dev.off()
 tiff("figures/2026-03_draft-figures-revision1.3/BG-cover-change_herb-cover-change.tiff",
      units = "in", height = 4, width = 5, res = 150)
 bgcov.herb
-dev.off()
-
-# BG cover change vs. Init_BGDensity
-tiff("figures/2026-03_draft-figures-revision1.3/BG-cover-change_initial-BG-density.tiff",
-     units = "in", height = 4, width = 5, res = 150)
-bgcov.inbgden
 dev.off()
 
 # BG cover change vs. Init_ShrubCover
