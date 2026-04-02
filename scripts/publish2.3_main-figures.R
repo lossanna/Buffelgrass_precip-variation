@@ -358,6 +358,51 @@ ggarrange(bgden.precip, bgcov.precip, survival.precip,
           labels = c("(A)", "(B)", "(C)"))
 
 
+
+# Figure 4: BG density, precip * shrub ------------------------------------
+
+# Generate prediction and add unscaled variable - 12 levels to get mean
+insight.bgden.shrub.precip <- dat.plot.ex %>% 
+  get_datagrid(c("Change_ShrubCover_scaled", "Prev_year_precip_scaled"), length = 10) %>% 
+  get_datagrid("Prev_year_precip_scaled", length = 12, numerics = "all") %>% 
+  arrange(Change_ShrubCover_scaled) %>% 
+  distinct(.keep_all = TRUE)
+insight.bgden.shrub.precip$Predicted <- get_predicted(bgden, insight.bgden.shrub.precip)
+unscaled.shrub.precip <- dat.plot.unscaled %>% 
+  get_datagrid(c("Change_ShrubCover", "Prev_year_precip"), length = 10) %>% 
+  get_datagrid("Prev_year_precip", length = 12, numerics = "all") %>% 
+  arrange(Change_ShrubCover) %>% 
+  distinct(.keep_all = TRUE)
+insight.bgden.shrub.precip$Change_ShrubCover <- unscaled.shrub.precip$Change_ShrubCover
+insight.bgden.shrub.precip$Prev_year_precip <- unscaled.shrub.precip$Prev_year_precip
+unique(insight.bgden.shrub.precip$Prev_year_precip_scaled) 
+insight.bgden.shrub.precip <- insight.bgden.shrub.precip %>% 
+  filter(Prev_year_precip_scaled %in% c(-0.941, 0.004, 1.657))
+
+# Graph
+bgden.shrub.precip <- dat.plot %>% 
+  ggplot(aes(x = Change_ShrubCover, y = Change_BGDensity,
+             color = Prev_year_precip)) +
+  geom_point(alpha = 0.7) +
+  geom_line(data = insight.bgden.shrub.precip,
+            aes(y = Predicted, group = Prev_year_precip), linewidth = 1.5) +
+  theme_bw() +
+  scale_color_viridis(option = "viridis", direction = -1,
+                      name = "Previous year \nprecip (mm)") +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  labs(y = expression(paste(Delta ~ "Buffelgrass density (individuals / ", m^2, ")")),
+       x = expression(Delta ~ "Native shrub cover (%)")) +
+  theme(plot.margin = margin(10, 10, 10, 10))
+bgden.shrub.precip
+
+
+
+
 # Write out figures -------------------------------------------------------
 
 # Figure 1
@@ -378,13 +423,18 @@ ggarrange(total.shrub.slope, repro.shrub.slope,
           common.legend = TRUE, legend = "bottom")
 dev.off()
 
-# Figure 4
-
+# Figure 3
 tiff("figures/publish2.3-figures/Figure3_600dpi.tiff",
      units = "in", height = 6, width = 8, res = 600)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
           labels = c("(A)", "(B)", "(C)"))
+dev.off()
+
+# Figure 4
+tiff("figures/publish2.3-figures/Figure4_600dpi.tiff",
+     units = "in", height = 4, width = 6, res = 600)
+bgden.shrub.precip
 dev.off()
 
 save.image("RData/publish2.3_main-figures.RData")
