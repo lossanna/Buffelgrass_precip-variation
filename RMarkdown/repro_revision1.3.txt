@@ -4,7 +4,7 @@ Previous year precipitation	-1.6149	0.9594	812.6087	-1.683	0.09271
 Plot slope	0.1442	0.8554	51.0604	0.169	0.86681
 Change in BG density	-1.3018	0.8566	696.6020	-1.520	0.12904
 Change in shrub cover	1.1347	0.6989	754.3917	1.624	0.10488
-Change in herb cover	3.4310	0.6981	1128.0505	4.915	1.02e-06 ***
+Change in herb cover	3.4310	0.6981	1128.0505	4.915	1.02e-06***
 Initial BG density	-2.7099	0.8556	71.1368	-3.167	0.00227**
 Initial shrub cover	-0.9721	0.7928	57.9103	-1.226	0.22509
 Initial herb cover	1.4198	0.8862	72.1788	1.602	0.11348

@@ -7,7 +7,7 @@ Change in shrub cover	6.29992	1.16242	656.67727	5.420	8.39e-08***
 Change in herb cover	1.11002	1.13625	673.98008	0.977	0.32896
 Initial BG density	-4.17861	1.66981	67.78773	-2.502	0.01475*
 Initial shrub cover	-0.05043	1.55826	69.61869	-0.032	0.97428
-Initial herb cover	2.06919	1.74676  71.73814	1.185	0.24009
+Initial herb cover	2.06919	1.74676	71.73814	1.185	0.24009
 Change in BG density * Previous year precip	3.00247	1.77954	137.16719	1.687	0.09383
 Change in shrub cover * Previous year precip	-7.47986	1.40429	456.64090	-5.326	1.58e-07***
 Change in herb cover * Previous year precip	3.49025	1.22747	452.43403	2.843	0.00466**

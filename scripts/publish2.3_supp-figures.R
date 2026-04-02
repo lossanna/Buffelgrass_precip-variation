@@ -192,7 +192,7 @@ herb.change.precip
 
 
 
-# Figure S4: Repro culm, BG density ---------------------------------------
+# Figure S4: Total culm, BG density ---------------------------------------
 
 # Generate prediction and add unscaled variable
 insight.total.bgden <- get_datagrid(dat.culm.ex, by = c("Change_BGDensity_scaled"),
