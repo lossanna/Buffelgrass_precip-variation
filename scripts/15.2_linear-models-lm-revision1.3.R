@@ -1,5 +1,5 @@
 # Created: 2026-02-04
-# Updated: 2026-04-02
+# Updated: 2026-04-07
 
 # Purpose: Apply v1.2 updates and v1.3 updates (decided in 15.1.R)
 #   v1.2: Include initial BG density, shrub cover, and herb cover values as explanatory variables.
@@ -29,14 +29,15 @@ survival.dat <- read_csv("data/cleaned/11.2_survival-data_clean.csv")
 culm.change <- culm.change.raw %>% 
   mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
-         Change_BGDensity_scaled = scale(Change_BGDensity, scale = TRUE)[, 1],
-         Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
-         Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1],
-         Change_BGCover_scaled = scale(Change_BGCover, scale = TRUE)[, 1],
-         Init_BGDensity_scaled = scale(Init_BGDensity, scale = TRUE)[, 1],
-         Init_ShrubCover_scaled = scale(Init_ShrubCover, scale = TRUE)[, 1],
-         Init_HerbCover_scaled = scale(Init_HerbCover, scale = TRUE)[, 1],
-         Init_BGCover_scaled = scale(Init_BGCover, scale = TRUE)[, 1])
+         Change_BGDensity_scaled = scale(Change_BGDensity, center = TRUE, scale = TRUE)[, 1],
+         Change_ShrubCover_scaled = scale(Change_ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         Change_HerbCover_scaled = scale(Change_HerbCover, center = TRUE, scale = TRUE)[, 1],
+         Change_BGCover_scaled = scale(Change_BGCover, center = TRUE, scale = TRUE)[, 1],
+         Init_BGDensity_scaled = scale(Init_BGDensity, center = TRUE, scale = TRUE)[, 1],
+         Init_ShrubCover_scaled = scale(Init_ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         Init_HerbCover_scaled = scale(Init_HerbCover, center = TRUE, scale = TRUE)[, 1],
+         Init_BGCover_scaled = scale(Init_BGCover, center = TRUE, scale = TRUE)[, 1])
+
 
 # Center and scale numeric variables for plot-level data
 plot.change <- culm.change.raw %>% 
@@ -44,13 +45,13 @@ plot.change <- culm.change.raw %>%
   distinct(.keep_all = TRUE) %>% 
   mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
          Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
-         Change_ShrubCover_scaled = scale(Change_ShrubCover, scale = TRUE)[, 1],
-         Change_HerbCover_scaled = scale(Change_HerbCover, scale = TRUE)[, 1],
-         Change_BGCover_scaled = scale(Change_BGCover, scale = TRUE)[, 1],
-         Init_BGDensity_scaled = scale(Init_BGDensity, scale = TRUE)[, 1],
-         Init_ShrubCover_scaled = scale(Init_ShrubCover, scale = TRUE)[, 1],
-         Init_HerbCover_scaled = scale(Init_HerbCover, scale = TRUE)[, 1],
-         Init_BGCover_scaled = scale(Init_BGCover, scale = TRUE)[, 1])
+         Change_ShrubCover_scaled = scale(Change_ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         Change_HerbCover_scaled = scale(Change_HerbCover, center = TRUE, scale = TRUE)[, 1],
+         Change_BGCover_scaled = scale(Change_BGCover, center = TRUE, scale = TRUE)[, 1],
+         Init_BGDensity_scaled = scale(Init_BGDensity, center = TRUE, scale = TRUE)[, 1],
+         Init_ShrubCover_scaled = scale(Init_ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         Init_HerbCover_scaled = scale(Init_HerbCover, center = TRUE, scale = TRUE)[, 1],
+         Init_BGCover_scaled = scale(Init_BGCover, center = TRUE, scale = TRUE)[, 1])
 
 
 # Center and scale numeric variables for survival data
