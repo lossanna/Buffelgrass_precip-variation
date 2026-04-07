@@ -13,7 +13,7 @@ load("../RData/publish2.3_figsS1-S11.RData")
 ```
 
 Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
-Last updated: 2026-04-02  
+Last updated: 2026-04-07  
 
 This document includes all the supplemental tables and figures that accompany "Precipitation and slope moderate associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert" by Ossanna et al. (2026).
 
