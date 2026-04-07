@@ -3105,7 +3105,7 @@ tiff("figures/2026-03_draft-figures-revision1.3/Repro-change_herb-cover-change.t
 repro.herb
 dev.off()
 
-# Rerpo change vs. Init_BGDensity 
+# Repro change vs. Init_BGDensity 
 tiff("figures/2026-03_draft-figures-revision1.3/Repro-change_initial-BG-density.tiff",
      units = "in", height = 4, width = 5, res = 150)
 repro.inbgden
