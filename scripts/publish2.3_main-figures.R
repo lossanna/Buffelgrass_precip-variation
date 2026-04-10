@@ -1,5 +1,5 @@
 # Created: 2026-03-31
-# Updated: 2026-04-02
+# Updated: 2026-04-10
 
 # Purpose: Create main figures for publishing (revision 1.3).
 
@@ -222,7 +222,7 @@ total.shrub.slope <- dat.culm %>%
             aes(y = Predicted, group = PlotSlope), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "plasma", direction = -1,
-                      name = "Plot slope (\u00B0)") +
+                      name = "Slope angle (\u00B0)") +
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") +
@@ -264,7 +264,7 @@ repro.shrub.slope <- dat.culm %>%
             aes(y = Predicted, group = PlotSlope), linewidth = 1.5) +
   theme_bw() +
   scale_color_viridis(option = "plasma", direction = -1,
-                      name = "Plot slope (\u00B0)") +
+                      name = "Slope angle (\u00B0)") +
   geom_hline(yintercept = 0,
              linetype = "dashed",
              color = "red") +
