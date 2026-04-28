@@ -1,5 +1,5 @@
 # Created: 2026-03-31
-# Updated: 2026-04-10
+# Updated: 2026-04-28
 
 # Purpose: Create main figures for publishing (revision 1.3).
 
@@ -323,7 +323,8 @@ repro.bgden.precip <- dat.culm %>%
              linetype = "dashed",
              color = "red") +
   labs(y = expression(Delta ~ "Buffelgrass reproductive culm count"),
-       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
+       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")"))) +
+  theme(plot.margin = margin(10, 10, 10, 10))
 repro.bgden.precip
 
 
@@ -488,6 +489,12 @@ dev.off()
 # Figure 4
 tiff("figures/publish2.3-figures/Figure4_600dpi.tiff",
      units = "in", height = 6, width = 8, res = 600)
+ggarrange(bgden.precip, bgcov.precip, survival.precip,
+          ncol = 2, nrow = 2,
+          labels = c("(A)", "(B)", "(C)"))
+dev.off()
+tiff("figures/publish2.3-figures/Figure4_580dpi.tiff",
+     units = "in", height = 6, width = 8, res = 580)
 ggarrange(bgden.precip, bgcov.precip, survival.precip,
           ncol = 2, nrow = 2,
           labels = c("(A)", "(B)", "(C)"))
