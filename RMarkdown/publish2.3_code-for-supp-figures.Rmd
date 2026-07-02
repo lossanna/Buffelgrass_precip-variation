@@ -1,0 +1,498 @@
+---
+title: "Code for supplemental figures"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(insight)
+library(viridis)
+library(ggpubr)
+load("../RData/publish2.3_supp-figures.RData")
+```
+
+Contact: Lia Ossanna, lossanna@arizona.edu or lossanna@nmsu.edu  
+Last updated: 2026-05-05
+
+This document includes the R code needed to produce the supplemental figures presented in "Precipitation and slope angle moderate associations between native shrubs and invasive buffelgrass (*Pennisetum ciliare*) growth in the Sonoran Desert" by Ossanna et al. (2026). Code was run with R v4.5.3.
+
+For detailed information and annotated code, see `code-for-main-figures.html`.
+
+Figures:
+
+- S1: Precipitation conditions
+- S2: Reproductive culm change vs. herb cover change
+- S3: Shrub/herb cover change vs. precip
+- S4: Total culm change vs. density change
+- S5: Total culm change vs. initial density
+- S6: Reproductive culm change vs. initial density
+- S7: Cover change vs. initial cover
+- S8: Density change vs. cover change
+- S9: Total culm change vs. cover change
+- S10: Survival vs. density
+- S11: Survival vs. shrub cover
+
+# Setup
+```{r Setup, eval=FALSE}
+library(readr) # v2.2.0
+library(dplyr) # v1.2.0
+library(ggplot2) # v4.0.2
+library(insight) # v1.3.1
+library(viridis) # v0.6.5
+library(ggpubr) # v0.6.3
+
+# Load data ---------------------------------------------------------------
+
+culm.change.raw <- read_csv("culm-data.csv")
+plot.change.raw <- read_csv("plot-data.csv")
+survival.dat.raw <- read_csv("survival-data.csv")
+dat <- read_csv("all-data.csv")
+
+# Center and scale numeric variables --------------------------------------
+
+# Center and scale numeric variables for culm change data
+culm.change <- culm.change.raw %>% 
+  mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
+         Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
+         Change_BGDensity_scaled = scale(Change_BGDensity, center = TRUE, scale = TRUE)[, 1],
+         Change_ShrubCover_scaled = scale(Change_ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         Change_HerbCover_scaled = scale(Change_HerbCover, center = TRUE, scale = TRUE)[, 1],
+         Change_BGCover_scaled = scale(Change_BGCover, center = TRUE, scale = TRUE)[, 1],
+         Init_BGDensity_scaled = scale(Init_BGDensity, center = TRUE, scale = TRUE)[, 1],
+         Init_ShrubCover_scaled = scale(Init_ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         Init_HerbCover_scaled = scale(Init_HerbCover, center = TRUE, scale = TRUE)[, 1],
+         Init_BGCover_scaled = scale(Init_BGCover, center = TRUE, scale = TRUE)[, 1])
+
+# Center and scale numeric variables for plot-level data
+plot.change <- plot.change.raw %>% 
+  mutate(PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
+         Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
+         Change_ShrubCover_scaled = scale(Change_ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         Change_HerbCover_scaled = scale(Change_HerbCover, center = TRUE, scale = TRUE)[, 1],
+         Change_BGCover_scaled = scale(Change_BGCover, center = TRUE, scale = TRUE)[, 1],
+         Init_BGDensity_scaled = scale(Init_BGDensity, center = TRUE, scale = TRUE)[, 1],
+         Init_ShrubCover_scaled = scale(Init_ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         Init_HerbCover_scaled = scale(Init_HerbCover, center = TRUE, scale = TRUE)[, 1],
+         Init_BGCover_scaled = scale(Init_BGCover, center = TRUE, scale = TRUE)[, 1])
+
+
+# Center and scale numeric variables for survival data
+dat.survival <- survival.dat.raw %>% 
+  mutate(Prev_year_precip_scaled = scale(Prev_year_precip, center = TRUE, scale = TRUE)[, 1],
+         PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
+         ShrubCover_scaled = scale(ShrubCover, center = TRUE, scale = TRUE)[, 1],
+         HerbCover_scaled = scale(HerbCover, center = TRUE, scale = TRUE)[, 1],
+         PlotSlope_scaled = scale(PlotSlope, center = TRUE, scale = TRUE)[, 1],
+         BGDensity_scaled = scale(BGDensity, center = TRUE, scale = TRUE)[, 1])
+
+
+
+# Construct 3 dataset versions needed for graphing ------------------------
+
+# Need 3 datasets:
+#   1. Data for graphing observed data
+#   2. Data to construct datagrid with model predictions
+#   3. Data to construct datagrid with unscaled explanatory variable (to be added to #2)
+
+
+# 1. Dataset for graphing (response and unscaled explanatory variables)
+#   Culm change - total & repro
+dat.culm <- culm.change %>% 
+  select(Change_TotalCulms, Change_ReproductiveCulms, 
+         Prev_year_precip, PlotSlope, Change_BGDensity, Change_ShrubCover, Change_HerbCover,
+         Init_BGDensity, Init_ShrubCover, Init_HerbCover)
+
+#   Plot change - density & cover
+dat.bgden <- plot.change %>% 
+  select(Change_BGDensity,  
+         Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+         Init_BGDensity, Init_ShrubCover, Init_HerbCover) 
+
+dat.bgcov <- plot.change %>% 
+  select(Change_BGCover, 
+         Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+         Init_BGCover, Init_ShrubCover, Init_HerbCover) 
+
+
+#   Survival  
+dat.survival <- survival.dat %>%
+  select(remaining_toothpicks, seedlings_surviving, survival_prop,
+         Prev_year_precip, PlotSlope, BGDensity, ShrubCover, HerbCover,
+         Prev_year_precip_scaled, PlotSlope_scaled, BGDensity_scaled,
+         ShrubCover_scaled, HerbCover_scaled)
+
+
+# 2. Dataset for constructing datagrid with predictions (scaled explanatory variables only)
+#   Culm change - total & repro 
+dat.culm.ex <- culm.change %>% 
+  select(Prev_year_precip_scaled, PlotSlope_scaled, 
+         Change_BGDensity_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
+         Init_BGDensity_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
+
+#   Plot change - density & cover
+dat.bgden.ex <- plot.change %>% 
+  select(Prev_year_precip_scaled,
+         PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
+         Init_BGDensity_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
+
+dat.bgcov.ex <- plot.change %>% 
+  select(Prev_year_precip_scaled,
+         PlotSlope_scaled, Change_ShrubCover_scaled, Change_HerbCover_scaled,
+         Init_BGCover_scaled, Init_ShrubCover_scaled, Init_HerbCover_scaled)
+
+#   Survival  
+dat.survival.ex <- survival.dat %>%
+  select(Prev_year_precip_scaled,
+         PlotSlope_scaled, BGDensity_scaled, ShrubCover_scaled, HerbCover_scaled)
+
+
+# 3. Dataset for constructing datagrid with unscaled variables to match graph (unscaled explanatory variables only)
+#   Culm change - total & repro
+dat.culm.unscaled <- culm.change %>% 
+  select(Prev_year_precip, PlotSlope, 
+         Change_BGDensity, Change_ShrubCover, Change_HerbCover,
+         Init_BGDensity, Init_ShrubCover, Init_HerbCover)
+
+#   Plot change - density & cover
+dat.bgden.unscaled <- plot.change %>% 
+  select(Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+         Init_BGDensity, Init_ShrubCover, Init_HerbCover)
+
+dat.bgcov.unscaled <- plot.change %>% 
+  select(Prev_year_precip, PlotSlope, Change_ShrubCover, Change_HerbCover,
+         Init_BGCover, Init_ShrubCover, Init_HerbCover)
+
+#   Survival 
+dat.survival.unscaled <- survival.dat %>%
+  select(Prev_year_precip, PlotSlope, BGDensity, ShrubCover, HerbCover)
+```
+
+
+# Figure S1: Precipitation conditions
+```{r}
+# Create dataframe of dat for with precip cols
+dat.precip <- dat %>% 
+  select(Year, Site, Transect, Plot, Prev_year_precip, Perc_dev, MAP) %>% 
+  distinct(.keep_all = TRUE) 
+
+# Create dataframe of average for precip by site (red dashed lines)
+precip.avg.site <- dat.precip %>% 
+  group_by(Year, Site) %>% 
+  summarise(Perc_dev_avg = mean(Perc_dev),
+            Prev_year_precip_avg = mean(Prev_year_precip),
+            .groups = "keep")
+
+map.avg <- dat.precip %>% 
+  select(Site, Transect, MAP) %>% 
+  distinct(.keep_all = TRUE) %>% 
+  group_by(Site) %>% 
+  summarise(MAP_avg = mean(MAP))
+
+# Line graph of averages across sites
+precip.site.all <- precip.avg.site %>% 
+  ggplot(aes(x = Year, y = Prev_year_precip_avg)) +
+  geom_point() +
+  geom_line() +
+  facet_wrap(~Site) +
+  theme_bw() +
+  labs(x = NULL,
+       y = "Previous year precip (mm)",
+       title = "Precipitation conditions") +
+  theme(axis.text.x = element_text(color = "black")) +
+  geom_hline(data = map.avg, 
+             aes(yintercept = MAP_avg), 
+             linetype = "dashed", color = "red")
+precip.site.all
+```
+
+
+# Figure S2: Reproductive culm change vs. herb cover change
+## Create a dataframe to graph model-predicted lines
+```{r, message=FALSE}
+# Generate prediction and add unscaled variable
+insight.repro.herb <- get_datagrid(dat.culm.ex, by = c("Change_HerbCover_scaled"),
+                                   length = 100)
+insight.repro.herb$Change_ReproductiveCulms <- get_predicted(repro, insight.repro.herb)
+unscaled.herb <- get_datagrid(dat.culm.unscaled, by = "Change_HerbCover",
+                              length = 100) %>% 
+  arrange(Change_HerbCover)
+insight.repro.herb$Change_HerbCover <- unscaled.herb$Change_HerbCover
+```
+
+## Graph
+```{r}
+repro.herb <- dat.culm %>% 
+  ggplot(aes(x = Change_HerbCover, y = Change_ReproductiveCulms)) +
+  geom_point(alpha = 0.35) +
+  geom_line(data = insight.repro.herb,
+            aes(y = Change_ReproductiveCulms), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Buffelgrass reproductive culm count"),
+       x = expression(Delta ~ "Native grass & forb cover (%)")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+repro.herb
+```
+
+
+# Figure S3: Shrub/herb cover change vs. precip
+## 3a: Shrub
+```{r, message=FALSE}
+shrub.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_ShrubCover)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native shrub cover (%)"),
+       x = "Previous year precipitation (mm)") +
+  theme(plot.margin = margin(10, 10, 10, 20))
+```
+
+## 3b: Herb
+```{r, message=FALSE}
+herb.change.precip <- plot.change %>% 
+  ggplot(aes(x = Prev_year_precip, y = Change_HerbCover)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Native grass & forb cover (%)"),
+       x = "Previous year precipitation (mm)") +
+  theme(plot.margin = margin(10, 10, 10, 20))
+```
+
+## Combine
+```{r, message=FALSE}
+ggarrange(shrub.change.precip, herb.change.precip,
+          ncol = 2, nrow = 1,
+          labels = c("a", "b"))
+```
+
+
+# Figure S4: Total culm change vs. density change
+## Create a dataframe to graph model-predicted lines
+```{r}
+# Generate prediction and add unscaled variable
+insight.total.bgden <- get_datagrid(dat.culm.ex, by = c("Change_BGDensity_scaled"),
+                                    length = 100)
+insight.total.bgden$Change_TotalCulms <- get_predicted(total, insight.total.bgden)
+unscaled.bgden <- get_datagrid(dat.culm.unscaled, by = "Change_BGDensity",
+                               length = 100) %>% 
+  arrange(Change_BGDensity)
+insight.total.bgden$Change_BGDensity <- unscaled.bgden$Change_BGDensity
+```
+
+## Graph
+```{r}
+total.bgden <- dat.culm %>% 
+  ggplot(aes(x = Change_BGDensity, y = Change_TotalCulms)) +
+  geom_point(alpha = 0.35) +
+  geom_line(data = insight.total.bgden,
+            aes(y = Change_TotalCulms), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Total buffelgrass culm count"),
+       x = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")"))) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") +
+  geom_vline(xintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+total.bgden
+```
+
+
+
+# Figure S5: Total culm change vs. initial density
+## Create a dataframe to graph model-predicted lines
+```{r}
+# Generate prediction and add unscaled variable
+insight.total.inbgden <- get_datagrid(dat.culm.ex, by = c("Init_BGDensity_scaled"),
+                                      length = 100)
+insight.total.inbgden$Change_TotalCulms <- get_predicted(total, insight.total.inbgden)
+unscaled.inbgden <- get_datagrid(dat.culm.unscaled, by = "Init_BGDensity",
+                                 length = 100) %>% 
+  arrange(Init_BGDensity)
+insight.total.inbgden$Init_BGDensity <- unscaled.inbgden$Init_BGDensity
+```
+
+## Graph
+```{r}
+total.inbgden <- dat.culm %>% 
+  ggplot(aes(x = Init_BGDensity, y = Change_TotalCulms)) +
+  geom_point(alpha = 0.35) +
+  geom_line(data = insight.total.inbgden,
+            aes(y = Change_TotalCulms), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(x = expression(paste("Initial buffelgrass density (individuals / ", m^2, ")")),
+       y = expression(Delta ~ "Total buffelgrass culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+total.inbgden
+```
+
+
+
+# Figure S6: Reproductive culm change vs. initial density
+## Create a dataframe to graph model-predicted lines
+```{r}
+# Generate prediction and add unscaled variable
+insight.repro.inbgden <- get_datagrid(dat.culm.ex, by = c("Init_BGDensity_scaled"),
+                                      length = 100)
+insight.repro.inbgden$Change_ReproductiveCulms <- get_predicted(repro, insight.repro.inbgden)
+unscaled.inbgden <- get_datagrid(dat.culm.unscaled, by = "Init_BGDensity",
+                                 length = 100) %>% 
+  arrange(Init_BGDensity)
+insight.repro.inbgden$Init_BGDensity <- unscaled.inbgden$Init_BGDensity
+```
+
+## Graph
+```{r}
+repro.inbgden <- dat.culm %>% 
+  ggplot(aes(x = Init_BGDensity, y = Change_ReproductiveCulms)) +
+  geom_point(alpha = 0.35) +
+  geom_line(data = insight.repro.inbgden,
+            aes(y = Change_ReproductiveCulms), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(x = expression(paste("Initial buffelgrass density (individuals / ", m^2, ")")),
+       y = expression(Delta ~ "Buffelgrass reproductive culm count")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red")
+repro.inbgden
+```
+
+
+
+# Figure S7: Cover change vs. initial cover
+## Create a dataframe to graph model-predicted lines
+```{r}
+# Generate prediction and add unscaled variable 
+insight.bgcov.inbgcov <- get_datagrid(dat.bgcov.ex, by = c("Init_BGCover_scaled"),
+                                      length = 10)
+insight.bgcov.inbgcov$Change_BGCover <- get_predicted(bgcov, insight.bgcov.inbgcov)
+unscaled.inbgcov <- get_datagrid(dat.bgcov.unscaled, by = "Init_BGCover",
+                                 length = 10) %>% 
+  arrange(Init_BGCover)
+insight.bgcov.inbgcov$Init_BGCover <- unscaled.inbgcov$Init_BGCover
+```
+
+## Graph
+```{r}
+bgcov.inbgcov <- dat.bgcov %>% 
+  ggplot(aes(x = Init_BGCover, y = Change_BGCover)) +
+  geom_point(alpha = 0.7) +
+  geom_line(data = insight.bgcov.inbgcov,
+            aes(y = Change_BGCover), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(y = expression(Delta ~ "Buffelgrass cover (%)"),
+       x = expression("Initial buffelgrass cover (%)")) +
+  geom_hline(yintercept = 0,
+             linetype = "dashed",
+             color = "red") 
+bgcov.inbgcov
+```
+
+
+
+# Figure S8: Density change vs. cover change
+```{r, message=FALSE}
+density.cover <- plot.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_BGDensity)) +
+  geom_point(alpha = 0.7) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(x = expression(Delta ~ "Buffelgrass cover (%)"),
+       y = expression(Delta ~ paste("Buffelgrass density (individuals / ", m^2, ")")))
+density.cover
+```
+
+
+# Figure S9: Total culm change vs. cover change
+```{r, message=FALSE}
+total.cover <- culm.change %>% 
+  ggplot(aes(x = Change_BGCover, y = Change_TotalCulms)) +
+  geom_point(alpha = 0.35) +
+  geom_smooth(method = "lm", se = FALSE) +
+  theme_bw() +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  geom_vline(xintercept = 0, color = "red", linetype = "dashed") +
+  labs(y = expression(Delta ~ "Total buffelgrass culm count"),
+       x = expression(Delta ~ "Buffelgrass cover (%)"))
+total.cover
+```
+
+
+
+# Figure S10: Survival vs. density
+## Create a dataframe to graph model-predicted lines
+```{r}
+insight.survival.bgden <- get_datagrid(dat.survival.ex, by = c("BGDensity_scaled"),
+                                       length = 50)
+insight.survival.bgden$survival_prop <- get_predicted(survival, insight.survival.bgden)
+unscaled.bgden <- get_datagrid(dat.survival.unscaled, by = "BGDensity",
+                               length = 50) %>%
+  arrange(BGDensity)
+insight.survival.bgden$BGDensity <- unscaled.bgden$BGDensity
+```
+
+## Graph
+```{r}
+survival.bgden <- dat.survival %>%
+  ggplot(aes(x = BGDensity, y = survival_prop)) +
+  geom_point(alpha = 0.7) +
+  geom_line(data = insight.survival.bgden,
+            aes(y = survival_prop), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(x = expression(paste("Buffelgrass density (individuals / ", m^2, ")")),
+       y = "Proportion of surviving buffelgrass seedlings")
+survival.bgden
+```
+
+
+# Figure S11: Survival vs. shrub cover
+## Create a dataframe to graph model-predicted lines
+```{r}
+insight.survival.shrub <- get_datagrid(dat.survival.ex, by = c("ShrubCover_scaled"),
+                                       length = 50)
+insight.survival.shrub$survival_prop <- get_predicted(survival, insight.survival.shrub) 
+unscaled.shrub <- get_datagrid(dat.survival.unscaled, by = "ShrubCover",
+                               length = 50) %>%
+  arrange(ShrubCover)
+insight.survival.shrub$ShrubCover <- unscaled.shrub$ShrubCover
+```
+
+## Graph
+```{r}
+survival.shrub <- dat.survival %>%
+  ggplot(aes(x = ShrubCover, y = survival_prop)) +
+  geom_point(alpha = 0.7) +
+  geom_line(data = insight.survival.shrub,
+            aes(y = survival_prop), linewidth = 1,
+            color = "purple3") +
+  theme_bw() +
+  labs(x = "Native shrub cover (%)",
+       y = "Proportion of surviving buffelgrass seedlings")
+survival.shrub
+```
+
